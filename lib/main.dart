@@ -29,38 +29,22 @@ class MainApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             themeMode: themeService.themeMode,
             theme: ThemeData(
+              fontFamily: GoogleFonts.poppins().fontFamily,
               colorScheme: ColorScheme.fromSeed(
                 seedColor: themeService.seedColor,
                 brightness: Brightness.light,
                 dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
-              ),
-              textTheme: GoogleFonts.interTextTheme(
-                ThemeData.from(
-                  colorScheme: ColorScheme.fromSeed(
-                    seedColor: themeService.seedColor,
-                    brightness: Brightness.light,
-                    dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
-                  ),
-                ).textTheme,
               ),
               progressIndicatorTheme: const ProgressIndicatorThemeData(),
               sliderTheme: const SliderThemeData(),
               useMaterial3: true,
             ),
             darkTheme: ThemeData(
+              fontFamily: GoogleFonts.poppins().fontFamily,
               colorScheme: ColorScheme.fromSeed(
                 seedColor: themeService.seedColor,
                 brightness: Brightness.dark,
                 dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
-              ),
-              textTheme: GoogleFonts.interTextTheme(
-                ThemeData.from(
-                  colorScheme: ColorScheme.fromSeed(
-                    seedColor: themeService.seedColor,
-                    brightness: Brightness.dark,
-                    dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
-                  ),
-                ).textTheme,
               ),
               progressIndicatorTheme: const ProgressIndicatorThemeData(),
               sliderTheme: const SliderThemeData(),
