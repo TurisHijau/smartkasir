@@ -20,8 +20,7 @@ class HomeView extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     AppColors.primary,
-                    AppColors.primaryDark,
-                    AppColors.primaryDark,
+                    AppColors.secondary,
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -59,10 +58,10 @@ class HomeView extends StatelessWidget {
                     // Icon keranjang
                     Column(
                       children: [
-                        Icon(
-                          Icons.shopping_cart_outlined,
-                          size: 120,
-                          color: Colors.white.withOpacity(0.9),
+                        Image.asset(
+                          'assets/images/logo.png',
+                          width: 150,
+                          height: 150,
                         ),
                         const SizedBox(height: 20),
                       ],
