@@ -14,9 +14,16 @@ class AppColors {
   static const Color tertiaryDark = Color(0xFF00B8D4);
   
   // Neutral colors
-  static const Color background = Colors.white;
-  static const Color backgroundDark = Color(0xFF121212);
-  static const Color surface = Colors.white;
-  static const Color surfaceDark = Color(0xFF1E1E1E);
-  static const Color error = Color(0xFFB00020);
+  static const Color black = Color(0xFF010022);
+  static const Color white = Color(0xFFFFFFFF);
+
+  // Gray colors
+  static const Color lightGray = Color(0xFFE7EEF1);
+  static const Color gray = Color(0xFF97A4AC);
+  static const Color darkGray = Color(0xFF575960);
+
+  // Additional colors
+  static const Color lightPrimary = Color(0xFFD2DFF4);
+  static const Color lightRed = Color(0xFFE5A5A4);
+  static const Color red = Color(0xFFCB1717);
 }
