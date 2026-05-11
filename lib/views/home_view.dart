@@ -17,33 +17,32 @@ class HomeView extends StatelessWidget {
             body: Stack(
               fit: StackFit.expand,
               children: [
-                Positioned(
-                  left: -160,
-                  bottom: -80,
-                  child: Opacity(
-                    opacity: 0.60,
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      width: 530,
-                      height: 530,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-                BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 6.0, sigmaY: 6.0),
-                  child: Container(color: Colors.black.withOpacity(0.1)),
-                ),
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.tertiary.withOpacity(1),
-                        AppColors.primary.withOpacity(0.8),
-                        AppColors.secondary.withOpacity(0.8),
+                        AppColors.tertiary,
+                        AppColors.primary,
+                        AppColors.secondary,
                       ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -160,
+                  bottom: -60,
+                  child: Opacity(
+                    opacity: 0.20,
+                    child: ImageFiltered(
+                      imageFilter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 530,
+                        height: 530,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),
