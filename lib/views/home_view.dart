@@ -31,16 +31,16 @@ class HomeView extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  left: -160,
-                  bottom: -60,
+                  left: -270,
+                  bottom: -100,
                   child: Opacity(
                     opacity: 0.20,
                     child: ImageFiltered(
                       imageFilter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
                       child: Image.asset(
                         'assets/images/logo.png',
-                        width: 530,
-                        height: 530,
+                        width: 650,
+                        height: 650,
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -48,9 +48,9 @@ class HomeView extends StatelessWidget {
                 ),
                 SafeArea(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 1),
 
                       // Judul
                       Column(
@@ -59,19 +59,19 @@ class HomeView extends StatelessWidget {
                             "SMARTKASIR",
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 38,
+                              fontSize: 45,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
-                          SizedBox(height: 1),
                           Text(
                             "Bisnis Pintar, Mulai dari Sini.",
                             style: TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.w600,
-                              fontSize: 18,
+                              fontSize: 22,
                             ),
                           ),
+                         SizedBox(height: 15),
                         ],
                       ),
 
@@ -80,8 +80,8 @@ class HomeView extends StatelessWidget {
                         children: [
                           Image.asset(
                             'assets/images/logo.png',
-                            width: 200,
-                            height: 200,
+                            width: 230,
+                            height: 230,
                           ),
                           const SizedBox(height: 20),
                         ],
@@ -103,7 +103,7 @@ class HomeView extends StatelessWidget {
                                 onPressed: () =>
                                     viewModel.navigateToLogin(context),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey.shade300,
+                                  backgroundColor: AppColors.lightGray,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(30),
                                   ),
@@ -111,8 +111,8 @@ class HomeView extends StatelessWidget {
                                 child: const Text(
                                   "MASUK",
                                   style: TextStyle(
-                                    color: Colors.blue,
-                                    fontSize: 16,
+                                    color: AppColors.primary,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -130,7 +130,7 @@ class HomeView extends StatelessWidget {
                                     viewModel.navigateToRegister(context),
                                 style: OutlinedButton.styleFrom(
                                   side: const BorderSide(
-                                    color: Colors.white,
+                                    color: AppColors.white,
                                     width: 1.5,
                                   ),
                                   shape: RoundedRectangleBorder(
@@ -140,8 +140,9 @@ class HomeView extends StatelessWidget {
                                 child: const Text(
                                   "DAFTAR TOKO",
                                   style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
+                                    color: AppColors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),

@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:smartkasir/views/auth/login_view.dart';
+import 'package:smartkasir/views/auth/register_view.dart';
 
 class HomeViewModel extends ChangeNotifier {
   HomeViewModel();
 
   void navigateToLogin(BuildContext context) {
-    // TODO: Implement navigation to the login view
-    debugPrint("Navigate to Login");
-  }
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const LoginView(),
+    ),
+  );
+}
 
   void navigateToRegister(BuildContext context) {
-    // TODO: Implement navigation to the store registration view
-    debugPrint("Navigate to Register Store");
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const RegisterView(),
+    ),
+  );
   }
 }
