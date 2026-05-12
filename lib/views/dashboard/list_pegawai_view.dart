@@ -283,13 +283,15 @@ class _EmployeeCard extends StatelessWidget {
             children: [
               _ActionButton(
                 backgroundColor: AppColors.lightPrimary,
-                imagePath: 'assets/images/icons/edit.png',
+                icon: Icons.edit_square,
+                iconColor: AppColors.primary,
                 onTap: () {},
               ),
               const SizedBox(width: 8),
               _ActionButton(
                 backgroundColor: AppColors.lightRed,
-                imagePath: 'assets/images/icons/trashbin.png',
+                icon: Icons.delete,
+                iconColor: Colors.red,
                 onTap: () {},
               ),
             ],
@@ -302,12 +304,14 @@ class _EmployeeCard extends StatelessWidget {
 
 class _ActionButton extends StatelessWidget {
   final Color backgroundColor;
-  final String imagePath;
+  final IconData icon;
+  final Color iconColor;
   final VoidCallback onTap;
 
   const _ActionButton({
     required this.backgroundColor,
-    required this.imagePath,
+    required this.icon,
+    required this.iconColor,
     required this.onTap,
   });
 
@@ -322,13 +326,12 @@ class _ActionButton extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(4),
         ),
-        child: Image.asset(
-          imagePath,
-          width: 18,
-          height: 18,
-          fit: BoxFit.contain,
+        child: Icon(
+          icon,
+          size: 25,
+          color: iconColor,
         ),
       ),
     );
