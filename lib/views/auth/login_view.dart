@@ -198,7 +198,8 @@ class LoginView extends StatelessWidget {
                             width: double.infinity,
                             height: 58,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () =>
+                                    viewModel.navigateToScannerView(context),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 elevation: 0,

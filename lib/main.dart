@@ -3,8 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/services/preferences_service.dart';
 import 'package:smartkasir/services/theme_service.dart';
+import 'package:smartkasir/views/analitik_view.dart';
 import 'package:smartkasir/views/dashboard/list_produk_view.dart';
 import 'package:smartkasir/views/home_view.dart';
+import 'package:smartkasir/views/analitik_view.dart';
 
 
 void main() {
