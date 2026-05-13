@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/services/preferences_service.dart';
 import 'package:smartkasir/services/theme_service.dart';
+import 'package:smartkasir/views/analitik_view.dart';
 import 'package:smartkasir/views/home_view.dart';
 
 void main() {
@@ -50,7 +51,7 @@ class MainApp extends StatelessWidget {
               sliderTheme: const SliderThemeData(),
               useMaterial3: true,
             ),
-            home: HomeView(), // arahkan ke HomePage
+            home: AnalitikView(), // arahkan ke HomePage
           );
         },
       ),
