@@ -52,7 +52,7 @@ class MainApp extends StatelessWidget {
               sliderTheme: const SliderThemeData(),
               useMaterial3: true,
             ),
-            home: ListProdukView(), // arahkan ke HomePage
+            home: HomeView(), // arahkan ke HomePage
           );
         },
       ),
