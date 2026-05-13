@@ -23,7 +23,8 @@ class SettingsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-    void navigateToSetting(BuildContext context) {
+  // NGARAH KE SETTINGAN YA
+  void navigateToSetting(BuildContext context) {
   Navigator.push(
     context,
     MaterialPageRoute(
