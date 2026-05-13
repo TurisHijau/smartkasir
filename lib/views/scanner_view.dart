@@ -96,7 +96,7 @@ class _ScannerViewState extends State<ScannerView> {
     final cameraHeight = screenHeight * 0.42;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           // AREA KAMERA
@@ -132,7 +132,11 @@ class _ScannerViewState extends State<ScannerView> {
           fit: StackFit.expand,
           children: [
             if (_isCameraOn)
-              MobileScanner(controller: _scannerController, onDetect: _onDetect)
+              MobileScanner(
+                key: const ValueKey('camera'),
+                controller: _scannerController,
+                onDetect: _onDetect,
+              )
             else
               _buildCameraOffState(),
 
@@ -178,12 +182,16 @@ class _ScannerViewState extends State<ScannerView> {
     );
   }
 
-  void _toggleCamera() {
-    setState(() => _isCameraOn = !_isCameraOn);
+  // TOGGLE KAMERA
+  Future<void> _toggleCamera() async {
     if (_isCameraOn) {
-      _scannerController.start();
+      await _scannerController.stop();
     } else {
-      _scannerController.stop();
+      await _scannerController.start();
+    }
+
+    if (mounted) {
+      setState(() => _isCameraOn = !_isCameraOn);
     }
   }
 
@@ -278,7 +286,7 @@ class _ScannerViewState extends State<ScannerView> {
               style: TextStyle(color: Colors.white54, fontSize: 12),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -286,7 +294,7 @@ class _ScannerViewState extends State<ScannerView> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
               elevation: 0,
             ),
             onPressed: _toggleCamera,
@@ -316,18 +324,16 @@ class _ScannerViewState extends State<ScannerView> {
     );
   }
 
-  // ─────────────────────────── PANEL BAWAH ───────────────────────────
+  // PANEL BAWAH
 
   Widget _buildBottomPanel() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
+            color: Colors.black.withOpacity(0.15),
             blurRadius: 18,
             offset: const Offset(0, -4),
           ),
@@ -335,22 +341,17 @@ class _ScannerViewState extends State<ScannerView> {
       ),
       child: Column(
         children: [
-          // Indikator tarik
           Container(
             width: 44,
             height: 4,
             margin: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white24 : Colors.black12,
+              color: Colors.black12,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-
-          // Header ringkasan belanja
           _buildCartHeader(),
-          const Divider(height: 1),
-
-          // Daftar item / empty state
+          Divider(height: 1, color: Colors.grey[600]),
           Expanded(
             child: _cartItems.isEmpty ? _buildEmptyCart() : _buildCartList(),
           ),
@@ -376,11 +377,15 @@ class _ScannerViewState extends State<ScannerView> {
             children: [
               const Text(
                 'Barang yang dibeli',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black54,
+                ),
               ),
               Text(
                 'Total $totalItems items',
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -390,9 +395,9 @@ class _ScannerViewState extends State<ScannerView> {
               Text(
                 'Total Harga',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey[500],
+                  color: Colors.grey[600],
                   letterSpacing: 0.5,
                 ),
               ),
@@ -412,8 +417,6 @@ class _ScannerViewState extends State<ScannerView> {
   }
 
   Widget _buildEmptyCart() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -422,19 +425,23 @@ class _ScannerViewState extends State<ScannerView> {
             width: 88,
             height: 88,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF2A2D3A) : const Color(0xFFF0F3F7),
+              color: Colors.grey[400],
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.shopping_basket_outlined,
               size: 42,
-              color: isDark ? Colors.white24 : Colors.grey[350],
+              color: Colors.grey[200],
             ),
           ),
           const SizedBox(height: 18),
-          const Text(
+          Text(
             'Keranjang Belanja Kosong',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 17,
+              color: Colors.grey[600],
+            ),
           ),
           const SizedBox(height: 8),
           Padding(
@@ -464,22 +471,17 @@ class _ScannerViewState extends State<ScannerView> {
   }
 
   Widget _buildCartItemCard(_CartItemPlaceholder item, int index) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2130) : Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? Colors.white10 : const Color(0xFFEDEFF3),
-        ),
+        border: Border.all(color: const Color(0xFFEDEFF3)),
         boxShadow: [
-          if (!isDark)
-            const BoxShadow(
-              color: Colors.black38,
-              blurRadius: 6,
-              offset: Offset(0, 2),
-            ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -517,11 +519,9 @@ class _ScannerViewState extends State<ScannerView> {
   }
 
   Widget _quantityControl(_CartItemPlaceholder item, int index) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2A2D3A) : const Color(0xFFF5F6FA),
+        color: const Color(0xFFF5F6FA),
         borderRadius: BorderRadius.circular(10),
       ),
       padding: const EdgeInsets.all(2),
@@ -568,59 +568,166 @@ class _ScannerViewState extends State<ScannerView> {
     );
   }
 
-  // ─────────────────────────── TOMBOL BAWAH ───────────────────────────
+  // TOMBOL BAWAH
 
   Widget _buildBottomButtons() {
     final isEmpty = _cartItems.isEmpty;
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Tombol Input Manual
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _showInputManualSheet,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+    return Container(
+      color: Colors.white,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Tombol Input Manual
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _showInputManualSheet,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Input Manual',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  child: const Text(
+                    'Input Manual',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-            // Tombol Review Belanja
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: isEmpty ? null : _showReviewSheet,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isEmpty
-                      ? Colors.grey[300]
-                      : const Color(0xFF2A2D3A),
-                  foregroundColor: isEmpty ? Colors.grey[500] : Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+              // Tombol Review Belanja
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: isEmpty ? null : _showReviewSheet,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryDark,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: const Color(0xFF2A2D3A),
+                    disabledForegroundColor: Colors.white38,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    'Review Belanja',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                 ),
-                child: const Text(
-                  'Review Belanja',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // POPUP INPUT MANUAL
+  void _showInputManualSheet() {
+    final kodeController = TextEditingController();
+    final namaController = TextEditingController();
+    final jumlahController = TextEditingController(text: '1');
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _dialogFieldLabel('Kode Produk'),
+                  const SizedBox(height: 8),
+                  _dialogTextField(
+                    controller: kodeController,
+                    hint: 'Masukkan Kode Produk',
+                  ),
+                  const SizedBox(height: 16),
+                  _dialogFieldLabel('Nama Produk'),
+                  const SizedBox(height: 8),
+                  _dialogTextField(
+                    controller: namaController,
+                    hint: 'Masukkan Nama Produk',
+                  ),
+                  const SizedBox(height: 16),
+                  _dialogFieldLabel('Jumlah'),
+                  const SizedBox(height: 8),
+                  _dialogTextField(
+                    controller: jumlahController,
+                    hint: 'Masukkan Jumlah',
+                    isNumber: true,
+                  ),
+                  const SizedBox(height: 28),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final kode = kodeController.text.trim();
+                        final nama = namaController.text.trim();
+                        final jumlah = int.tryParse(jumlahController.text) ?? 1;
+
+                        if (kode.isNotEmpty && nama.isNotEmpty) {
+                          setState(() {
+                            _cartItems.insert(
+                              0,
+                              _CartItemPlaceholder(
+                                barcode: kode,
+                                nama: nama,
+                                harga:
+                                    15000, // Harga default karena di UI tidak ada field harga
+                                quantity: jumlah,
+                              ),
+                            );
+                          });
+                          Navigator.pop(context);
+                          _showBarcodeSnackBar('Produk "$nama" ditambahkan');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: const Text(
+                        'Tambah Produk',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // TOMBOL CLOSE (XMARK)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close, color: Colors.grey, size: 22),
               ),
             ),
           ],
@@ -629,80 +736,44 @@ class _ScannerViewState extends State<ScannerView> {
     );
   }
 
-  // ─────────────────────────── BOTTOM SHEET ───────────────────────────
+  Widget _dialogFieldLabel(String label) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: AppColors.primary,
+        fontWeight: FontWeight.bold,
+        fontSize: 14,
+      ),
+    );
+  }
 
-  void _showInputManualSheet() {
-    final controller = TextEditingController();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
+  Widget _dialogTextField({
+    required TextEditingController controller,
+    required String hint,
+    bool isNumber = false,
+  }) {
+    return TextField(
+      controller: controller,
+      style: const TextStyle(color: Colors.black87, fontSize: 14),
+      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Input Barcode Manual',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                keyboardType: TextInputType.text,
-                decoration: InputDecoration(
-                  hintText: 'Masukkan kode barcode...',
-                  prefixIcon: const Icon(Icons.qr_code),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    final value = controller.text.trim();
-                    if (value.isNotEmpty) {
-                      Navigator.pop(context);
-                      _showBarcodeSnackBar(value);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Cari Produk',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
     );
@@ -718,9 +789,9 @@ class _ScannerViewState extends State<ScannerView> {
         minChildSize: 0.4,
         maxChildSize: 0.9,
         builder: (_, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -743,7 +814,7 @@ class _ScannerViewState extends State<ScannerView> {
                 child: ListView.separated(
                   controller: scrollController,
                   itemCount: _cartItems.length,
-                  separatorBuilder: (_, __) => const Divider(),
+                  separatorBuilder: (_, __) => Divider(color: Colors.grey[500]),
                   itemBuilder: (_, i) {
                     final item = _cartItems[i];
                     return ListTile(
@@ -766,7 +837,7 @@ class _ScannerViewState extends State<ScannerView> {
                   },
                 ),
               ),
-              const Divider(),
+              Divider(color: Colors.grey[600]),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
