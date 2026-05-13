@@ -6,7 +6,9 @@ import 'package:smartkasir/services/theme_service.dart';
 import 'package:smartkasir/views/analitik_view.dart';
 import 'package:smartkasir/views/dashboard/list_produk_view.dart';
 import 'package:smartkasir/views/home_view.dart';
-import 'package:smartkasir/views/analitik_view.dart';
+import 'package:smartkasir/views/settings/settings_view.dart';
+
+
 
 
 void main() {
@@ -54,7 +56,7 @@ class MainApp extends StatelessWidget {
               sliderTheme: const SliderThemeData(),
               useMaterial3: true,
             ),
-            home: HomeView(), // arahkan ke HomePage
+            home: AnalitikView  (), // arahkan ke HomePage
           );
         },
       ),
