@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:smartkasir/views/scanner_view.dart';
 
 class HomeViewModel extends ChangeNotifier {
   HomeViewModel();
 
   void navigateToLogin(BuildContext context) {
-    // TODO: Implement navigation to the login view
-    debugPrint("Navigate to Login");
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ScannerView()),
+    );
   }
 
   void navigateToRegister(BuildContext context) {
-    // TODO: Implement navigation to the store registration view
     debugPrint("Navigate to Register Store");
   }
 }
