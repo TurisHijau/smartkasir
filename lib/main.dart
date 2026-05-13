@@ -3,9 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/services/preferences_service.dart';
 import 'package:smartkasir/services/theme_service.dart';
+import 'package:smartkasir/views/dashboard/kelola_pegawai_view.dart';
+import 'package:smartkasir/views/dashboard/kelola_produk_view.dart';
 import 'package:smartkasir/views/dashboard/list_pegawai_view.dart';
 import 'package:smartkasir/views/home_view.dart';
-
+import 'package:smartkasir/views/profile/profile_view.dart';
+import 'package:smartkasir/views/settings/settings_view.dart';
 
 void main() {
   runApp(const MainApp());
@@ -48,11 +51,14 @@ class MainApp extends StatelessWidget {
                 brightness: Brightness.dark,
                 dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
               ),
+              textTheme: GoogleFonts.poppinsTextTheme(
+                ThemeData(brightness: Brightness.dark).textTheme,
+              ).apply(bodyColor: Colors.black, displayColor: Colors.white),
               progressIndicatorTheme: const ProgressIndicatorThemeData(),
               sliderTheme: const SliderThemeData(),
               useMaterial3: true,
             ),
-            home: ListPegawaiView(), // arahkan ke HomePage
+            home: const SettingsView(), // arahkan ke HomePage
           );
         },
       ),
