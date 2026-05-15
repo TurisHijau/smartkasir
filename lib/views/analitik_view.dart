@@ -12,20 +12,20 @@ class AnalitikView extends StatefulWidget {
 }
 
 class _AnalitikViewState extends State<AnalitikView> {
-  final _vm = AnalitikViewModel();
+  final viewModel = AnalitikViewModel();
 
   @override
   void dispose() {
-    _vm.dispose();
+    viewModel.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: _vm,
+      listenable: viewModel,
       builder: (context, _) => Container(
-        // ── Gradient background sama seperti list_pegawai_view ──
+        // gradient background 
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [AppColors.tertiary, AppColors.secondary],
@@ -38,10 +38,10 @@ class _AnalitikViewState extends State<AnalitikView> {
           body: SafeArea(
             child: Column(
               children: [
-                // ── Header di atas gradient ──
+                //  Header 
                 _buildHeader(context),
 
-                // ── Konten putih dengan border radius atas ──
+                //  border radius atas 
                 Expanded(
                   child: Container(
                     width: double.infinity,
@@ -50,6 +50,7 @@ class _AnalitikViewState extends State<AnalitikView> {
                       color: AppColors.lightGray,
                       borderRadius: BorderRadius.vertical(
                         top: Radius.circular(45),
+                        
                       ),
                     ),
                     child: ClipRRect(
@@ -63,10 +64,10 @@ class _AnalitikViewState extends State<AnalitikView> {
                           children: [
                             _buildStoreInfo(),
                             const SizedBox(height: 16),
-                            _buildStatCards(_vm.statCards),
-                            const SizedBox(height: 12),
-                            _buildStatCards(_vm.statCardsRow2),
+                            _buildStatCards(viewModel.statCards),
                             const SizedBox(height: 16),
+                            _buildStatCards(viewModel.statCardsRow2),
+                            const SizedBox(height:16),
                             _buildRevenueChart(),
                             const SizedBox(height: 16),
                             _buildPaymentMethod(),
@@ -103,7 +104,7 @@ class _AnalitikViewState extends State<AnalitikView> {
             Align(
               alignment: Alignment.centerLeft,
               child: IconButton(
-                onPressed: () => Navigator.maybePop(context),
+                onPressed: () => viewModel.returnToSettings(context),
                 icon: const Icon(
                   Icons.arrow_back_ios_new,
                   color: AppColors.white,
@@ -152,11 +153,11 @@ class _AnalitikViewState extends State<AnalitikView> {
               style: const TextStyle(color: AppColors.primary),
               children: [
                 TextSpan(
-                  text: _vm.storeName,
+                  text: viewModel.storeName,
                   style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                 ),
                 TextSpan(
-                  text: ' - ${_vm.storeDate}',
+                  text: ' - ${viewModel.date}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w400,
                     fontSize: 13,
@@ -168,10 +169,10 @@ class _AnalitikViewState extends State<AnalitikView> {
           ),
           const SizedBox(height: 12),
           Row(
-            children: List.generate(_vm.periodLabels.length, (i) {
+            children: List.generate(viewModel.periodLabels.length, (i) {
               return Padding(
-                padding: EdgeInsets.only(right: i < _vm.periodLabels.length - 1 ? 8 : 0),
-                child: _periodButton(_vm.periodLabels[i], i),
+                padding: EdgeInsets.only(right: i < viewModel.periodLabels.length - 1 ? 8 : 0),
+                child: _periodButton(viewModel.periodLabels[i], i),
               );
             }),
           ),
@@ -181,9 +182,9 @@ class _AnalitikViewState extends State<AnalitikView> {
   }
 
   Widget _periodButton(String label, int index) {
-    final isSelected = _vm.selectedPeriod == index;
+    final isSelected = viewModel.selectedPeriod == index;
     return GestureDetector(
-      onTap: () => _vm.selectPeriod(index),
+      onTap: () => viewModel.selectPeriod(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
@@ -309,8 +310,8 @@ class _AnalitikViewState extends State<AnalitikView> {
             height: 160,
             child: CustomPaint(
               painter: LineChartPainter(
-                values: _vm.chartValues,
-                labels: _vm.chartDays,
+                values: viewModel.chartValues,
+                labels: viewModel.chartDays,
               ),
               size: Size.infinite,
             ),
@@ -323,7 +324,7 @@ class _AnalitikViewState extends State<AnalitikView> {
   // ─── Payment method ───────────────────────────────────────────────────────
 
   Widget _buildPaymentMethod() {
-    final pm = _vm.paymentMethod;
+    final pm = viewModel.paymentMethod;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -439,7 +440,7 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 12),
-          ..._vm.lowStockItems.map(
+          ...viewModel.lowStockItems.map(
             (item) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: Row(
@@ -514,7 +515,7 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 12),
-          ..._vm.recentTransactions.map(
+          ...viewModel.recentTransactions.map(
             (t) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
@@ -607,7 +608,7 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 12),
-          ..._vm.topProducts.asMap().entries.map(
+          ...viewModel.topProducts.asMap().entries.map(
             (e) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 7),
               child: Row(

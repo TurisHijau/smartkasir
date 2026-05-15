@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// ─── Model Classes ───────────────────────────────────────────────────────────
+//  Model Classes 
 
 class StatCardData {
   final String label;
@@ -46,26 +46,32 @@ class TopProductItem {
   final String name;
   final int pcs;
 
-  const TopProductItem({required this.name, required this.pcs});
+  const TopProductItem({
+    required this.name, 
+    required this.pcs
+    });
 }
 
 class PaymentMethodData {
   final int cash;
   final int qris;
 
-  const PaymentMethodData({required this.cash, required this.qris});
+  const PaymentMethodData({
+    required this.cash, 
+    required this.qris
+    });
 
   int get total => cash + qris;
   double get cashRatio => cash / total;
   double get qrisRatio => qris / total;
 }
 
-// ─── ViewModel ───────────────────────────────────────────────────────────────
+// ViewModel 
 
 class AnalitikViewModel extends ChangeNotifier {
   // ── Store info ──
   final String storeName = 'TOKO PAK KUMIS';
-  final String storeDate = 'Sen, 4 Mei 2026';
+  final String date = 'Sen, 4 Mei 2026';
   final List<String> periodLabels = ['Hari ini', 'Minggu ini', 'Bulan ini'];
 
   int _selectedPeriod = 0;
@@ -74,6 +80,11 @@ class AnalitikViewModel extends ChangeNotifier {
   void selectPeriod(int index) {
     _selectedPeriod = index;
     notifyListeners();
+  }
+
+  // go back to setting page
+  void returnToSettings(BuildContext context) {
+    Navigator.pop(context);
   }
 
   // ── Stat cards row 1 ──
@@ -127,7 +138,7 @@ class AnalitikViewModel extends ChangeNotifier {
     qris: 55,
   );
 
-  // ── Low stock ──
+  // Low stock
   final List<LowStockItem> lowStockItems = const [
     LowStockItem(name: 'Aqua 600ml',  count: '3 items',  color: Color(0xFFEF4444)),
     LowStockItem(name: 'Milo Sachet', count: '4 items',  color: Color(0xFFEF4444)),
