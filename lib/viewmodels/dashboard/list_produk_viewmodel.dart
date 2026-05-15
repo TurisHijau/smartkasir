@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartkasir/views/dashboard/kelola_produk_view.dart';
 
 class ListProdukViewmodel extends ChangeNotifier {
   bool showFilter = false;
@@ -38,4 +39,14 @@ class ListProdukViewmodel extends ChangeNotifier {
     showFilter = !showFilter;
     notifyListeners();
   }
+
+
+  void navigateToEditProduct(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const KelolaProdukView(),
+    ),
+  );
+}
 }

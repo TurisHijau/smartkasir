@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:smartkasir/views/settings/settings_view.dart';
 import 'package:vibration/vibration.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/viewmodels/settings/settings_viewmodel.dart';
@@ -153,7 +154,13 @@ class _ScannerViewState extends State<ScannerView> {
                   _overlayButton(
                     icon: Icons.settings_outlined,
                     onTap: () {
-                    },
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SettingsView(),
+                              ),
+                            );
+                          },
                   ),
                   const SizedBox(height: 12),
                   if (_isCameraOn)

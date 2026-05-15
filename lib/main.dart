@@ -8,9 +8,6 @@ import 'package:smartkasir/views/dashboard/list_produk_view.dart';
 import 'package:smartkasir/views/home_view.dart';
 import 'package:smartkasir/views/settings/settings_view.dart';
 
-
-
-
 void main() {
   runApp(const MainApp());
 }
@@ -56,7 +53,7 @@ class MainApp extends StatelessWidget {
               sliderTheme: const SliderThemeData(),
               useMaterial3: true,
             ),
-            home: AnalitikView  (), // arahkan ke HomePage
+            home: HomeView(), // arahkan ke HomePage
           );
         },
       ),

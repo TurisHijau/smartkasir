@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/viewmodels/settings/settings_viewmodel.dart';
-import 'package:smartkasir/views/dashboard/kelola_pegawai_view.dart';
-import 'package:smartkasir/views/dashboard/kelola_produk_view.dart';
-import 'package:smartkasir/views/profile/profile_view.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -23,7 +20,8 @@ class _SettingsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<SettingsViewModel>();
+    // Menggunakan context.read karena navigasi adalah aksi (bukan untuk me-render ulang UI terus menerus)
+    final viewModel = context.read<SettingsViewModel>();
 
     return Container(
       decoration: const BoxDecoration(
@@ -80,14 +78,7 @@ class _SettingsContent extends StatelessWidget {
                                 ),
                               ),
                               TextButton.icon(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const ProfileView(),
-                                    ),
-                                  );
-                                },
+                                onPressed: () => viewModel.navigateToProfile(context),
                                 icon: const Icon(
                                   Icons.edit,
                                   size: 18,
@@ -126,37 +117,25 @@ class _SettingsContent extends StatelessWidget {
                           icon: Icons.analytics,
                           title: 'Analitik',
                           subtitle: 'Lihat analisis keuangan toko',
+                          onTap: () => viewModel.navigateToAnalitik(context),
                         ),
                         _buildMenuTile(
                           icon: Icons.people,
                           title: 'Pegawai',
                           subtitle: 'Buat atau edit akun pegawai',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const KelolaPegawaiView(),
-                              ),
-                            );
-                          },
+                          onTap: () => viewModel.navigateToEmploye(context),
                         ),
                         _buildMenuTile(
                           icon: Icons.inventory,
                           title: 'Produk',
                           subtitle: 'Kelola list produk',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const KelolaProdukView(),
-                              ),
-                            );
-                          },
+                          onTap: () => viewModel.navigateToProducts(context),
                         ),
                         _buildMenuTile(
                           icon: Icons.account_balance_wallet,
                           title: 'Saldo',
                           subtitle: 'Lihat pembayaran via QRIS',
+                          onTap: () => (context),
                         ),
 
                         const SizedBox(height: 24),

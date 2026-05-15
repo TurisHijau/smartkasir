@@ -121,7 +121,7 @@ class _ListPegawaiContent extends StatelessWidget {
             backgroundColor: AppColors.primary,
             shape: const CircleBorder(),
             elevation: 4,
-            onPressed: () {},
+            onPressed: () => viewModel.navigateToEditEmployee(context),
             child: const Icon(Icons.add, size: 50, color: AppColors.white),
           ),
         ),
@@ -231,6 +231,7 @@ class _EmployeeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.read<ListPegawaiViewmodel>();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
@@ -285,7 +286,7 @@ class _EmployeeCard extends StatelessWidget {
                 backgroundColor: AppColors.lightPrimary,
                 icon: Icons.edit_square,
                 iconColor: AppColors.primary,
-                onTap: () {},
+                onTap: () => viewModel.navigateToEditEmployee(context),
               ),
               const SizedBox(width: 8),
               _ActionButton(

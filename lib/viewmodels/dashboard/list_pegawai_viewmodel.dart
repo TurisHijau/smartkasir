@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartkasir/views/dashboard/kelola_pegawai_view.dart';
 
 class ListPegawaiViewmodel extends ChangeNotifier {
   ListPegawaiViewmodel();
@@ -38,4 +39,13 @@ class ListPegawaiViewmodel extends ChangeNotifier {
   ];
 
   List<Map<String, String>> get employees => _employees;
+
+  void navigateToEditEmployee(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const KelolaPegawaiView(),
+    ),
+  );
+}
 }

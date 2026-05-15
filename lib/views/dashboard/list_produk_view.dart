@@ -20,7 +20,7 @@ class _ListProdukScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<ListProdukViewmodel>();
+    final viewmodel = context.watch<ListProdukViewmodel>();
 
     return Container(
       decoration: const BoxDecoration(
@@ -39,14 +39,14 @@ class _ListProdukScreen extends StatelessWidget {
             backgroundColor: AppColors.primary,
             shape: const CircleBorder(),
             elevation: 4,
-            onPressed: () {},
+            onPressed: () => viewmodel.navigateToEditProduct(context),
             child: const Icon(Icons.add, size: 50, color: AppColors.white),
           ),
         ),
         body: SafeArea(
           child: Column(
             children: [
-              _buildHeader(),
+              _buildHeader(context),
 
               Expanded(
                 child: Container(
@@ -81,7 +81,10 @@ class _ListProdukScreen extends StatelessWidget {
                                   height: 48,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: AppColors.gray, width: 1.8),
+                                    border: Border.all(
+                                      color: AppColors.gray,
+                                      width: 1.8,
+                                    ),
                                     color: AppColors.lightGray,
                                   ),
                                   child: const TextField(
@@ -113,7 +116,7 @@ class _ListProdukScreen extends StatelessWidget {
 
                               _actionButton(
                                 icon: Icons.filter_alt_rounded,
-                                onTap: vm.toggleFilter,
+                                onTap: viewmodel.toggleFilter,
                               ),
                             ],
                           ),
@@ -132,13 +135,13 @@ class _ListProdukScreen extends StatelessWidget {
                           const SizedBox(height: 18),
 
                           Expanded(
-                            child: vm.hasProduct
+                            child: viewmodel.hasProduct
                                 ? ListView.builder(
-                                    itemCount: vm.products.length,
+                                    itemCount: viewmodel.products.length,
                                     itemBuilder: (context, index) {
-                                      final product = vm.products[index];
+                                      final product = viewmodel.products[index];
 
-                                      return _productCard(product);
+                                      return _productCard(context, product);
                                     },
                                   )
                                 : _emptyState(),
@@ -146,7 +149,7 @@ class _ListProdukScreen extends StatelessWidget {
                         ],
                       ),
 
-                      if (vm.showFilter)
+                      if (viewmodel.showFilter)
                         Positioned(
                           top: 86,
                           right: 0,
@@ -208,15 +211,18 @@ class _ListProdukScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 27),
       child: Row(
         children: [
-          const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.white,
-            size: 28,
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: AppColors.white,
+              size: 28,
+            ),
           ),
 
           const Expanded(
@@ -248,12 +254,13 @@ class _ListProdukScreen extends StatelessWidget {
           color: AppColors.primary,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon,size: 34, color: AppColors.white),
+        child: Icon(icon, size: 34, color: AppColors.white),
       ),
     );
   }
 
-  Widget _productCard(Map<String, dynamic> product) {
+  Widget _productCard(BuildContext context, Map<String, dynamic> product) {
+    final viewmodel = context.read<ListProdukViewmodel>();
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -310,6 +317,7 @@ class _ListProdukScreen extends StatelessWidget {
           Row(
             children: [
               _miniButton(
+                onTap: () => viewmodel.navigateToEditProduct(context),
                 icon: Icons.add,
                 bgColor: AppColors.lightGreen,
                 iconColor: AppColors.green,
@@ -319,6 +327,7 @@ class _ListProdukScreen extends StatelessWidget {
               const SizedBox(width: 6),
 
               _miniButton(
+                onTap: () => viewmodel.navigateToEditProduct(context),
                 icon: Icons.edit_square,
                 bgColor: AppColors.lightPrimary,
                 iconColor: AppColors.primary,
@@ -343,15 +352,19 @@ class _ListProdukScreen extends StatelessWidget {
     required Color bgColor,
     required Color iconColor,
     double iconSize = 20,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(4),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Icon(icon, size: iconSize, color: iconColor),
       ),
-      child: Icon(icon, size: iconSize, color: iconColor),
     );
   }
 
@@ -368,7 +381,11 @@ class _ListProdukScreen extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.darkGray),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: AppColors.darkGray,
+              ),
             ),
           ),
 
@@ -401,9 +418,9 @@ class _ListProdukScreen extends StatelessWidget {
                 size: 57,
               ),
             ),
-      
+
             const SizedBox(height: 10),
-      
+
             const Text(
               "Produk Kosong",
               style: TextStyle(
@@ -412,13 +429,17 @@ class _ListProdukScreen extends StatelessWidget {
                 color: AppColors.darkGray,
               ),
             ),
-      
+
             const SizedBox(height: 2),
-      
+
             const Text(
               "Tambahkan produk dengan menekan\n tombol + di pojok kanan bawah",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.darkGray),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.darkGray,
+              ),
             ),
           ],
         ),
