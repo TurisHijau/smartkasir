@@ -18,6 +18,148 @@ class ListProdukView extends StatelessWidget {
 class _ListProdukScreen extends StatelessWidget {
   const _ListProdukScreen();
 
+  // FUNGSI UNTUK MENAMPILKAN MODAL TAMBAH STOK
+  void _showAddStockDialog(BuildContext context, Map<String, dynamic> product) {
+    final jumlahController = TextEditingController();
+    final viewmodel = context.read<ListProdukViewmodel>();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: AppColors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // NAMA PRODUK LABEL
+                const Text(
+                  "Nama Produk",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // NAMA PRODUK FIELD (READ ONLY)
+                TextField(
+                  controller: TextEditingController(text: product["nama"]),
+                  readOnly: true,
+                  style: const TextStyle(
+                    color: AppColors.darkGray,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppColors.white,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.gray,
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.gray,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // JUMLAH LABEL
+                const Text(
+                  "Jumlah",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // INPUT JUMLAH FIELD
+                TextField(
+                  controller: jumlahController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(
+                    color: AppColors.darkGray,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: "0",
+                    hintStyle: const TextStyle(color: AppColors.gray),
+                    filled: true,
+                    fillColor: AppColors.white,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.gray,
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.primary,
+                        width: 1.8,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // TOMBOL TAMBAH STOK
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Panggil fungsi tambah stok di viewmodel Anda jika diperlukan
+                      // viewmodel.addStock(product, jumlahController.text);
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      "Tambah Stok",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewmodel = context.watch<ListProdukViewmodel>();
@@ -47,7 +189,6 @@ class _ListProdukScreen extends StatelessWidget {
           child: Column(
             children: [
               _buildHeader(context),
-
               Expanded(
                 child: Container(
                   width: double.infinity,
@@ -71,9 +212,7 @@ class _ListProdukScreen extends StatelessWidget {
                               color: AppColors.primary,
                             ),
                           ),
-
                           const SizedBox(height: 8),
-
                           Row(
                             children: [
                               Expanded(
@@ -104,25 +243,19 @@ class _ListProdukScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
-
                               const SizedBox(width: 10),
-
                               _actionButton(
                                 icon: Icons.qr_code_scanner_rounded,
                                 onTap: () {},
                               ),
-
                               const SizedBox(width: 8),
-
                               _actionButton(
                                 icon: Icons.filter_alt_rounded,
                                 onTap: viewmodel.toggleFilter,
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 6),
-
                           const Text(
                             "Tap icon untuk membuka scan via kamera",
                             style: TextStyle(
@@ -131,16 +264,13 @@ class _ListProdukScreen extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-
                           const SizedBox(height: 18),
-
                           Expanded(
                             child: viewmodel.hasProduct
                                 ? ListView.builder(
                                     itemCount: viewmodel.products.length,
                                     itemBuilder: (context, index) {
                                       final product = viewmodel.products[index];
-
                                       return _productCard(context, product);
                                     },
                                   )
@@ -148,7 +278,6 @@ class _ListProdukScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-
                       if (viewmodel.showFilter)
                         Positioned(
                           top: 86,
@@ -177,13 +306,9 @@ class _ListProdukScreen extends StatelessWidget {
                                     color: AppColors.gray,
                                   ),
                                 ),
-
                                 const SizedBox(height: 4),
-
                                 _dropdownBox(text: "Pilih Salah Satu Kategori"),
-
                                 const SizedBox(height: 16),
-
                                 const Text(
                                   "Stok",
                                   style: TextStyle(
@@ -192,9 +317,7 @@ class _ListProdukScreen extends StatelessWidget {
                                     color: AppColors.gray,
                                   ),
                                 ),
-
                                 const SizedBox(height: 4),
-
                                 _dropdownBox(text: "< 20 items"),
                               ],
                             ),
@@ -224,7 +347,6 @@ class _ListProdukScreen extends StatelessWidget {
               size: 28,
             ),
           ),
-
           const Expanded(
             child: Center(
               child: Text(
@@ -237,7 +359,6 @@ class _ListProdukScreen extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(width: 24),
         ],
       ),
@@ -289,9 +410,7 @@ class _ListProdukScreen extends StatelessWidget {
                     color: AppColors.primary,
                   ),
                 ),
-
                 const SizedBox(height: 4),
-
                 Text(
                   "Harga : ${product["harga"]}",
                   style: const TextStyle(
@@ -300,9 +419,7 @@ class _ListProdukScreen extends StatelessWidget {
                     color: AppColors.darkGray,
                   ),
                 ),
-
                 const SizedBox(height: 2),
-
                 Text(
                   "Stok : ${product["stok"]}",
                   style: const TextStyle(
@@ -313,28 +430,24 @@ class _ListProdukScreen extends StatelessWidget {
               ],
             ),
           ),
-
           Row(
             children: [
+              // TOMBOL TAMBAH HIJAU (DIPERBAIKI)
               _miniButton(
-                onTap: () => viewmodel.navigateToEditProduct(context),
+                onTap: () => viewmodel.showAddStockDialog(context, product),
                 icon: Icons.add,
                 bgColor: AppColors.lightGreen,
                 iconColor: AppColors.green,
                 iconSize: 26,
               ),
-
               const SizedBox(width: 6),
-
               _miniButton(
                 onTap: () => viewmodel.navigateToEditProduct(context),
                 icon: Icons.edit_square,
                 bgColor: AppColors.lightPrimary,
                 iconColor: AppColors.primary,
               ),
-
               const SizedBox(width: 6),
-
               _miniButton(
                 icon: Icons.delete,
                 bgColor: AppColors.lightRed,
@@ -388,7 +501,6 @@ class _ListProdukScreen extends StatelessWidget {
               ),
             ),
           ),
-
           const Icon(
             Icons.keyboard_arrow_down_rounded,
             color: AppColors.darkGray,
@@ -408,7 +520,7 @@ class _ListProdukScreen extends StatelessWidget {
             Container(
               width: 100,
               height: 100,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.gray,
                 shape: BoxShape.circle,
               ),
@@ -418,9 +530,7 @@ class _ListProdukScreen extends StatelessWidget {
                 size: 57,
               ),
             ),
-
             const SizedBox(height: 10),
-
             const Text(
               "Produk Kosong",
               style: TextStyle(
@@ -429,9 +539,7 @@ class _ListProdukScreen extends StatelessWidget {
                 color: AppColors.darkGray,
               ),
             ),
-
             const SizedBox(height: 2),
-
             const Text(
               "Tambahkan produk dengan menekan\n tombol + di pojok kanan bawah",
               textAlign: TextAlign.center,
