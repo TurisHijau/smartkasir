@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smartkasir/views/analitik_view.dart';
+import 'package:smartkasir/views/dashboard/analitik_view.dart';
 import 'package:smartkasir/views/dashboard/list_pegawai_view.dart';
 import 'package:smartkasir/views/dashboard/list_produk_view.dart';
 import 'package:smartkasir/views/profile/profile_view.dart';

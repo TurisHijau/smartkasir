@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartkasir/views/dashboard/stock_produk_view.dart';
 
 //  Model Classes 
 
@@ -82,10 +83,6 @@ class AnalitikViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // go back to setting page
-  void returnToSettings(BuildContext context) {
-    Navigator.pop(context);
-  }
 
   // ── Stat cards row 1 ──
   final List<StatCardData> statCards = const [
@@ -167,4 +164,24 @@ class AnalitikViewModel extends ChangeNotifier {
     TopProductItem(name: 'Kecap Bango',  pcs: 10),
     TopProductItem(name: 'Paracetamol',  pcs: 5),
   ];
+
+  // routing
+  void returnToSettings(BuildContext context) {
+    Navigator.pop(context);
+  }
+
+  void goToStockProduk(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const StockProdukView()),
+    );
+  }
+
+  void goToStockLastTransaction(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const StockProdukView()),
+    );
+  }
+
 }

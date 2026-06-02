@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:smartkasir/constants/app_colors.dart';
-import 'package:smartkasir/viewmodels/analitik_viewmodel.dart';
-
+import 'package:smartkasir/viewmodels/dashboard/analitik_viewmodel.dart';
 
 class AnalitikView extends StatefulWidget {
   const AnalitikView({super.key});
@@ -25,7 +24,7 @@ class _AnalitikViewState extends State<AnalitikView> {
     return ListenableBuilder(
       listenable: viewModel,
       builder: (context, _) => Container(
-        // gradient background 
+        // gradient background
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [AppColors.tertiary, AppColors.secondary],
@@ -38,10 +37,10 @@ class _AnalitikViewState extends State<AnalitikView> {
           body: SafeArea(
             child: Column(
               children: [
-                //  Header 
+                //  Header
                 _buildHeader(context),
 
-                //  border radius atas 
+                //  border radius atas
                 Expanded(
                   child: Container(
                     width: double.infinity,
@@ -50,7 +49,6 @@ class _AnalitikViewState extends State<AnalitikView> {
                       color: AppColors.lightGray,
                       borderRadius: BorderRadius.vertical(
                         top: Radius.circular(45),
-                        
                       ),
                     ),
                     child: ClipRRect(
@@ -67,7 +65,7 @@ class _AnalitikViewState extends State<AnalitikView> {
                             _buildStatCards(viewModel.statCards),
                             const SizedBox(height: 16),
                             _buildStatCards(viewModel.statCardsRow2),
-                            const SizedBox(height:16),
+                            const SizedBox(height: 16),
                             _buildRevenueChart(),
                             const SizedBox(height: 16),
                             _buildPaymentMethod(),
@@ -154,7 +152,10 @@ class _AnalitikViewState extends State<AnalitikView> {
               children: [
                 TextSpan(
                   text: viewModel.storeName,
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
                 ),
                 TextSpan(
                   text: ' - ${viewModel.date}',
@@ -171,7 +172,9 @@ class _AnalitikViewState extends State<AnalitikView> {
           Row(
             children: List.generate(viewModel.periodLabels.length, (i) {
               return Padding(
-                padding: EdgeInsets.only(right: i < viewModel.periodLabels.length - 1 ? 8 : 0),
+                padding: EdgeInsets.only(
+                  right: i < viewModel.periodLabels.length - 1 ? 8 : 0,
+                ),
                 child: _periodButton(viewModel.periodLabels[i], i),
               );
             }),
@@ -305,9 +308,9 @@ class _AnalitikViewState extends State<AnalitikView> {
               color: AppColors.primary,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 50),
           SizedBox(
-            height: 160,
+            height: 164,
             child: CustomPaint(
               painter: LineChartPainter(
                 values: viewModel.chartValues,
@@ -359,7 +362,7 @@ class _AnalitikViewState extends State<AnalitikView> {
                 child: CustomPaint(
                   painter: DonutChartPainter(
                     values: [pm.cashRatio, pm.qrisRatio],
-                    colors: const [Color(0xFF2176D9), Color(0xFF93C5FD)],
+                    colors: const [AppColors.secondary, AppColors.tertiary],
                   ),
                 ),
               ),
@@ -367,9 +370,17 @@ class _AnalitikViewState extends State<AnalitikView> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _legendItem(const Color(0xFF2176D9), 'Cash', '${pm.cash} transaksi'),
+                  _legendItem(
+                    AppColors.secondary,
+                    'Cash',
+                    '${pm.cash} transaksi',
+                  ),
                   const SizedBox(height: 12),
-                  _legendItem(const Color(0xFF93C5FD), 'QRIS', '${pm.qris} transaksi'),
+                  _legendItem(
+                    AppColors.tertiary,
+                    'QRIS',
+                    '${pm.qris} transaksi',
+                  ),
                 ],
               ),
             ],
@@ -396,10 +407,10 @@ class _AnalitikViewState extends State<AnalitikView> {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+                color: color,
               ),
             ),
             Text(
@@ -476,10 +487,13 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 8),
-          Center(
-            child: Text(
-              'Lihat Selengkapnya →',
-              style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
+          GestureDetector(
+            onTap: () => viewModel.goToStockProduk(context),
+            child: const Center(
+              child: Text(
+                'Lihat Selengkapnya →',
+                style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+              ),
             ),
           ),
         ],
@@ -569,10 +583,13 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 4),
-          Center(
-            child: const Text(
-              'Lihat Selengkapnya →',
-              style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+          GestureDetector(
+            onTap: () => viewModel.goToStockProduk(context),
+            child: const Center(
+              child: Text(
+                'Lihat Selengkapnya →',
+                style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+              ),
             ),
           ),
         ],
@@ -712,7 +729,8 @@ class LineChartPainter extends CustomPainter {
 
     // Line
     final linePath = Path()..moveTo(points.first.dx, points.first.dy);
-    for (int i = 1; i < points.length; i++) linePath.lineTo(points[i].dx, points[i].dy);
+    for (int i = 1; i < points.length; i++)
+      linePath.lineTo(points[i].dx, points[i].dy);
     canvas.drawPath(
       linePath,
       Paint()
