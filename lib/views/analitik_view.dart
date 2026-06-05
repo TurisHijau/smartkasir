@@ -56,29 +56,47 @@ class _AnalitikViewState extends State<AnalitikView> {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(45),
                       ),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildStoreInfo(),
-                            const SizedBox(height: 16),
-                            _buildStatCards(_vm.statCards),
-                            const SizedBox(height: 12),
-                            _buildStatCards(_vm.statCardsRow2),
-                            const SizedBox(height: 16),
-                            _buildRevenueChart(),
-                            const SizedBox(height: 16),
-                            _buildPaymentMethod(),
-                            const SizedBox(height: 16),
-                            _buildLowStock(),
-                            const SizedBox(height: 16),
-                            _buildRecentTransactions(),
-                            const SizedBox(height: 16),
-                            _buildTopProducts(),
-                          ],
+                      child: _vm.isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : _vm.errorMessage != null
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.error_outline, size: 48, color: AppColors.gray),
+                                      const SizedBox(height: 12),
+                                      Text(_vm.errorMessage!, style: const TextStyle(color: AppColors.darkGray)),
+                                      const SizedBox(height: 12),
+                                      ElevatedButton(
+                                        onPressed: () => _vm.loadData(),
+                                        child: const Text("Coba Lagi"),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildStoreInfo(),
+                              const SizedBox(height: 16),
+                              _buildStatCards(_vm.statCards),
+                              const SizedBox(height: 12),
+                              _buildStatCards(_vm.statCardsRow2),
+                              const SizedBox(height: 16),
+                              if (_vm.chartValues.isNotEmpty) _buildRevenueChart(),
+                              if (_vm.chartValues.isNotEmpty) const SizedBox(height: 16),
+                              _buildPaymentMethod(),
+                              const SizedBox(height: 16),
+                              _buildLowStock(),
+                              const SizedBox(height: 16),
+                              _buildRecentTransactions(),
+                              const SizedBox(height: 16),
+                              _buildTopProducts(),
+                            ],
+                          ),
                         ),
-                      ),
                     ),
                   ),
                 ),

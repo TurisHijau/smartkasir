@@ -47,96 +47,121 @@ class _ProfileContent extends StatelessWidget {
                       top: Radius.circular(45),
                     ),
                   ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Profile Header
-                        Center(
-                          child: Column(
-                            children: [
-                              const CircleAvatar(
-                                radius: 60,
-                                backgroundColor: AppColors.primary,
-                                child: Text(
-                                  'TP',
-                                  style: TextStyle(
-                                    fontSize: 40,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                  child: viewModel.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : viewModel.errorMessage != null
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.error_outline, size: 48, color: AppColors.gray),
+                                  const SizedBox(height: 12),
+                                  Text(viewModel.errorMessage!, style: const TextStyle(color: AppColors.darkGray)),
+                                  const SizedBox(height: 12),
+                                  ElevatedButton(
+                                    onPressed: () => viewModel.loadProfile(),
+                                    child: const Text("Coba Lagi"),
                                   ),
-                                ),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'TOKO PAK KUMIS',
-                                style: TextStyle(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.black,
-                                ),
-                              ),
-                              const Text(
-                                'Pemilik Toko',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: AppColors.gray,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              ElevatedButton.icon(
-                                onPressed: () => viewModel.editProfile(),
-                                icon: const Icon(
-                                  Icons.edit,
-                                  color: Colors.white,
-                                ),
-                                label: const Text(
-                                  'Edit Profil',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 40),
+                            )
+                          : viewModel.profileData == null
+                              ? const SizedBox.shrink()
+                              : SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Profile Header
+                                      Center(
+                                        child: Column(
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 60,
+                                              backgroundColor: AppColors.primary,
+                                              child: Text(
+                                                _getInitials(viewModel.profileData!.user.name),
+                                                style: const TextStyle(
+                                                  fontSize: 40,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 16),
+                                            Text(
+                                              viewModel.profileData!.user.name.toUpperCase(),
+                                              style: const TextStyle(
+                                                fontSize: 26,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.black,
+                                              ),
+                                            ),
+                                            Text(
+                                              _getRoleLabel(viewModel.profileData!.user.role.name),
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                color: AppColors.gray,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 24),
+                                            ElevatedButton.icon(
+                                              onPressed: () => viewModel.editProfile(),
+                                              icon: const Icon(
+                                                Icons.edit,
+                                                color: Colors.white,
+                                              ),
+                                              label: const Text(
+                                                'Edit Profil',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppColors.primary,
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 32,
+                                                  vertical: 12,
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 40),
 
-                        // Info Section
-                        _buildInfoTile(
-                          Icons.person,
-                          'Nama Toko',
-                          'Toko Pak Kumis',
-                        ),
-                        _buildInfoTile(
-                          Icons.phone,
-                          'No. Telepon',
-                          '081234567890',
-                        ),
-                        _buildInfoTile(
-                          Icons.email,
-                          'Email',
-                          'tokopakkumis@email.com',
-                        ),
-                        _buildInfoTile(
-                          Icons.location_on,
-                          'Alamat',
-                          'Jl. Raya No. 123, Kota Anda',
-                        ),
-                      ],
-                    ),
-                  ),
+                                      // Info Section
+                                      _buildInfoTile(
+                                        Icons.storefront,
+                                        'Nama Toko',
+                                        viewModel.profileData!.store.businessName,
+                                      ),
+                                      _buildInfoTile(
+                                        Icons.person_outline,
+                                        'Username',
+                                        viewModel.profileData!.user.username,
+                                      ),
+                                      _buildInfoTile(
+                                        Icons.phone,
+                                        'No. Telepon Toko',
+                                        viewModel.profileData!.store.phone ?? '-',
+                                      ),
+                                      _buildInfoTile(
+                                        Icons.email,
+                                        'Email Pemilik',
+                                        viewModel.profileData!.user.email ?? '-',
+                                      ),
+                                      _buildInfoTile(
+                                        Icons.location_on,
+                                        'Alamat',
+                                        viewModel.profileData!.store.address ?? '-',
+                                      ),
+                                    ],
+                                  ),
+                                ),
                 ),
               ),
             ],
@@ -144,6 +169,28 @@ class _ProfileContent extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return 'U';
+    final parts = name.trim().split(' ');
+    if (parts.length > 1) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name.substring(0, name.length > 1 ? 2 : 1).toUpperCase();
+  }
+
+  String _getRoleLabel(String roleName) {
+    switch (roleName) {
+      case 'OWNER':
+        return 'Pemilik Toko';
+      case 'MANAGER':
+        return 'Manajer';
+      case 'CASHIER':
+        return 'Kasir';
+      default:
+        return roleName;
+    }
   }
 
   Widget _buildHeader(BuildContext context) {
