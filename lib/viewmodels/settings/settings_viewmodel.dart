@@ -3,6 +3,7 @@ import 'package:smartkasir/views/dashboard/analitik_view.dart';
 import 'package:smartkasir/views/dashboard/list_pegawai_view.dart';
 import 'package:smartkasir/views/dashboard/list_produk_view.dart';
 import 'package:smartkasir/views/profile/profile_view.dart';
+import 'package:smartkasir/views/saldo_view.dart';
 
 class SettingsViewModel extends ChangeNotifier {
   // Placeholder for settings logic
@@ -38,6 +39,15 @@ class SettingsViewModel extends ChangeNotifier {
     context,
     MaterialPageRoute(
       builder: (context) => const ListProdukView(),
+    ),
+  );
+}
+
+  void navigateToSaldo(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const SaldoView(),
     ),
   );
 }

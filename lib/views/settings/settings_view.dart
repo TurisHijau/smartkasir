@@ -135,7 +135,7 @@ class _SettingsContent extends StatelessWidget {
                           icon: Icons.account_balance_wallet,
                           title: 'Saldo',
                           subtitle: 'Lihat pembayaran via QRIS',
-                          onTap: () => (context),
+                          onTap: () => viewModel.navigateToSaldo(context),
                         ),
 
                         const SizedBox(height: 24),
