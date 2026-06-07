@@ -28,9 +28,10 @@ class LoginViewmodel extends ChangeNotifier {
       final token = await authService.login(username, password);
 
       if (token != null && context.mounted) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const ScannerView()),
+          (route) => false,
         );
       }
     } catch (e) {

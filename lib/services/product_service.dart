@@ -16,10 +16,11 @@ class ProductService {
 
   Future<Product> create(Product product) async {
     final response = await _api.post('/products', body: product.toJson());
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
       return Product.fromJson(jsonDecode(response.body));
     }
-    throw Exception("Gagal menambah produk: ${response.statusCode} - ${response.body}");
+    final body = jsonDecode(response.body);
+    throw Exception(body["message"] ?? "Gagal menambah produk");
   }
 
   Future<Product> update(String id, Product product) async {
@@ -27,7 +28,8 @@ class ProductService {
     if (response.statusCode == 200) {
       return Product.fromJson(jsonDecode(response.body));
     }
-    throw Exception("Gagal mengupdate produk: ${response.statusCode} - ${response.body}");
+    final body = jsonDecode(response.body);
+    throw Exception(body["message"] ?? "Gagal mengupdate produk");
   }
 
   Future<void> delete(String id) async {

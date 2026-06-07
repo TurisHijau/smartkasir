@@ -33,7 +33,8 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _noTelpController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _konfirmasiPasswordController = TextEditingController();
+  final TextEditingController _konfirmasiPasswordController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -135,7 +136,8 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                             controller: _konfirmasiPasswordController,
                             hint: 'Masukkan Kembali Password',
                             obscureText: viewModel.obscureConfirmPassword,
-                            onSuffixIconTap: viewModel.toggleConfirmPasswordVisibility,
+                            onSuffixIconTap:
+                                viewModel.toggleConfirmPasswordVisibility,
                             required: !viewModel.isEditMode,
                           ),
 
@@ -143,7 +145,10 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                             const SizedBox(height: 16),
                             Text(
                               viewModel.errorMessage!,
-                              style: const TextStyle(color: AppColors.red, fontSize: 13),
+                              style: const TextStyle(
+                                color: AppColors.red,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
 
@@ -157,31 +162,45 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                                   ? null
                                   : () async {
                                       if (_formKey.currentState!.validate()) {
-                                        if (_passwordController.text.isNotEmpty &&
+                                        if (_passwordController
+                                                .text
+                                                .isNotEmpty &&
                                             _passwordController.text !=
-                                                _konfirmasiPasswordController.text) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                _konfirmasiPasswordController
+                                                    .text) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
                                             const SnackBar(
-                                              content: Text('Password tidak cocok'),
+                                              content: Text(
+                                                'Password tidak cocok',
+                                              ),
                                               backgroundColor: Colors.red,
                                             ),
                                           );
                                           return;
                                         }
 
-                                        final password = _passwordController.text.isNotEmpty
+                                        final password =
+                                            _passwordController.text.isNotEmpty
                                             ? _passwordController.text
                                             : 'unchanged';
 
-                                        final success = await viewModel.saveEmployee(
-                                          name: _namaPegawaiController.text.trim(),
-                                          username: _usernameController.text.trim(),
-                                          phone: _noTelpController.text.trim(),
-                                          password: password,
-                                        );
+                                        final success = await viewModel
+                                            .saveEmployee(
+                                              name: _namaPegawaiController.text
+                                                  .trim(),
+                                              username: _usernameController.text
+                                                  .trim(),
+                                              phone: _noTelpController.text
+                                                  .trim(),
+                                              password: password,
+                                            );
 
                                         if (success && context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
                                             SnackBar(
                                               content: Text(
                                                 viewModel.isEditMode
@@ -196,7 +215,8 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                                     },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
-                                disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                                disabledBackgroundColor: AppColors.primary
+                                    .withOpacity(0.6),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -212,7 +232,9 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                                       ),
                                     )
                                   : Text(
-                                      viewModel.isEditMode ? 'UPDATE PEGAWAI' : 'TAMBAH PEGAWAI',
+                                      viewModel.isEditMode
+                                          ? 'UPDATE PEGAWAI'
+                                          : 'TAMBAH PEGAWAI',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 16,
@@ -238,9 +260,9 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
-        color: AppColors.lightGray,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.darkGray, width: 2),
+        border: Border.all(color: AppColors.gray, width: 2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<Role>(
@@ -333,7 +355,7 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
           fontSize: 17,
         ),
         filled: true,
-        fillColor: AppColors.lightGray,
+        fillColor: AppColors.white,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 18,
           vertical: 16,
@@ -349,11 +371,11 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
             : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.darkGray, width: 2),
+          borderSide: const BorderSide(color: AppColors.gray, width: 2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.darkGray, width: 2),
+          borderSide: const BorderSide(color: AppColors.gray, width: 2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),

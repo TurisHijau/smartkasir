@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
+import 'package:smartkasir/utils/currency_input_formatter.dart';
 import 'package:smartkasir/viewmodels/saldo_viewmodel.dart';
 
 class SaldoView extends StatelessWidget {
@@ -113,6 +114,7 @@ class SaldoView extends StatelessWidget {
                               const SizedBox(height: 8),
                               TextField(
                                 keyboardType: TextInputType.number,
+                                inputFormatters: [CurrencyInputFormatter()],
                                 decoration: InputDecoration(
                                   hintText: 'Masukkan Jumlah Penarikan',
                                   hintStyle: const TextStyle(
