@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/viewmodels/settings/settings_viewmodel.dart';
-import 'package:smartkasir/views/dashboard/kelola_pegawai_view.dart';
-import 'package:smartkasir/views/dashboard/kelola_produk_view.dart';
-import 'package:smartkasir/views/profile/profile_view.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -20,6 +17,15 @@ class SettingsView extends StatelessWidget {
 
 class _SettingsContent extends StatelessWidget {
   const _SettingsContent();
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return 'U';
+    final parts = name.trim().split(' ');
+    if (parts.length > 1) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name.substring(0, name.length > 1 ? 2 : 1).toUpperCase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,166 +56,170 @@ class _SettingsContent extends StatelessWidget {
                       top: Radius.circular(45),
                     ),
                   ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Profile Section Header
-                        Center(
-                          child: Column(
-                            children: [
-                              const CircleAvatar(
-                                radius: 50,
-                                backgroundColor: AppColors.primary,
-                                child: Text(
-                                  'TP',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                  child: viewModel.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : viewModel.errorMessage != null
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.error_outline, size: 48, color: AppColors.gray),
+                                  const SizedBox(height: 12),
+                                  Text(viewModel.errorMessage!, style: const TextStyle(color: AppColors.darkGray)),
+                                  const SizedBox(height: 12),
+                                  ElevatedButton(
+                                    onPressed: () => viewModel.loadProfile(),
+                                    child: const Text("Coba Lagi"),
                                   ),
-                                ),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'TOKO PAK KUMIS',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.black,
-                                ),
-                              ),
-                              TextButton.icon(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const ProfileView(),
+                            )
+                          : SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Profile Section Header
+                                  Center(
+                                    child: Column(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 50,
+                                          backgroundColor: AppColors.primary,
+                                          child: Text(
+                                            viewModel.profileData != null
+                                                ? _getInitials(viewModel.profileData!.user.name)
+                                                : 'U',
+                                            style: const TextStyle(
+                                              fontSize: 32,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          viewModel.profileData != null
+                                              ? viewModel.profileData!.store.businessName.toUpperCase()
+                                              : 'TOKO',
+                                          style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.black,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        TextButton.icon(
+                                          onPressed: () => viewModel.navigateToProfile(context),
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            size: 18,
+                                            color: AppColors.primary,
+                                          ),
+                                          label: const Text(
+                                            'Profil Detail',
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.edit,
-                                  size: 18,
-                                  color: AppColors.primary,
-                                ),
-                                label: const Text(
-                                  'Edit Profile',
-                                  style: TextStyle(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w600,
                                   ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 32),
+                                  const SizedBox(height: 32),
 
-                        // Manajemen Toko Section
-                        const Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 8,
-                          ),
-                          child: Text(
-                            'Manajemen Toko',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.darkGray,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        _buildMenuTile(
-                          icon: Icons.analytics,
-                          title: 'Analitik',
-                          subtitle: 'Lihat analisis keuangan toko',
-                        ),
-                        _buildMenuTile(
-                          icon: Icons.people,
-                          title: 'Pegawai',
-                          subtitle: 'Buat atau edit akun pegawai',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const KelolaPegawaiView(),
-                              ),
-                            );
-                          },
-                        ),
-                        _buildMenuTile(
-                          icon: Icons.inventory,
-                          title: 'Produk',
-                          subtitle: 'Kelola list produk',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const KelolaProdukView(),
-                              ),
-                            );
-                          },
-                        ),
-                        _buildMenuTile(
-                          icon: Icons.account_balance_wallet,
-                          title: 'Saldo',
-                          subtitle: 'Lihat pembayaran via QRIS',
-                        ),
+                                  // Manajemen Toko Section
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 8,
+                                    ),
+                                    child: Text(
+                                      'Manajemen Toko',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.darkGray,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _buildMenuTile(
+                                    icon: Icons.analytics,
+                                    title: 'Analitik',
+                                    subtitle: 'Lihat analisis keuangan toko',
+                                    onTap: () => viewModel.navigateToAnalitik(context),
+                                  ),
+                                  _buildMenuTile(
+                                    icon: Icons.people,
+                                    title: 'Pegawai',
+                                    subtitle: 'Buat atau edit akun pegawai',
+                                    onTap: () => viewModel.navigateToEmploye(context),
+                                  ),
+                                  _buildMenuTile(
+                                    icon: Icons.inventory,
+                                    title: 'Produk',
+                                    subtitle: 'Kelola list produk',
+                                    onTap: () => viewModel.navigateToProducts(context),
+                                  ),
+                                  _buildMenuTile(
+                                    icon: Icons.account_balance_wallet,
+                                    title: 'Saldo',
+                                    subtitle: 'Lihat pembayaran via QRIS',
+                                    onTap: () => viewModel.navigateToSaldo(context),
+                                  ),
 
-                        const SizedBox(height: 24),
+                                  const SizedBox(height: 24),
 
-                        // Pengaturan Perangkat Section
-                        const Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 8,
-                          ),
-                          child: Text(
-                            'Pengaturan Perangkat',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.darkGray,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        _buildMenuTile(
-                          icon: Icons.print,
-                          title: 'Printer Struk',
-                          subtitle: 'Tidak ada koneksi',
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.refresh,
-                                  color: AppColors.primary,
-                                ),
-                                onPressed: () => viewModel.refreshPrinter(),
+                                  // Pengaturan Perangkat Section
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 8,
+                                    ),
+                                    child: Text(
+                                      'Pengaturan Perangkat',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.darkGray,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _buildMenuTile(
+                                    icon: Icons.print,
+                                    title: 'Printer Struk',
+                                    subtitle: 'Tidak ada koneksi',
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.refresh,
+                                            color: AppColors.primary,
+                                          ),
+                                          onPressed: () => viewModel.refreshPrinter(),
+                                        ),
+                                        const Icon(Icons.settings, color: AppColors.gray),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 20),
+                                    child: Text(
+                                      'Hubungkan via Bluetooth to ikon Gear, lalu tap Refresh',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.gray,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 32),
+                                ],
                               ),
-                              const Icon(Icons.settings, color: AppColors.gray),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: Text(
-                            'Hubungkan via Bluetooth to ikon Gear, lalu tap Refresh',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.gray,
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                      ],
-                    ),
-                  ),
                 ),
               ),
             ],

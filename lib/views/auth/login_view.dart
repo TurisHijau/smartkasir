@@ -3,11 +3,19 @@ import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/viewmodels/auth/login_viewmodel.dart';
 
-class LoginView extends StatelessWidget {
+class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
   @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  @override
   Widget build(BuildContext context) {
+    final usernameController = TextEditingController();
+    final passwordController = TextEditingController();
+
     return ChangeNotifierProvider(
       create: (_) => LoginViewmodel(),
       child: Consumer<LoginViewmodel>(
@@ -21,10 +29,7 @@ class LoginView extends StatelessWidget {
                   height: MediaQuery.of(context).size.height * 0.45,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        AppColors.tertiary,
-                        AppColors.secondary,
-                      ],
+                      colors: [AppColors.tertiary, AppColors.secondary],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -111,6 +116,7 @@ class LoginView extends StatelessWidget {
 
                           // Email Field
                           TextField(
+                            controller: usernameController,
                             decoration: InputDecoration(
                               hintText: "Masukkan email/username Anda",
                               hintStyle: const TextStyle(
@@ -160,6 +166,7 @@ class LoginView extends StatelessWidget {
 
                           // Password Field
                           TextField(
+                            controller: passwordController,
                             obscureText: true,
                             decoration: InputDecoration(
                               hintText: "Masukkan password Anda",
@@ -198,23 +205,40 @@ class LoginView extends StatelessWidget {
                             width: double.infinity,
                             height: 58,
                             child: ElevatedButton(
-                              onPressed: () =>
-                                    viewModel.navigateToScannerView(context),
+                              onPressed: viewModel.loading
+                                  ? null
+                                  : () {
+                                      viewModel.login(
+                                        context,
+                                        usernameController.text,
+                                        passwordController.text,
+                                      );
+                                    },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
+                                disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                               ),
-                              child: const Text(
-                                "MASUK",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
+                              child: viewModel.loading
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
+                                  : const Text(
+                                      "MASUK",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
                             ),
                           ),
 
