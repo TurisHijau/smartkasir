@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:smartkasir/models/product.dart';
 import 'package:smartkasir/services/product_service.dart';
+import 'package:smartkasir/views/dashboard/barcode_scanner_view.dart';
 
 class KelolaProdukViewModel extends ChangeNotifier {
   final ProductService _productService = ProductService();
 
   bool isLoading = false;
   String? errorMessage;
+  String? scannedBarcode;
 
   /// The product being edited, null for create mode.
   final Product? editingProduct;
@@ -51,7 +53,14 @@ class KelolaProdukViewModel extends ChangeNotifier {
     }
   }
 
-  void scanProductCode() {
-    // TODO: Implement barcode scanning for product code
+  Future<void> scanProductCode(BuildContext context) async {
+    final barcode = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const BarcodeScannerView()),
+    );
+    if (barcode != null) {
+      scannedBarcode = barcode; // ← simpan hasil scan
+      notifyListeners();
+    }
   }
 }

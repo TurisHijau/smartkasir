@@ -6,6 +6,7 @@ import 'package:smartkasir/models/stock_movement.dart';
 import 'package:smartkasir/services/product_service.dart';
 import 'package:smartkasir/services/stock_service.dart';
 import 'package:smartkasir/services/auth_service.dart';
+import 'package:smartkasir/views/dashboard/barcode_scanner_view.dart';
 import 'package:smartkasir/views/dashboard/kelola_produk_view.dart';
 
 class ListProdukViewmodel extends ChangeNotifier {
@@ -21,9 +22,11 @@ class ListProdukViewmodel extends ChangeNotifier {
   List<Product> _allProducts = [];
   List<Product> _filteredProducts = [];
   String _searchQuery = '';
+  String? _stockFilter;
 
   List<Product> get products => _filteredProducts;
   bool get hasProduct => _filteredProducts.isNotEmpty;
+  String? get stockFilter => _stockFilter;
 
   ListProdukViewmodel() {
     loadProducts();
@@ -62,20 +65,46 @@ class ListProdukViewmodel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setStockFilter(String? filter) {
+    _stockFilter = filter;
+    _applyFilter();
+    notifyListeners();
+  }
+
   void _applyFilter() {
-    if (_searchQuery.isEmpty) {
-      _filteredProducts = List.from(_allProducts);
-    } else {
-      _filteredProducts = _allProducts.where((p) {
+    List<Product> result = List.from(_allProducts);
+
+    // Filter search
+    if (_searchQuery.isNotEmpty) {
+      result = result.where((p) {
         return p.name.toLowerCase().contains(_searchQuery) ||
             (p.barcode?.toLowerCase().contains(_searchQuery) ?? false);
       }).toList();
     }
+
+    // Filter stok
+    if (_stockFilter == 'low') {
+      result = result.where((p) => p.stock < 20 && p.stock > 0).toList();
+    } else if (_stockFilter == 'empty') {
+      result = result.where((p) => p.stock == 0).toList();
+    }
+
+    _filteredProducts = result;
   }
 
   void toggleFilter() {
     showFilter = !showFilter;
     notifyListeners();
+  }
+
+  Future<void> scanBarcode(BuildContext context) async {
+    final barcode = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const BarcodeScannerView()),
+    );
+    if (barcode != null) {
+      search(barcode);
+    }
   }
 
   void navigateToAddProduct(BuildContext context) {
@@ -135,8 +164,6 @@ class ListProdukViewmodel extends ChangeNotifier {
       }
     }
   }
-
-  // ── Stock dialog ──────────────────────────────────────────────────────────
 
   void showAddStockDialog(BuildContext context, Product product) {
     final jumlahController = TextEditingController();

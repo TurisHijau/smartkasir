@@ -77,18 +77,14 @@ class ListPegawaiViewmodel extends ChangeNotifier {
   void navigateToAddEmployee(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const KelolaPegawaiView(),
-      ),
+      MaterialPageRoute(builder: (context) => const KelolaPegawaiView()),
     ).then((_) => loadUsers());
   }
 
   void navigateToEditEmployee(BuildContext context, User user) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => KelolaPegawaiView(user: user),
-      ),
+      MaterialPageRoute(builder: (context) => KelolaPegawaiView(user: user)),
     ).then((_) => loadUsers());
   }
 
@@ -124,7 +120,10 @@ class ListPegawaiViewmodel extends ChangeNotifier {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Gagal menghapus: $e"), backgroundColor: Colors.red[700]),
+            SnackBar(
+              content: Text("Gagal menghapus: $e"),
+              backgroundColor: Colors.red[700],
+            ),
           );
         }
       }
