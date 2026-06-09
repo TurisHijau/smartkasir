@@ -82,4 +82,13 @@ class SettingsViewModel extends ChangeNotifier {
     // TODO: Implement printer refresh logic
     notifyListeners();
   }
+
+  // NGARAH KE SETTINGAN YA
+  void navigateToSetting(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const SettingsView(),
+    ),
+  );
 }
