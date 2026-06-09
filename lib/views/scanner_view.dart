@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:smartkasir/models/product.dart';
+import 'package:smartkasir/models/transaction.dart';
+import 'package:smartkasir/services/product_service.dart';
+import 'package:smartkasir/services/transaction_service.dart';
 import 'package:smartkasir/views/settings/settings_view.dart';
 import 'package:vibration/vibration.dart';
 import 'package:smartkasir/constants/app_colors.dart';
-import 'package:smartkasir/viewmodels/settings/settings_viewmodel.dart';
 
 class ScannerView extends StatefulWidget {
   const ScannerView({super.key});
@@ -17,12 +20,15 @@ class _ScannerViewState extends State<ScannerView> {
     detectionSpeed: DetectionSpeed.normal,
     returnImage: false,
   );
+  final ProductService _productService = ProductService();
+  final TransactionService _transactionService = TransactionService();
 
   bool _isCameraOn = true;
   bool _isFlashOn = false;
+  bool _isProcessingScan = false;
 
   final Map<String, DateTime> _lastScanTimes = {};
-  final List<_CartItemPlaceholder> _cartItems = [];
+  final List<_CartItem> _cartItems = [];
 
   @override
   void dispose() {
@@ -31,6 +37,7 @@ class _ScannerViewState extends State<ScannerView> {
   }
 
   Future<void> _onDetect(BarcodeCapture capture) async {
+    if (_isProcessingScan) return;
     final now = DateTime.now();
 
     for (final barcode in capture.barcodes) {
@@ -46,10 +53,39 @@ class _ScannerViewState extends State<ScannerView> {
         Vibration.vibrate(duration: 200);
       }
 
-      if (mounted) _showBarcodeSnackBar(rawValue);
+      // Look up product by barcode
+      _isProcessingScan = true;
+      try {
+        final product = await _productService.findByBarcode(rawValue);
+        if (product != null && mounted) {
+          _addProductToCart(product);
+          _showBarcodeSnackBar('Produk "${product.name}" ditambahkan');
+        } else if (mounted) {
+          _showBarcodeSnackBar('Produk dengan barcode "$rawValue" tidak ditemukan');
+        }
+      } catch (e) {
+        if (mounted) {
+          _showBarcodeSnackBar('Gagal mencari produk: $e');
+        }
+      } finally {
+        _isProcessingScan = false;
+      }
 
       break;
     }
+  }
+
+  void _addProductToCart(Product product) {
+    setState(() {
+      final existingIdx = _cartItems.indexWhere((item) => item.product.id == product.id);
+      if (existingIdx >= 0) {
+        _cartItems[existingIdx] = _cartItems[existingIdx].copyWith(
+          quantity: _cartItems[existingIdx].quantity + 1,
+        );
+      } else {
+        _cartItems.insert(0, _CartItem(product: product, quantity: 1));
+      }
+    });
   }
 
   void _showBarcodeSnackBar(String value) {
@@ -61,24 +97,11 @@ class _ScannerViewState extends State<ScannerView> {
             const Icon(Icons.qr_code_scanner, color: Colors.white, size: 20),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Barcode Terdeteksi',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    value,
-                    style: const TextStyle(fontSize: 12, color: Colors.white70),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+              child: Text(
+                value,
+                style: const TextStyle(fontSize: 13, color: Colors.white),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
               ),
             ),
           ],
@@ -154,13 +177,13 @@ class _ScannerViewState extends State<ScannerView> {
                   _overlayButton(
                     icon: Icons.settings_outlined,
                     onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SettingsView(),
-                              ),
-                            );
-                          },
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsView(),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
                   if (_isCameraOn)
@@ -371,7 +394,7 @@ class _ScannerViewState extends State<ScannerView> {
     final totalItems = _cartItems.fold<int>(0, (s, i) => s + i.quantity);
     final totalHarga = _cartItems.fold<double>(
       0,
-      (s, i) => s + (i.harga * i.quantity),
+      (s, i) => s + (i.product.sellingPrice * i.quantity),
     );
 
     return Padding(
@@ -477,7 +500,7 @@ class _ScannerViewState extends State<ScannerView> {
     );
   }
 
-  Widget _buildCartItemCard(_CartItemPlaceholder item, int index) {
+  Widget _buildCartItemCard(_CartItem item, int index) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -499,7 +522,7 @@ class _ScannerViewState extends State<ScannerView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.nama,
+                  item.product.name,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
@@ -509,7 +532,7 @@ class _ScannerViewState extends State<ScannerView> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Rp${_formatRupiah(item.harga)}',
+                  'Rp${_formatRupiah(item.product.sellingPrice)}',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
@@ -525,7 +548,7 @@ class _ScannerViewState extends State<ScannerView> {
     );
   }
 
-  Widget _quantityControl(_CartItemPlaceholder item, int index) {
+  Widget _quantityControl(_CartItem item, int index) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF5F6FA),
@@ -639,105 +662,115 @@ class _ScannerViewState extends State<ScannerView> {
     );
   }
 
-  // POPUP INPUT MANUAL
+  // POPUP INPUT MANUAL — now looks up barcode from API
   void _showInputManualSheet() {
     final kodeController = TextEditingController();
-    final namaController = TextEditingController();
-    final jumlahController = TextEditingController(text: '1');
+    bool isSearching = false;
 
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _dialogFieldLabel('Kode Produk'),
-                  const SizedBox(height: 8),
-                  _dialogTextField(
-                    controller: kodeController,
-                    hint: 'Masukkan Kode Produk',
-                  ),
-                  const SizedBox(height: 16),
-                  _dialogFieldLabel('Nama Produk'),
-                  const SizedBox(height: 8),
-                  _dialogTextField(
-                    controller: namaController,
-                    hint: 'Masukkan Nama Produk',
-                  ),
-                  const SizedBox(height: 16),
-                  _dialogFieldLabel('Jumlah'),
-                  const SizedBox(height: 8),
-                  _dialogTextField(
-                    controller: jumlahController,
-                    hint: 'Masukkan Jumlah',
-                    isNumber: true,
-                  ),
-                  const SizedBox(height: 28),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        final kode = kodeController.text.trim();
-                        final nama = namaController.text.trim();
-                        final jumlah = int.tryParse(jumlahController.text) ?? 1;
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _dialogFieldLabel('Kode Produk / Barcode'),
+                    const SizedBox(height: 8),
+                    _dialogTextField(
+                      controller: kodeController,
+                      hint: 'Masukkan Kode Produk / Barcode',
+                    ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: isSearching
+                            ? null
+                            : () async {
+                                final barcode = kodeController.text.trim();
+                                if (barcode.isEmpty) return;
 
-                        if (kode.isNotEmpty && nama.isNotEmpty) {
-                          setState(() {
-                            _cartItems.insert(
-                              0,
-                              _CartItemPlaceholder(
-                                barcode: kode,
-                                nama: nama,
-                                harga:
-                                    15000, // Harga default karena di UI tidak ada field harga
-                                quantity: jumlah,
+                                setDialogState(() => isSearching = true);
+                                try {
+                                  final product = await _productService.findByBarcode(barcode);
+                                  if (product != null && context.mounted) {
+                                    _addProductToCart(product);
+                                    Navigator.pop(context);
+                                    _showBarcodeSnackBar('Produk "${product.name}" ditambahkan');
+                                  } else if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Produk tidak ditemukan'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Error: $e'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                } finally {
+                                  if (context.mounted) {
+                                    setDialogState(() => isSearching = false);
+                                  }
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: isSearching
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            : const Text(
+                                'Cari & Tambah Produk',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
-                            );
-                          });
-                          Navigator.pop(context);
-                          _showBarcodeSnackBar('Produk "$nama" ditambahkan');
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Text(
-                        'Tambah Produk',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            // TOMBOL CLOSE (XMARK)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close, color: Colors.grey, size: 22),
+              // TOMBOL CLOSE (XMARK)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: Colors.grey, size: 22),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -787,84 +820,258 @@ class _ScannerViewState extends State<ScannerView> {
   }
 
   void _showReviewSheet() {
+    final totalAmount = _cartItems.fold<double>(
+      0,
+      (s, i) => s + (i.product.sellingPrice * i.quantity),
+    );
+    final amountPaidController = TextEditingController();
+    PaymentMethod selectedMethod = PaymentMethod.CASH;
+    bool isProcessing = false;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.55,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        builder: (_, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Container(
-                width: 44,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Review Belanja',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: ListView.separated(
-                  controller: scrollController,
-                  itemCount: _cartItems.length,
-                  separatorBuilder: (_, __) => Divider(color: Colors.grey[500]),
-                  itemBuilder: (_, i) {
-                    final item = _cartItems[i];
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        item.nama,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(
-                        'Rp${_formatRupiah(item.harga)} × ${item.quantity}',
-                      ),
-                      trailing: Text(
-                        'Rp${_formatRupiah(item.harga * item.quantity)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Divider(color: Colors.grey[600]),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Total',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      builder: (_) => StatefulBuilder(
+        builder: (context, setSheetState) => DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.4,
+          maxChildSize: 0.95,
+          builder: (_, scrollController) => Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  Text(
-                    'Rp${_formatRupiah(_cartItems.fold(0.0, (s, i) => s + i.harga * i.quantity))}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.primary,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Review Belanja',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: ListView.separated(
+                    controller: scrollController,
+                    itemCount: _cartItems.length,
+                    separatorBuilder: (_, __) => Divider(color: Colors.grey[500]),
+                    itemBuilder: (_, i) {
+                      final item = _cartItems[i];
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          item.product.name,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          'Rp${_formatRupiah(item.product.sellingPrice)} × ${item.quantity}',
+                        ),
+                        trailing: Text(
+                          'Rp${_formatRupiah(item.product.sellingPrice * item.quantity)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Divider(color: Colors.grey[600]),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Total',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Rp${_formatRupiah(totalAmount)}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Payment method
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Metode Pembayaran',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: PaymentMethod.values.map((method) {
+                    final isSelected = selectedMethod == method;
+                    return ChoiceChip(
+                      label: Text(method.name),
+                      selected: isSelected,
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color: isSelected ? Colors.white : AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      onSelected: (selected) {
+                        if (selected) {
+                          setSheetState(() => selectedMethod = method);
+                        }
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 12),
+
+                // Amount paid
+                TextField(
+                  controller: amountPaidController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Jumlah Bayar',
+                    hintText: 'Masukkan jumlah uang',
+                    prefixText: 'Rp ',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 16),
+
+                // Process button
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: isProcessing
+                        ? null
+                        : () async {
+                            final paid = double.tryParse(amountPaidController.text) ?? 0;
+                            if (paid < totalAmount && selectedMethod == PaymentMethod.CASH) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Jumlah bayar kurang!'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+
+                            final effectivePaid = selectedMethod != PaymentMethod.CASH
+                                ? totalAmount
+                                : paid;
+
+                            setSheetState(() => isProcessing = true);
+                            try {
+                              final request = TransactionRequest(
+                                amountPaid: effectivePaid,
+                                paymentMethod: selectedMethod,
+                                items: _cartItems
+                                    .map((item) => TransactionItemRequest(
+                                          productId: item.product.id!,
+                                          quantity: item.quantity,
+                                        ))
+                                    .toList(),
+                              );
+
+                              final transaction = await _transactionService.create(request);
+
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                setState(() => _cartItems.clear());
+                                _showTransactionSuccess(transaction);
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Gagal membuat transaksi: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } finally {
+                              if (context.mounted) {
+                                setSheetState(() => isProcessing = false);
+                              }
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryDark,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: AppColors.primaryDark.withOpacity(0.6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: isProcessing
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : const Text(
+                            'Proses Transaksi',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showTransactionSuccess(Transaction transaction) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green, size: 64),
+            const SizedBox(height: 16),
+            const Text(
+              'Transaksi Berhasil!',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text('Kode: ${transaction.transactionCode ?? "-"}'),
+            Text('Total: Rp${_formatRupiah(transaction.totalAmount)}'),
+            Text('Bayar: Rp${_formatRupiah(transaction.amountPaid)}'),
+            Text('Kembalian: Rp${_formatRupiah(transaction.changeAmount)}'),
+            Text('Metode: ${transaction.paymentMethod.name}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }
@@ -883,25 +1090,16 @@ class _ScannerViewState extends State<ScannerView> {
   }
 }
 
-/// Model placeholder item keranjang sebelum koneksi ke database
-class _CartItemPlaceholder {
-  final String barcode;
-  final String nama;
-  final double harga;
+/// Cart item using real Product model
+class _CartItem {
+  final Product product;
   final int quantity;
 
-  const _CartItemPlaceholder({
-    required this.barcode,
-    required this.nama,
-    required this.harga,
-    required this.quantity,
-  });
+  const _CartItem({required this.product, required this.quantity});
 
-  _CartItemPlaceholder copyWith({int? quantity}) {
-    return _CartItemPlaceholder(
-      barcode: barcode,
-      nama: nama,
-      harga: harga,
+  _CartItem copyWith({int? quantity}) {
+    return _CartItem(
+      product: product,
       quantity: quantity ?? this.quantity,
     );
   }

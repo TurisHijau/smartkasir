@@ -1,59 +1,144 @@
 import 'package:flutter/material.dart';
 import 'package:smartkasir/constants/app_colors.dart';
+import 'package:smartkasir/models/auth.dart';
+import 'package:smartkasir/models/product.dart';
+import 'package:smartkasir/models/stock_movement.dart';
+import 'package:smartkasir/services/product_service.dart';
+import 'package:smartkasir/services/stock_service.dart';
+import 'package:smartkasir/services/auth_service.dart';
 import 'package:smartkasir/views/dashboard/kelola_produk_view.dart';
 
 class ListProdukViewmodel extends ChangeNotifier {
+  final ProductService _productService = ProductService();
+  final StockService _stockService = StockService();
+  final AuthService _authService = AuthService();
+
   bool showFilter = false;
+  bool isLoading = false;
+  String? errorMessage;
+  bool isCashier = false;
 
-  // ubah jadi false untuk tampilan kosong
-  bool hasProduct = true;
+  List<Product> _allProducts = [];
+  List<Product> _filteredProducts = [];
+  String _searchQuery = '';
 
-  final List<Map<String, dynamic>> products = [
-    {
-      "nama": "Sosis Kanzler",
-      "harga": "Rp10.000,00",
-      "stok": "20 items",
-    },
-    {
-      "nama": "Nugget Fiesta",
-      "harga": "Rp55.000,00",
-      "stok": "10 items",
-    },
-    {
-      "nama": "Suku Ultramilk",
-      "harga": "Rp8.000,00",
-      "stok": "15 items",
-    },
-    {
-      "nama": "Indomie",
-      "harga": "Rp3.500,00",
-      "stok": "40 items",
-    },
-    {
-      "nama": "Beras 3KG",
-      "harga": "Rp45.000,00",
-      "stok": "10 items",
-    },
-  ];
+  List<Product> get products => _filteredProducts;
+  bool get hasProduct => _filteredProducts.isNotEmpty;
+
+  ListProdukViewmodel() {
+    loadProducts();
+  }
+
+  Future<void> loadProducts() async {
+    try {
+      isLoading = true;
+      errorMessage = null;
+      notifyListeners();
+
+      final results = await Future.wait([
+        _productService.getAll(),
+        _authService.getProfile().catchError((_) => null),
+      ]);
+
+      _allProducts = results[0] as List<Product>;
+      final profile = results[1] as AuthResponse?;
+
+      if (profile != null && profile.user.role.name == 'CASHIER') {
+        isCashier = true;
+      }
+
+      _applyFilter();
+    } catch (e) {
+      errorMessage = e.toString().replaceAll("Exception: ", "");
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void search(String query) {
+    _searchQuery = query.toLowerCase();
+    _applyFilter();
+    notifyListeners();
+  }
+
+  void _applyFilter() {
+    if (_searchQuery.isEmpty) {
+      _filteredProducts = List.from(_allProducts);
+    } else {
+      _filteredProducts = _allProducts.where((p) {
+        return p.name.toLowerCase().contains(_searchQuery) ||
+            (p.barcode?.toLowerCase().contains(_searchQuery) ?? false);
+      }).toList();
+    }
+  }
 
   void toggleFilter() {
     showFilter = !showFilter;
     notifyListeners();
   }
 
-  void navigateToEditProduct(BuildContext context) {
+  void navigateToAddProduct(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const KelolaProdukView()),
+    ).then((_) => loadProducts());
+  }
+
+  void navigateToEditProduct(BuildContext context, Product product) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const KelolaProdukView(),
+        builder: (context) => KelolaProdukView(product: product),
       ),
-    );
+    ).then((_) => loadProducts());
   }
 
-  // ===========================================================================
-  // FUNGSI DIALOG YANG DIPINDAHKAN KE VIEWMODEL
-  // ===========================================================================
-  void showAddStockDialog(BuildContext context, Map<String, dynamic> product) {
+  Future<void> deleteProduct(BuildContext context, Product product) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Hapus Produk"),
+        content: Text("Yakin ingin menghapus \"${product.name}\"?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.red),
+            child: const Text("Hapus"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && product.id != null) {
+      try {
+        await _productService.delete(product.id!);
+        await loadProducts();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("\"${product.name}\" berhasil dihapus")),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Gagal menghapus: $e"),
+              backgroundColor: Colors.red[700],
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  // ── Stock dialog ──────────────────────────────────────────────────────────
+
+  void showAddStockDialog(BuildContext context, Product product) {
     final jumlahController = TextEditingController();
 
     showDialog(
@@ -80,7 +165,7 @@ class ListProdukViewmodel extends ChangeNotifier {
                 ),
                 const SizedBox(height: 10),
                 TextField(
-                  controller: TextEditingController(text: product["nama"]),
+                  controller: TextEditingController(text: product.name),
                   readOnly: true,
                   style: const TextStyle(
                     color: AppColors.darkGray,
@@ -156,13 +241,33 @@ class ListProdukViewmodel extends ChangeNotifier {
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (jumlahController.text.isNotEmpty) {
-                        final inputStok = int.tryParse(jumlahController.text) ?? 0;
-                        // Eksekusi penambahan stok ke list state
-                        addStock(product["nama"], inputStok);
+                    onPressed: () async {
+                      if (jumlahController.text.isNotEmpty &&
+                          product.id != null) {
+                        final qty = int.tryParse(jumlahController.text) ?? 0;
+                        if (qty > 0) {
+                          try {
+                            await _stockService.restock(
+                              StockRequest(
+                                productId: product.id!,
+                                quantity: qty,
+                                notes: "Restock dari aplikasi",
+                              ),
+                            );
+                            if (context.mounted) Navigator.pop(context);
+                            await loadProducts();
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Gagal restock: $e"),
+                                  backgroundColor: Colors.red[700],
+                                ),
+                              );
+                            }
+                          }
+                        }
                       }
-                      Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
@@ -187,22 +292,5 @@ class ListProdukViewmodel extends ChangeNotifier {
         );
       },
     );
-  }
-
-  // FUNGSI LOGIKA UNTUK UPDATE NILAI STOK DI DALAM LIST
-  void addStock(String namaProduk, int jumlahTambah) {
-    final index = products.indexWhere((p) => p["nama"] == namaProduk);
-    if (index != -1) {
-      // Mengambil angka saja dari string data, misal "20 items" -> 20
-      final currentStokString = products[index]["stok"] as String;
-      final currentStokInt = int.tryParse(currentStokString.split(' ')[0]) ?? 0;
-
-      // Hitung stok baru dan simpan kembali ke list
-      final newStok = currentStokInt + jumlahTambah;
-      products[index]["stok"] = "$newStok items";
-      
-      // Beritahu UI untuk render ulang dengan data terbaru
-      notifyListeners();
-    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/viewmodels/dashboard/analitik_viewmodel.dart';
+import 'package:smartkasir/viewmodels/settings/settings_viewmodel.dart';
 
 class AnalitikView extends StatefulWidget {
   const AnalitikView({super.key});
@@ -11,18 +12,19 @@ class AnalitikView extends StatefulWidget {
 }
 
 class _AnalitikViewState extends State<AnalitikView> {
-  final viewModel = AnalitikViewModel();
+  final _vm  = AnalitikViewModel();
+  final vm = SettingsViewModel();
 
   @override
   void dispose() {
-    viewModel.dispose();
+    _vm.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: viewModel,
+      listenable: _vm,
       builder: (context, _) => Container(
         // gradient background
         decoration: const BoxDecoration(
@@ -55,29 +57,47 @@ class _AnalitikViewState extends State<AnalitikView> {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(45),
                       ),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildStoreInfo(),
-                            const SizedBox(height: 16),
-                            _buildStatCards(viewModel.statCards),
-                            const SizedBox(height: 16),
-                            _buildStatCards(viewModel.statCardsRow2),
-                            const SizedBox(height: 16),
-                            _buildRevenueChart(),
-                            const SizedBox(height: 16),
-                            _buildPaymentMethod(),
-                            const SizedBox(height: 16),
-                            _buildLowStock(),
-                            const SizedBox(height: 16),
-                            _buildRecentTransactions(),
-                            const SizedBox(height: 16),
-                            _buildTopProducts(),
-                          ],
+                      child: _vm.isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : _vm.errorMessage != null
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.error_outline, size: 48, color: AppColors.gray),
+                                      const SizedBox(height: 12),
+                                      Text(_vm.errorMessage!, style: const TextStyle(color: AppColors.darkGray)),
+                                      const SizedBox(height: 12),
+                                      ElevatedButton(
+                                        onPressed: () => _vm.loadData(),
+                                        child: const Text("Coba Lagi"),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildStoreInfo(),
+                              const SizedBox(height: 16),
+                              _buildStatCards(_vm.statCards),
+                              const SizedBox(height: 12),
+                              _buildStatCards(_vm.statCardsRow2),
+                              const SizedBox(height: 16),
+                              if (_vm.chartValues.isNotEmpty) _buildRevenueChart(),
+                              if (_vm.chartValues.isNotEmpty) const SizedBox(height: 16),
+                              _buildPaymentMethod(),
+                              const SizedBox(height: 16),
+                              _buildLowStock(),
+                              const SizedBox(height: 16),
+                              _buildRecentTransactions(),
+                              const SizedBox(height: 16),
+                              _buildTopProducts(),
+                            ],
+                          ),
                         ),
-                      ),
                     ),
                   ),
                 ),
@@ -102,7 +122,7 @@ class _AnalitikViewState extends State<AnalitikView> {
             Align(
               alignment: Alignment.centerLeft,
               child: IconButton(
-                onPressed: () => viewModel.returnToSettings(context),
+                onPressed: () => _vm.returnToSettings(context),
                 icon: const Icon(
                   Icons.arrow_back_ios_new,
                   color: AppColors.white,
@@ -151,14 +171,14 @@ class _AnalitikViewState extends State<AnalitikView> {
               style: const TextStyle(color: AppColors.primary),
               children: [
                 TextSpan(
-                  text: viewModel.storeName,
+                  text: _vm.storeName,
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
                 ),
                 TextSpan(
-                  text: ' - ${viewModel.date}',
+                  text: ' - ${_vm.date}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w400,
                     fontSize: 13,
@@ -170,12 +190,12 @@ class _AnalitikViewState extends State<AnalitikView> {
           ),
           const SizedBox(height: 12),
           Row(
-            children: List.generate(viewModel.periodLabels.length, (i) {
+            children: List.generate(_vm.periodLabels.length, (i) {
               return Padding(
                 padding: EdgeInsets.only(
-                  right: i < viewModel.periodLabels.length - 1 ? 8 : 0,
+                  right: i < _vm.periodLabels.length - 1 ? 8 : 0,
                 ),
-                child: _periodButton(viewModel.periodLabels[i], i),
+                child: _periodButton(_vm.periodLabels[i], i),
               );
             }),
           ),
@@ -185,9 +205,9 @@ class _AnalitikViewState extends State<AnalitikView> {
   }
 
   Widget _periodButton(String label, int index) {
-    final isSelected = viewModel.selectedPeriod == index;
+    final isSelected = _vm.selectedPeriod == index;
     return GestureDetector(
-      onTap: () => viewModel.selectPeriod(index),
+      onTap: () => _vm.selectPeriod(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
@@ -313,8 +333,8 @@ class _AnalitikViewState extends State<AnalitikView> {
             height: 164,
             child: CustomPaint(
               painter: LineChartPainter(
-                values: viewModel.chartValues,
-                labels: viewModel.chartDays,
+                values: _vm.chartValues,
+                labels: _vm.chartDays,
               ),
               size: Size.infinite,
             ),
@@ -327,7 +347,7 @@ class _AnalitikViewState extends State<AnalitikView> {
   // ─── Payment method ───────────────────────────────────────────────────────
 
   Widget _buildPaymentMethod() {
-    final pm = viewModel.paymentMethod;
+    final pm = _vm.paymentMethod;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -451,7 +471,7 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 12),
-          ...viewModel.lowStockItems.map(
+          ..._vm.lowStockItems.map(
             (item) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: Row(
@@ -488,7 +508,7 @@ class _AnalitikViewState extends State<AnalitikView> {
           ),
           const SizedBox(height: 8),
           GestureDetector(
-            onTap: () => viewModel.goToStockProduk(context),
+            onTap: () => vm.navigateToProducts(context),
             child: const Center(
               child: Text(
                 'Lihat Selengkapnya →',
@@ -529,7 +549,7 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 12),
-          ...viewModel.recentTransactions.map(
+          ..._vm.recentTransactions.map(
             (t) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
@@ -584,7 +604,7 @@ class _AnalitikViewState extends State<AnalitikView> {
           ),
           const SizedBox(height: 4),
           GestureDetector(
-            onTap: () => viewModel.goToStockProduk(context),
+            onTap: () => vm.TransactionHistory(context),
             child: const Center(
               child: Text(
                 'Lihat Selengkapnya →',
@@ -625,7 +645,7 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 12),
-          ...viewModel.topProducts.asMap().entries.map(
+          ..._vm.topProducts.asMap().entries.map(
             (e) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 7),
               child: Row(
