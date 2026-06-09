@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smartkasir/models/auth.dart';
 import 'package:smartkasir/services/auth_service.dart';
+import 'package:smartkasir/views/profile/edit_profile_view.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -20,7 +21,6 @@ class ProfileViewModel extends ChangeNotifier {
       notifyListeners();
 
       profileData = await _authService.getProfile();
-
     } catch (e) {
       errorMessage = e.toString().replaceAll("Exception: ", "");
     } finally {
@@ -29,8 +29,12 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  void editProfile() {
-    // TODO: Implement profile editing logic
-    notifyListeners();
+  void editProfile(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditProfileView(profileData: profileData!),
+      ),
+    ).then((_) => loadProfile());
   }
 }

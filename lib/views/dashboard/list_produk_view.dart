@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/models/product.dart';
+import 'package:smartkasir/views/dashboard/barcode_scanner_view.dart';
 import 'package:smartkasir/viewmodels/dashboard/list_produk_viewmodel.dart';
 
 class ListProdukView extends StatelessWidget {
@@ -16,8 +17,21 @@ class ListProdukView extends StatelessWidget {
   }
 }
 
-class _ListProdukScreen extends StatelessWidget {
+class _ListProdukScreen extends StatefulWidget {
   const _ListProdukScreen();
+
+  @override
+  State<_ListProdukScreen> createState() => _ListProdukScreenState();
+}
+
+class _ListProdukScreenState extends State<_ListProdukScreen> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +57,11 @@ class _ListProdukScreen extends StatelessWidget {
                   shape: const CircleBorder(),
                   elevation: 4,
                   onPressed: () => viewmodel.navigateToAddProduct(context),
-                  child: const Icon(Icons.add, size: 50, color: AppColors.white),
+                  child: const Icon(
+                    Icons.add,
+                    size: 50,
+                    color: AppColors.white,
+                  ),
                 ),
               ),
         body: SafeArea(
@@ -88,6 +106,7 @@ class _ListProdukScreen extends StatelessWidget {
                                     color: AppColors.lightGray,
                                   ),
                                   child: TextField(
+                                    controller: _searchController, // ← tambah
                                     onChanged: viewmodel.search,
                                     decoration: const InputDecoration(
                                       hintText: "Masukkan nama/kode produk",
@@ -108,7 +127,20 @@ class _ListProdukScreen extends StatelessWidget {
                               const SizedBox(width: 10),
                               _actionButton(
                                 icon: Icons.qr_code_scanner_rounded,
-                                onTap: () {},
+                                onTap: () async {
+                                  final barcode = await Navigator.push<String>(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const BarcodeScannerView(),
+                                    ),
+                                  );
+                                  if (barcode != null) {
+                                    _searchController.text =
+                                        barcode; // ← isi field
+                                    viewmodel.search(barcode); // ← filter
+                                  }
+                                },
                               ),
                               const SizedBox(width: 8),
                               _actionButton(
@@ -129,21 +161,24 @@ class _ListProdukScreen extends StatelessWidget {
                           const SizedBox(height: 18),
                           Expanded(
                             child: viewmodel.isLoading
-                                ? const Center(child: CircularProgressIndicator())
+                                ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
                                 : viewmodel.errorMessage != null
-                                    ? _errorState(viewmodel)
-                                    : viewmodel.hasProduct
-                                        ? RefreshIndicator(
-                                            onRefresh: viewmodel.loadProducts,
-                                            child: ListView.builder(
-                                              itemCount: viewmodel.products.length,
-                                              itemBuilder: (context, index) {
-                                                final product = viewmodel.products[index];
-                                                return _productCard(context, product);
-                                              },
-                                            ),
-                                          )
-                                        : _emptyState(),
+                                ? _errorState(viewmodel)
+                                : viewmodel.hasProduct
+                                ? RefreshIndicator(
+                                    onRefresh: viewmodel.loadProducts,
+                                    child: ListView.builder(
+                                      itemCount: viewmodel.products.length,
+                                      itemBuilder: (context, index) {
+                                        final product =
+                                            viewmodel.products[index];
+                                        return _productCard(context, product);
+                                      },
+                                    ),
+                                  )
+                                : _emptyState(),
                           ),
                         ],
                       ),
@@ -168,17 +203,6 @@ class _ListProdukScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  "Kategori",
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.gray,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                _dropdownBox(text: "Pilih Salah Satu Kategori"),
-                                const SizedBox(height: 16),
-                                const Text(
                                   "Stok",
                                   style: TextStyle(
                                     fontSize: 13,
@@ -186,8 +210,33 @@ class _ListProdukScreen extends StatelessWidget {
                                     color: AppColors.gray,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                _dropdownBox(text: "< 20 items"),
+                                const SizedBox(height: 8),
+                                _filterOption(
+                                  text: "Semua",
+                                  isSelected: viewmodel.stockFilter == null,
+                                  onTap: () {
+                                    viewmodel.setStockFilter(null);
+                                    viewmodel.toggleFilter();
+                                  },
+                                ),
+                                const SizedBox(height: 6),
+                                _filterOption(
+                                  text: "Stok Rendah (< 20)",
+                                  isSelected: viewmodel.stockFilter == 'low',
+                                  onTap: () {
+                                    viewmodel.setStockFilter('low');
+                                    viewmodel.toggleFilter();
+                                  },
+                                ),
+                                const SizedBox(height: 6),
+                                _filterOption(
+                                  text: "Stok Habis",
+                                  isSelected: viewmodel.stockFilter == 'empty',
+                                  onTap: () {
+                                    viewmodel.setStockFilter('empty');
+                                    viewmodel.toggleFilter();
+                                  },
+                                ),
                               ],
                             ),
                           ),
@@ -314,7 +363,6 @@ class _ListProdukScreen extends StatelessWidget {
           if (!viewmodel.isCashier)
             Row(
               children: [
-                // Tombol tambah stok
                 _miniButton(
                   onTap: () => viewmodel.showAddStockDialog(context, product),
                   icon: Icons.add,
@@ -323,15 +371,14 @@ class _ListProdukScreen extends StatelessWidget {
                   iconSize: 26,
                 ),
                 const SizedBox(width: 6),
-                // Tombol edit
                 _miniButton(
-                  onTap: () => viewmodel.navigateToEditProduct(context, product),
+                  onTap: () =>
+                      viewmodel.navigateToEditProduct(context, product),
                   icon: Icons.edit_square,
                   bgColor: AppColors.lightPrimary,
                   iconColor: AppColors.primary,
                 ),
                 const SizedBox(width: 6),
-                // Tombol hapus
                 _miniButton(
                   onTap: () => viewmodel.deleteProduct(context, product),
                   icon: Icons.delete,
@@ -362,35 +409,6 @@ class _ListProdukScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
         ),
         child: Icon(icon, size: iconSize, color: iconColor),
-      ),
-    );
-  }
-
-  Widget _dropdownBox({required String text}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(2),
-        border: Border.all(color: AppColors.darkGray, width: 1.2),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: AppColors.darkGray,
-              ),
-            ),
-          ),
-          const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: AppColors.darkGray,
-          ),
-        ],
       ),
     );
   }
@@ -457,6 +475,32 @@ class _ListProdukScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _filterOption({
+    required String text,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.lightGray,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: isSelected ? AppColors.white : AppColors.darkGray,
+          ),
         ),
       ),
     );

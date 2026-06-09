@@ -54,7 +54,22 @@ class AuthService {
       return AuthResponse.fromJson(data);
     } else {
       final body = response.body;
-      throw Exception("Gagal mendapatkan profil: ${response.statusCode} - $body");
+      throw Exception(
+        "Gagal mendapatkan profil: ${response.statusCode} - $body",
+      );
+    }
+  }
+
+  Future<User> updateUser(String id, Map<String, dynamic> data) async {
+    final response = await _api.put('/users/$id', body: data);
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      return User.fromJson(responseData);
+    } else {
+      throw Exception(
+        "Gagal update profil: ${response.statusCode} - ${response.body}",
+      );
     }
   }
 

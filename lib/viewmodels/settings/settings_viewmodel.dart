@@ -26,7 +26,6 @@ class SettingsViewModel extends ChangeNotifier {
       notifyListeners();
 
       profileData = await _authService.getProfile();
-
     } catch (e) {
       errorMessage = e.toString().replaceAll("Exception: ", "");
     } finally {
@@ -38,45 +37,35 @@ class SettingsViewModel extends ChangeNotifier {
   void navigateToProfile(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const ProfileView(),
-      ),
+      MaterialPageRoute(builder: (context) => const ProfileView()),
     ).then((_) => loadProfile());
   }
 
   void navigateToAnalitik(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AnalitikView(),
-      ),
+      MaterialPageRoute(builder: (context) => const AnalitikView()),
     );
   }
 
   void navigateToEmploye(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const ListPegawaiView(),
-      ),
+      MaterialPageRoute(builder: (context) => const ListPegawaiView()),
     );
   }
 
   void navigateToProducts(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const ListProdukView(),
-      ),
+      MaterialPageRoute(builder: (context) => const ListProdukView()),
     );
   }
 
   void navigateToSaldo(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const SaldoView(),
-      ),
+      MaterialPageRoute(builder: (context) => const SaldoView()),
     );
   }
 
