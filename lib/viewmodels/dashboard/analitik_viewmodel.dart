@@ -7,6 +7,7 @@ import 'package:smartkasir/services/auth_service.dart';
 import 'package:smartkasir/services/product_service.dart';
 import 'package:smartkasir/services/report_service.dart';
 import 'package:smartkasir/services/transaction_service.dart';
+import 'package:smartkasir/constants/app_colors.dart';
 
 //  Model Classes 
 
@@ -205,8 +206,8 @@ class AnalitikViewModel extends ChangeNotifier {
           label: 'Pendapatan',
           value: formatRevenue(revenue),
           badge: 'Hari ini',
-          badgeColor: const Color(0xFF22C55E),
-          badgeBg: const Color(0xFFDCFCE7),
+          badgeColor: AppColors.green,
+          badgeBg: AppColors.lightGreen,
         ),
         StatCardData(
           label: 'Transaksi',
@@ -242,8 +243,8 @@ class AnalitikViewModel extends ChangeNotifier {
           label: 'Total Produk',
           value: '${products.length}',
           badge: '${products.where((p) => p.stock < 20).length} stok rendah',
-          badgeColor: const Color(0xFFEF4444),
-          badgeBg: const Color(0xFFFEE2E2),
+          badgeColor: AppColors.red,
+          badgeBg: AppColors.lightRed,
         ),
       ];
 
@@ -275,28 +276,17 @@ class AnalitikViewModel extends ChangeNotifier {
       }
 
       // ── Payment method breakdown ──
-      int cashCount = 0, qrisCount = 0, debitCount = 0, creditCount = 0;
+      int cashCount = 0, qrisCount = 0;
       for (final t in transactions) {
-        switch (t.paymentMethod) {
-          case PaymentMethod.CASH:
-            cashCount++;
-            break;
-          case PaymentMethod.QRIS:
-            qrisCount++;
-            break;
-          case PaymentMethod.DEBIT:
-            debitCount++;
-            break;
-          case PaymentMethod.CREDIT:
-            creditCount++;
-            break;
+        if (t.paymentMethod == PaymentMethod.CASH) {
+          cashCount++;
+        } else if (t.paymentMethod == PaymentMethod.QRIS) {
+          qrisCount++;
         }
       }
       paymentMethod = PaymentMethodData(
         cash: cashCount,
-        qris: qrisCount,
-        debit: debitCount,
-        credit: creditCount,
+        qris: qrisCount
       );
 
       // ── Low stock ──
@@ -307,11 +297,7 @@ class AnalitikViewModel extends ChangeNotifier {
             (p) => LowStockItem(
               name: p.name,
               count: '${p.stock} items',
-              color: p.stock < 5
-                  ? const Color(0xFFEF4444)
-                  : p.stock < 10
-                  ? const Color(0xFFF97316)
-                  : const Color(0xFFFACC15),
+              color: p.stock < 5 ? AppColors.red : p.stock < 10 ? const Color(0xFFF97316) : const Color(0xFFFACC15),
             ),
           )
           .toList();
