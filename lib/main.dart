@@ -3,13 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/services/preferences_service.dart';
 import 'package:smartkasir/services/theme_service.dart';
-import 'package:smartkasir/views/analitik_view.dart';
-import 'package:smartkasir/views/dashboard/list_produk_view.dart';
 import 'package:smartkasir/views/home_view.dart';
-import 'package:smartkasir/views/settings/settings_view.dart';
-
-
-
 
 void main() {
   runApp(const MainApp());
@@ -45,18 +39,18 @@ class MainApp extends StatelessWidget {
               sliderTheme: const SliderThemeData(),
               useMaterial3: true,
             ),
-            darkTheme: ThemeData(
-              fontFamily: GoogleFonts.poppins().fontFamily,
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: themeService.seedColor,
-                brightness: Brightness.dark,
-                dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
-              ),
-              progressIndicatorTheme: const ProgressIndicatorThemeData(),
-              sliderTheme: const SliderThemeData(),
-              useMaterial3: true,
-            ),
-            home: AnalitikView  (), // arahkan ke HomePage
+            // darkTheme: ThemeData(
+            //   fontFamily: GoogleFonts.poppins().fontFamily,
+            //   colorScheme: ColorScheme.fromSeed(
+            //     seedColor: themeService.seedColor,
+            //     brightness: Brightness.dark,
+            //     dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
+            //   ),
+            //   progressIndicatorTheme: const ProgressIndicatorThemeData(),
+            //   sliderTheme: const SliderThemeData(),
+            //   useMaterial3: true,
+            // ),
+            home: HomeView(), // arahkan ke HomePage
           );
         },
       ),

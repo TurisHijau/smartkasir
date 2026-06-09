@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
+import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/viewmodels/dashboard/list_pegawai_viewmodel.dart';
 
 class ListPegawaiView extends StatelessWidget {
@@ -60,6 +61,7 @@ class _ListPegawaiContent extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       TextField(
+                        onChanged: viewModel.search,
                         decoration: InputDecoration(
                           hintText: "Masukkan nama pegawai",
                           hintStyle: const TextStyle(
@@ -91,21 +93,24 @@ class _ListPegawaiContent extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
                       Expanded(
-                        child: viewModel.employees.isEmpty
-                            ? const _EmptyEmployeeState()
-                            : ListView.separated(
-                                itemCount: viewModel.employees.length,
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(height: 14),
-                                itemBuilder: (context, index) {
-                                  final employee = viewModel.employees[index];
-                                  return _EmployeeCard(
-                                    name: employee["name"] ?? "",
-                                    username: employee["username"] ?? "",
-                                    phone: employee["phone"] ?? "",
-                                  );
-                                },
-                              ),
+                        child: viewModel.isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : viewModel.errorMessage != null
+                                ? _errorState(viewModel)
+                                : viewModel.employees.isEmpty
+                                    ? const _EmptyEmployeeState()
+                                    : RefreshIndicator(
+                                        onRefresh: viewModel.loadUsers,
+                                        child: ListView.separated(
+                                          itemCount: viewModel.employees.length,
+                                          separatorBuilder: (_, __) =>
+                                              const SizedBox(height: 14),
+                                          itemBuilder: (context, index) {
+                                            final user = viewModel.employees[index];
+                                            return _EmployeeCard(user: user);
+                                          },
+                                        ),
+                                      ),
                       ),
                     ],
                   ),
@@ -114,17 +119,19 @@ class _ListPegawaiContent extends StatelessWidget {
             ],
           ),
         ),
-        floatingActionButton: SizedBox(
-          width: 66,
-          height: 66,
-          child: FloatingActionButton(
-            backgroundColor: AppColors.primary,
-            shape: const CircleBorder(),
-            elevation: 4,
-            onPressed: () {},
-            child: const Icon(Icons.add, size: 50, color: AppColors.white),
-          ),
-        ),
+        floatingActionButton: viewModel.isOwner
+            ? SizedBox(
+                width: 66,
+                height: 66,
+                child: FloatingActionButton(
+                  backgroundColor: AppColors.primary,
+                  shape: const CircleBorder(),
+                  elevation: 4,
+                  onPressed: () => viewModel.navigateToAddEmployee(context),
+                  child: const Icon(Icons.add, size: 50, color: AppColors.white),
+                ),
+              )
+            : null,
       ),
     );
   }
@@ -163,6 +170,28 @@ class _ListPegawaiContent extends StatelessWidget {
       ),
     );
   }
+
+  Widget _errorState(ListPegawaiViewmodel viewModel) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 64, color: AppColors.gray),
+          const SizedBox(height: 16),
+          Text(
+            viewModel.errorMessage ?? "Terjadi kesalahan",
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.darkGray),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => viewModel.loadUsers(),
+            child: const Text("Coba Lagi"),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // hapus semua data pegawai di list pegawaiviewmodel jika ingin menampilkan list pegawai kosong
@@ -180,7 +209,7 @@ class _EmptyEmployeeState extends StatelessWidget {
             Container(
               width: 100,
               height: 100,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.gray,
                 shape: BoxShape.circle,
               ),
@@ -219,18 +248,25 @@ class _EmptyEmployeeState extends StatelessWidget {
 }
 
 class _EmployeeCard extends StatelessWidget {
-  final String name;
-  final String username;
-  final String phone;
+  final User user;
 
-  const _EmployeeCard({
-    required this.name,
-    required this.username,
-    required this.phone,
-  });
+  const _EmployeeCard({required this.user});
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.read<ListPegawaiViewmodel>();
+
+    String roleLabel(Role role) {
+      switch (role) {
+        case Role.OWNER:
+          return 'Pemilik';
+        case Role.MANAGER:
+          return 'Manajer';
+        case Role.CASHIER:
+          return 'Kasir';
+      }
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
@@ -251,7 +287,7 @@ class _EmployeeCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  user.name,
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontSize: 15,
@@ -260,7 +296,7 @@ class _EmployeeCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  username,
+                  user.username,
                   style: const TextStyle(
                     color: AppColors.darkGray,
                     fontSize: 13,
@@ -268,34 +304,55 @@ class _EmployeeCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  phone,
-                  style: const TextStyle(
-                    color: AppColors.darkGray,
-                    fontSize: 13,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      user.phone ?? '-',
+                      style: const TextStyle(
+                        color: AppColors.darkGray,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        roleLabel(user.role),
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
 
-          Row(
-            children: [
-              _ActionButton(
-                backgroundColor: AppColors.lightPrimary,
-                icon: Icons.edit_square,
-                iconColor: AppColors.primary,
-                onTap: () {},
-              ),
-              const SizedBox(width: 8),
-              _ActionButton(
-                backgroundColor: AppColors.lightRed,
-                icon: Icons.delete,
-                iconColor: Colors.red,
-                onTap: () {},
-              ),
-            ],
-          ),
+          if (viewModel.isOwner)
+            Row(
+              children: [
+                _ActionButton(
+                  backgroundColor: AppColors.lightPrimary,
+                  icon: Icons.edit_square,
+                  iconColor: AppColors.primary,
+                  onTap: () => viewModel.navigateToEditEmployee(context, user),
+                ),
+                const SizedBox(width: 8),
+                _ActionButton(
+                  backgroundColor: AppColors.lightRed,
+                  icon: Icons.delete,
+                  iconColor: Colors.red,
+                  onTap: () => viewModel.deleteUser(context, user),
+                ),
+              ],
+            ),
         ],
       ),
     );

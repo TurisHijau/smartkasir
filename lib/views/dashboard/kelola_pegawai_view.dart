@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
+import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/viewmodels/dashboard/kelola_pegawai_viewmodel.dart';
 
 class KelolaPegawaiView extends StatelessWidget {
-  const KelolaPegawaiView({super.key});
+  final User? user;
+
+  const KelolaPegawaiView({super.key, this.user});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => KelolaPegawaiViewModel(),
-      child: const _KelolaPegawaiContent(),
+      create: (_) => KelolaPegawaiViewModel(editingUser: user),
+      child: _KelolaPegawaiContent(user: user),
     );
   }
 }
 
 class _KelolaPegawaiContent extends StatefulWidget {
-  const _KelolaPegawaiContent();
+  final User? user;
+
+  const _KelolaPegawaiContent({this.user});
 
   @override
   State<_KelolaPegawaiContent> createState() => _KelolaPegawaiContentState();
@@ -25,14 +30,27 @@ class _KelolaPegawaiContent extends StatefulWidget {
 class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _namaPegawaiController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _noTelpController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _konfirmasiPasswordController =
       TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.user != null) {
+      final u = widget.user!;
+      _namaPegawaiController.text = u.name;
+      _usernameController.text = u.username;
+      _noTelpController.text = u.phone ?? '';
+    }
+  }
+
+  @override
   void dispose() {
     _namaPegawaiController.dispose();
+    _usernameController.dispose();
     _noTelpController.dispose();
     _passwordController.dispose();
     _konfirmasiPasswordController.dispose();
@@ -56,7 +74,7 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
         body: SafeArea(
           child: Column(
             children: [
-              _buildHeader(context),
+              _buildHeader(context, viewModel.isEditMode),
               Expanded(
                 child: Container(
                   width: double.infinity,
@@ -81,20 +99,35 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                           ),
                           const SizedBox(height: 20),
 
+                          _buildLabel('Username'),
+                          _buildTextField(
+                            controller: _usernameController,
+                            hint: 'Masukkan Username',
+                          ),
+                          const SizedBox(height: 20),
+
                           _buildLabel('No Telp'),
                           _buildTextField(
                             controller: _noTelpController,
                             hint: 'Masukkan No Telepon',
                             keyboardType: TextInputType.phone,
+                            required: false,
                           ),
+                          const SizedBox(height: 20),
+
+                          _buildLabel('Role'),
+                          _buildRoleDropdown(viewModel),
                           const SizedBox(height: 20),
 
                           _buildLabel('Password'),
                           _buildTextField(
                             controller: _passwordController,
-                            hint: 'Masukkan Password',
+                            hint: viewModel.isEditMode
+                                ? 'Kosongkan jika tidak diubah'
+                                : 'Masukkan Password',
                             obscureText: viewModel.obscurePassword,
                             onSuffixIconTap: viewModel.togglePasswordVisibility,
+                            required: !viewModel.isEditMode,
                           ),
                           const SizedBox(height: 20),
 
@@ -105,42 +138,109 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                             obscureText: viewModel.obscureConfirmPassword,
                             onSuffixIconTap:
                                 viewModel.toggleConfirmPasswordVisibility,
+                            required: !viewModel.isEditMode,
                           ),
-                          const SizedBox(height: 175),
+
+                          if (viewModel.errorMessage != null) ...[
+                            const SizedBox(height: 16),
+                            Text(
+                              viewModel.errorMessage!,
+                              style: const TextStyle(
+                                color: AppColors.red,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 40),
 
                           SizedBox(
                             width: double.infinity,
                             height: 55,
                             child: ElevatedButton(
-                              onPressed: () {
-                                if (_formKey.currentState!.validate()) {
-                                  if (_passwordController.text !=
-                                      _konfirmasiPasswordController.text) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Password tidak cocok'),
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  viewModel.addEmployee();
-                                }
-                              },
+                              onPressed: viewModel.isLoading
+                                  ? null
+                                  : () async {
+                                      if (_formKey.currentState!.validate()) {
+                                        if (_passwordController
+                                                .text
+                                                .isNotEmpty &&
+                                            _passwordController.text !=
+                                                _konfirmasiPasswordController
+                                                    .text) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Password tidak cocok',
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                          return;
+                                        }
+
+                                        final password =
+                                            _passwordController.text.isNotEmpty
+                                            ? _passwordController.text
+                                            : 'unchanged';
+
+                                        final success = await viewModel
+                                            .saveEmployee(
+                                              name: _namaPegawaiController.text
+                                                  .trim(),
+                                              username: _usernameController.text
+                                                  .trim(),
+                                              phone: _noTelpController.text
+                                                  .trim(),
+                                              password: password,
+                                            );
+
+                                        if (success && context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                viewModel.isEditMode
+                                                    ? "Pegawai berhasil diupdate"
+                                                    : "Pegawai berhasil ditambahkan",
+                                              ),
+                                            ),
+                                          );
+                                          Navigator.pop(context);
+                                        }
+                                      }
+                                    },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
+                                disabledBackgroundColor: AppColors.primary
+                                    .withOpacity(0.6),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 elevation: 0,
                               ),
-                              child: const Text(
-                                'TAMBAH PEGAWAI',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              child: viewModel.isLoading
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
+                                  : Text(
+                                      viewModel.isEditMode
+                                          ? 'UPDATE PEGAWAI'
+                                          : 'TAMBAH PEGAWAI',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                             ),
                           ),
                         ],
@@ -156,7 +256,37 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildRoleDropdown(KelolaPegawaiViewModel viewModel) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.gray, width: 2),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<Role>(
+          value: viewModel.selectedRole,
+          isExpanded: true,
+          style: const TextStyle(
+            color: AppColors.darkGray,
+            fontWeight: FontWeight.w600,
+            fontSize: 17,
+          ),
+          items: const [
+            DropdownMenuItem(value: Role.CASHIER, child: Text('Kasir')),
+            DropdownMenuItem(value: Role.MANAGER, child: Text('Manajer')),
+            DropdownMenuItem(value: Role.OWNER, child: Text('Pemilik')),
+          ],
+          onChanged: (role) {
+            if (role != null) viewModel.setRole(role);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, bool isEdit) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 12, 16, 0),
       child: SizedBox(
@@ -175,10 +305,10 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                 ),
               ),
             ),
-            const Center(
+            Center(
               child: Text(
-                'Kelola Pegawai',
-                style: TextStyle(
+                isEdit ? 'Edit Pegawai' : 'Kelola Pegawai',
+                style: const TextStyle(
                   color: AppColors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
@@ -211,6 +341,7 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
     TextInputType keyboardType = TextInputType.text,
     bool obscureText = false,
     VoidCallback? onSuffixIconTap,
+    bool required = true,
   }) {
     return TextFormField(
       controller: controller,
@@ -224,7 +355,7 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
           fontSize: 17,
         ),
         filled: true,
-        fillColor: AppColors.lightGray,
+        fillColor: AppColors.white,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 18,
           vertical: 16,
@@ -240,23 +371,25 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
             : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.darkGray, width: 2),
+          borderSide: const BorderSide(color: AppColors.gray, width: 2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.darkGray, width: 2),
+          borderSide: const BorderSide(color: AppColors.gray, width: 2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
           borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Field ini tidak boleh kosong';
-        }
-        return null;
-      },
+      validator: required
+          ? (value) {
+              if (value == null || value.isEmpty) {
+                return 'Field ini tidak boleh kosong';
+              }
+              return null;
+            }
+          : null,
     );
   }
 }

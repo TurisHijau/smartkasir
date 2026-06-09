@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:smartkasir/constants/app_colors.dart';
-import 'package:smartkasir/viewmodels/analitik_viewmodel.dart';
-
+import 'package:smartkasir/viewmodels/dashboard/analitik_viewmodel.dart';
+import 'package:smartkasir/viewmodels/settings/settings_viewmodel.dart';
 
 class AnalitikView extends StatefulWidget {
   const AnalitikView({super.key});
@@ -12,7 +12,8 @@ class AnalitikView extends StatefulWidget {
 }
 
 class _AnalitikViewState extends State<AnalitikView> {
-  final _vm = AnalitikViewModel();
+  final _vm  = AnalitikViewModel();
+  final vm = SettingsViewModel();
 
   @override
   void dispose() {
@@ -25,7 +26,7 @@ class _AnalitikViewState extends State<AnalitikView> {
     return ListenableBuilder(
       listenable: _vm,
       builder: (context, _) => Container(
-        // ── Gradient background sama seperti list_pegawai_view ──
+        // gradient background
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [AppColors.tertiary, AppColors.secondary],
@@ -38,10 +39,10 @@ class _AnalitikViewState extends State<AnalitikView> {
           body: SafeArea(
             child: Column(
               children: [
-                // ── Header di atas gradient ──
+                //  Header
                 _buildHeader(context),
 
-                // ── Konten putih dengan border radius atas ──
+                //  border radius atas
                 Expanded(
                   child: Container(
                     width: double.infinity,
@@ -56,29 +57,47 @@ class _AnalitikViewState extends State<AnalitikView> {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(45),
                       ),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildStoreInfo(),
-                            const SizedBox(height: 16),
-                            _buildStatCards(_vm.statCards),
-                            const SizedBox(height: 12),
-                            _buildStatCards(_vm.statCardsRow2),
-                            const SizedBox(height: 16),
-                            _buildRevenueChart(),
-                            const SizedBox(height: 16),
-                            _buildPaymentMethod(),
-                            const SizedBox(height: 16),
-                            _buildLowStock(),
-                            const SizedBox(height: 16),
-                            _buildRecentTransactions(),
-                            const SizedBox(height: 16),
-                            _buildTopProducts(),
-                          ],
+                      child: _vm.isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : _vm.errorMessage != null
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.error_outline, size: 48, color: AppColors.gray),
+                                      const SizedBox(height: 12),
+                                      Text(_vm.errorMessage!, style: const TextStyle(color: AppColors.darkGray)),
+                                      const SizedBox(height: 12),
+                                      ElevatedButton(
+                                        onPressed: () => _vm.loadData(),
+                                        child: const Text("Coba Lagi"),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildStoreInfo(),
+                              const SizedBox(height: 16),
+                              _buildStatCards(_vm.statCards),
+                              const SizedBox(height: 12),
+                              _buildStatCards(_vm.statCardsRow2),
+                              const SizedBox(height: 16),
+                              if (_vm.chartValues.isNotEmpty) _buildRevenueChart(),
+                              if (_vm.chartValues.isNotEmpty) const SizedBox(height: 16),
+                              _buildPaymentMethod(),
+                              const SizedBox(height: 16),
+                              _buildLowStock(),
+                              const SizedBox(height: 16),
+                              _buildRecentTransactions(),
+                              const SizedBox(height: 16),
+                              _buildTopProducts(),
+                            ],
+                          ),
                         ),
-                      ),
                     ),
                   ),
                 ),
@@ -103,7 +122,7 @@ class _AnalitikViewState extends State<AnalitikView> {
             Align(
               alignment: Alignment.centerLeft,
               child: IconButton(
-                onPressed: () => Navigator.maybePop(context),
+                onPressed: () => _vm.returnToSettings(context),
                 icon: const Icon(
                   Icons.arrow_back_ios_new,
                   color: AppColors.white,
@@ -153,7 +172,10 @@ class _AnalitikViewState extends State<AnalitikView> {
               children: [
                 TextSpan(
                   text: _vm.storeName,
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
                 ),
                 TextSpan(
                   text: ' - ${_vm.storeDate}',
@@ -170,7 +192,9 @@ class _AnalitikViewState extends State<AnalitikView> {
           Row(
             children: List.generate(_vm.periodLabels.length, (i) {
               return Padding(
-                padding: EdgeInsets.only(right: i < _vm.periodLabels.length - 1 ? 8 : 0),
+                padding: EdgeInsets.only(
+                  right: i < _vm.periodLabels.length - 1 ? 8 : 0,
+                ),
                 child: _periodButton(_vm.periodLabels[i], i),
               );
             }),
@@ -304,9 +328,9 @@ class _AnalitikViewState extends State<AnalitikView> {
               color: AppColors.primary,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 50),
           SizedBox(
-            height: 160,
+            height: 164,
             child: CustomPaint(
               painter: LineChartPainter(
                 values: _vm.chartValues,
@@ -358,7 +382,7 @@ class _AnalitikViewState extends State<AnalitikView> {
                 child: CustomPaint(
                   painter: DonutChartPainter(
                     values: [pm.cashRatio, pm.qrisRatio],
-                    colors: const [Color(0xFF2176D9), Color(0xFF93C5FD)],
+                    colors: const [AppColors.secondary, AppColors.tertiary],
                   ),
                 ),
               ),
@@ -366,9 +390,17 @@ class _AnalitikViewState extends State<AnalitikView> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _legendItem(const Color(0xFF2176D9), 'Cash', '${pm.cash} transaksi'),
+                  _legendItem(
+                    AppColors.secondary,
+                    'Cash',
+                    '${pm.cash} transaksi',
+                  ),
                   const SizedBox(height: 12),
-                  _legendItem(const Color(0xFF93C5FD), 'QRIS', '${pm.qris} transaksi'),
+                  _legendItem(
+                    AppColors.tertiary,
+                    'QRIS',
+                    '${pm.qris} transaksi',
+                  ),
                 ],
               ),
             ],
@@ -395,10 +427,10 @@ class _AnalitikViewState extends State<AnalitikView> {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+                color: color,
               ),
             ),
             Text(
@@ -475,10 +507,13 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 8),
-          Center(
-            child: Text(
-              'Lihat Selengkapnya →',
-              style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
+          GestureDetector(
+            onTap: () => vm.navigateToProducts(context),
+            child: const Center(
+              child: Text(
+                'Lihat Selengkapnya →',
+                style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+              ),
             ),
           ),
         ],
@@ -568,10 +603,13 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 4),
-          Center(
-            child: const Text(
-              'Lihat Selengkapnya →',
-              style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+          GestureDetector(
+            onTap: () => vm.TransactionHistory(context),
+            child: const Center(
+              child: Text(
+                'Lihat Selengkapnya →',
+                style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+              ),
             ),
           ),
         ],
@@ -583,6 +621,7 @@ class _AnalitikViewState extends State<AnalitikView> {
 
   Widget _buildTopProducts() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -711,7 +750,8 @@ class LineChartPainter extends CustomPainter {
 
     // Line
     final linePath = Path()..moveTo(points.first.dx, points.first.dy);
-    for (int i = 1; i < points.length; i++) linePath.lineTo(points[i].dx, points[i].dy);
+    for (int i = 1; i < points.length; i++)
+      linePath.lineTo(points[i].dx, points[i].dy);
     canvas.drawPath(
       linePath,
       Paint()
