@@ -9,7 +9,7 @@ class ApiClient {
   factory ApiClient() => _instance;
   ApiClient._internal();
 
-  static const String baseUrl = "http://192.168.0.71:8080";
+  static const String baseUrl = "http://10.0.2.2:8080";
   static const String _tokenKey = "smartkasir_prefs/authToken";
 
   String? _cachedToken;

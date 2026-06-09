@@ -117,7 +117,6 @@ class AnalitikViewModel extends ChangeNotifier {
   // ── Top products ──
   List<TopProductItem> topProducts = [];
 
-  var date;
 
   AnalitikViewModel() {
     _initDate();
@@ -167,20 +166,14 @@ class AnalitikViewModel extends ChangeNotifier {
 
       // Load data in parallel
       final results = await Future.wait([
-        _reportService
-            .getDailySales(date: todayStr)
-            .catchError((_) => <String, dynamic>{}),
+        _reportService.getDailySales(date: todayStr).catchError((_) => <String, dynamic>{}),
         _transactionService.getAll().catchError((_) => <Transaction>[]),
         _productService.getAll().catchError((_) => <Product>[]),
-        _reportService
-            .getTopProducts(
+        _reportService.getTopProducts(
               startDate: _formatDate(now.subtract(const Duration(days: 30))),
               endDate: todayStr,
-            )
-            .catchError((_) => <TopProductDTO>[]),
-        _reportService
-            .getMonthlySales(month: now.month, year: now.year)
-            .catchError((_) => <String, dynamic>{}),
+            ).catchError((_) => <TopProductDTO>[]),
+        _reportService.getMonthlySales(month: now.month, year: now.year).catchError((_) => <String, dynamic>{}),
         _authService.getProfile().catchError((_) => null),
       ]);
 
@@ -258,24 +251,27 @@ class AnalitikViewModel extends ChangeNotifier {
       chartDays = [];
       chartValues = [];
       final dayLabels = ['min', 'sen', 'sel', 'rab', 'kam', 'jum', 'sab'];
-      for (int i = 6; i >= 0; i--) {
-        final day = now.subtract(Duration(days: i));
+
+      // Fetch 7 hari secara parallel
+      final dailyFutures = List.generate(7, (i) {
+        final day = now.subtract(Duration(days: 6 - i));
+        return _reportService
+            .getDailySales(date: _formatDate(day))
+            .catchError((_) => <String, dynamic>{});
+      });
+
+      final dailyResults = await Future.wait(dailyFutures);
+
+      for (int i = 0; i < 7; i++) {
+        final day = now.subtract(Duration(days: 6 - i));
+        final data = dailyResults[i] as Map<String, dynamic>;
         chartDays.add(dayLabels[day.weekday % 7]);
-        final dayTx = transactions.where((t) {
-          if (t.transactionDate == null) return false;
-          return t.transactionDate!.year == day.year &&
-              t.transactionDate!.month == day.month &&
-              t.transactionDate!.day == day.day;
-        });
-        chartValues.add(dayTx.fold<double>(0, (s, t) => s + t.totalAmount));
+        chartValues.add((data['totalRevenue'] ?? 0).toDouble());
       }
 
-      // Ensure chart has at least some data
+      // Prevent division by zero
       if (chartValues.every((v) => v == 0)) {
-        chartValues = List.filled(
-          7,
-          1.0,
-        ); // Prevent division by zero in painter
+        chartValues = List.filled(7, 1.0);
       }
 
       // ── Payment method breakdown ──

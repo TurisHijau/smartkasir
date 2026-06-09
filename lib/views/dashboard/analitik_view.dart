@@ -178,7 +178,7 @@ class _AnalitikViewState extends State<AnalitikView> {
                   ),
                 ),
                 TextSpan(
-                  text: ' - ${_vm.date}',
+                  text: ' - ${_vm.storeDate}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w400,
                     fontSize: 13,
@@ -621,6 +621,7 @@ class _AnalitikViewState extends State<AnalitikView> {
 
   Widget _buildTopProducts() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
