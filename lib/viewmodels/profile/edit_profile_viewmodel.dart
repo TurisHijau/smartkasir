@@ -29,14 +29,18 @@ class EditProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _authService.updateUser(userId, {
+      final data = {
         "name": name.trim(),
         "email": email.trim(),
         "username": username.trim(),
-        "password": password,
         "role": role,
         "phone": phone.trim(),
-      });
+      };
+      if (password.isNotEmpty) {
+        data["password"] = password;
+      }
+
+      await _authService.updateUser(userId, data);
 
       return true;
     } catch (e) {

@@ -7,6 +7,8 @@ import 'package:smartkasir/views/dashboard/list_produk_view.dart';
 import 'package:smartkasir/views/dashboard/transaction_view.dart';
 import 'package:smartkasir/views/profile/profile_view.dart';
 import 'package:smartkasir/views/saldo_view.dart';
+import 'package:smartkasir/views/settings_view.dart';
+import 'package:smartkasir/views/auth/login_view.dart';
 
 class SettingsViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -91,4 +93,24 @@ class SettingsViewModel extends ChangeNotifier {
       builder: (context) => const SettingsView(),
     ),
   );
+}
+
+  Future<void> logout(BuildContext context) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+      await _authService.logout();
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginView()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      errorMessage = e.toString().replaceAll("Exception: ", "");
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 }

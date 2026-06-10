@@ -111,7 +111,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                               const SizedBox(height: 8),
                               _buildTextField(
                                 controller: _passwordController,
-                                hint: "Masukkan Password Baru",
+                                hint: "Kosongkan jika tidak ingin diubah",
                                 obscureText: true,
                               ),
 
