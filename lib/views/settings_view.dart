@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
-import 'package:smartkasir/models/user.dart'; // ← tambah import
+import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/viewmodels/settings/settings_viewmodel.dart';
 
 class SettingsView extends StatelessWidget {
@@ -226,21 +226,28 @@ class _SettingsContent extends StatelessWidget {
                               _buildMenuTile(
                                 icon: Icons.print,
                                 title: 'Printer Struk',
-                                subtitle: 'Tidak ada koneksi',
+                                subtitle: viewModel.isPrinterConnected 
+                                    ? 'Terhubung: ${viewModel.connectedPrinterName}'
+                                    : 'Tidak ada koneksi',
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    if (viewModel.isPrinterConnected)
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.print_outlined,
+                                          color: AppColors.primary,
+                                          size: 20,
+                                        ),
+                                        tooltip: 'Test Print',
+                                        onPressed: () => viewModel.testPrint(),
+                                      ),
                                     IconButton(
                                       icon: const Icon(
-                                        Icons.refresh,
-                                        color: AppColors.primary,
+                                        Icons.settings,
+                                        color: AppColors.gray,
                                       ),
-                                      onPressed: () =>
-                                          viewModel.refreshPrinter(),
-                                    ),
-                                    const Icon(
-                                      Icons.settings,
-                                      color: AppColors.gray,
+                                      onPressed: () => _showPrinterDialog(context, viewModel),
                                     ),
                                   ],
                                 ),
@@ -405,14 +412,87 @@ class _SettingsContent extends StatelessWidget {
                   ],
                 ),
               ),
-              if (trailing != null)
-                trailing
-              else
-                const Icon(Icons.chevron_right, color: AppColors.gray),
+                trailing != null
+                  ? trailing
+                  : const Icon(Icons.chevron_right, color: AppColors.gray),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void _showPrinterDialog(BuildContext context, SettingsViewModel viewModel) {
+    viewModel.scanPrinters();
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final vm = Provider.of<SettingsViewModel>(context);
+            return Container(
+              padding: const EdgeInsets.all(20),
+              height: 400,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Pilih Printer Bluetooth',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () => vm.scanPrinters(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  if (vm.isScanningPrinter)
+                    const Center(child: CircularProgressIndicator())
+                  else if (vm.availableBluetoothDevices.isEmpty)
+                    const Center(child: Text('Tidak ada perangkat ditemukan.\nPastikan Bluetooth menyala.'))
+                  else
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: vm.availableBluetoothDevices.length,
+                        itemBuilder: (context, index) {
+                          final device = vm.availableBluetoothDevices[index];
+                          final isConnected = vm.connectedPrinterMac == device.macAdress;
+                          return ListTile(
+                            leading: const Icon(Icons.print),
+                            title: Text(device.name),
+                            subtitle: Text(device.macAdress),
+                            trailing: isConnected
+                                ? TextButton(
+                                    onPressed: () => vm.disconnectPrinter(),
+                                    child: const Text('Putuskan', style: TextStyle(color: Colors.red)),
+                                  )
+                                : ElevatedButton(
+                                    onPressed: () {
+                                      vm.connectPrinter(device.macAdress, device.name);
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text('Hubungkan'),
+                                  ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

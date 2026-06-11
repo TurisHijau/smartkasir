@@ -24,7 +24,7 @@ class _ScannerViewState extends State<ScannerView> {
   final ProductService _productService = ProductService();
   final TransactionService _transactionService = TransactionService();
 
-  bool _isCameraOn = false; // ← default mati
+  bool _isCameraOn = false;
   bool _isFlashOn = false;
   bool _isProcessingScan = false;
 
@@ -701,12 +701,12 @@ class _ScannerViewState extends State<ScannerView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _dialogFieldLabel('Kode Produk / Barcode'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     _dialogTextField(
                       controller: kodeController,
                       hint: 'Masukkan Kode Produk / Barcode',
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
                       height: 52,
@@ -804,7 +804,7 @@ class _ScannerViewState extends State<ScannerView> {
       style: const TextStyle(
         color: AppColors.primary,
         fontWeight: FontWeight.bold,
-        fontSize: 14,
+        fontSize: 18,
       ),
     );
   }
@@ -816,11 +816,11 @@ class _ScannerViewState extends State<ScannerView> {
   }) {
     return TextField(
       controller: controller,
-      style: const TextStyle(color: Colors.black87, fontSize: 14),
+      style: const TextStyle(color: Colors.black87, fontSize: 18),
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 18),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,

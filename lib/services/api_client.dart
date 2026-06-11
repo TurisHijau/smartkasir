@@ -9,7 +9,7 @@ class ApiClient {
   factory ApiClient() => _instance;
   ApiClient._internal();
 
-  static const String baseUrl = "http://10.0.2.2:8080";
+  static const String baseUrl = "https://smartkasir-api.erzet.site";
   static const String _tokenKey = "smartkasir_prefs/authToken";
 
   String? _cachedToken;
@@ -55,15 +55,24 @@ class ApiClient {
 
   // ── HTTP methods ──────────────────────────────────────────────────────────
 
-  Future<http.Response> get(String path, {Map<String, String>? queryParams}) async {
-    final uri = Uri.parse("$baseUrl$path").replace(queryParameters: queryParams);
+  Future<http.Response> get(
+    String path, {
+    Map<String, String>? queryParams,
+  }) async {
+    final uri = Uri.parse(
+      "$baseUrl$path",
+    ).replace(queryParameters: queryParams);
     print("[API] GET $uri");
     final response = await http.get(uri, headers: await _headers());
     _logResponse(response);
     return response;
   }
 
-  Future<http.Response> post(String path, {Object? body, bool auth = true}) async {
+  Future<http.Response> post(
+    String path, {
+    Object? body,
+    bool auth = true,
+  }) async {
     final uri = Uri.parse("$baseUrl$path");
     print("[API] POST $uri");
     final response = await http.post(
@@ -98,6 +107,8 @@ class ApiClient {
   // ── Logging ───────────────────────────────────────────────────────────────
 
   void _logResponse(http.Response response) {
-    print("[API] ${response.statusCode} ${response.body.length > 500 ? '${response.body.substring(0, 500)}...' : response.body}");
+    print(
+      "[API] ${response.statusCode} ${response.body.length > 500 ? '${response.body.substring(0, 500)}...' : response.body}",
+    );
   }
 }
