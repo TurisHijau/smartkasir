@@ -7,8 +7,10 @@ class KelolaProdukViewModel extends ChangeNotifier {
   final ProductService _productService = ProductService();
 
   bool isLoading = false;
+  bool isCheckingBarcode = false;
   String? errorMessage;
   String? scannedBarcode;
+  bool isProductNameLocked = false;
 
   /// The product being edited, null for create mode.
   final Product? editingProduct;
@@ -53,13 +55,34 @@ class KelolaProdukViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> scanProductCode(BuildContext context) async {
+  Future<Map<String, String?>> scanProductCode(BuildContext context) async {
     final barcode = await Navigator.push<String>(
       context,
       MaterialPageRoute(builder: (_) => const BarcodeScannerView()),
     );
-    if (barcode != null) {
-      scannedBarcode = barcode; // ← simpan hasil scan
+
+    if (barcode == null) return {};
+
+    scannedBarcode = barcode;
+    isCheckingBarcode = true;
+    isProductNameLocked = false;
+    notifyListeners();
+
+    try {
+      final productName = await _productService.getProductNameByBarcode(
+        barcode,
+      );
+
+      if (productName != null) {
+        isProductNameLocked = true; // ← lock field nama
+      }
+
+      notifyListeners();
+      return {'barcode': barcode, 'productName': productName};
+    } catch (e) {
+      return {'barcode': barcode, 'productName': null};
+    } finally {
+      isCheckingBarcode = false;
       notifyListeners();
     }
   }

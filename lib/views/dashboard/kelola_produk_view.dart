@@ -115,11 +115,20 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                               const SizedBox(width: 12),
                               GestureDetector(
                                 onTap: () async {
-                                  await viewModel.scanProductCode(context);
-                                  // ← isi controller setelah scan
-                                  if (viewModel.scannedBarcode != null) {
+                                  final result = await viewModel
+                                      .scanProductCode(context);
+                                  if (result.isNotEmpty) {
+                                    // isi barcode
                                     _kodeProdukController.text =
-                                        viewModel.scannedBarcode!;
+                                        result['barcode'] ?? '';
+
+                                    // isi nama kalau ditemukan, kosongkan kalau tidak
+                                    if (result['productName'] != null) {
+                                      _namaProdukController.text =
+                                          result['productName']!;
+                                    } else {
+                                      _namaProdukController.clear();
+                                    }
                                   }
                                 },
                                 child: Container(
@@ -152,6 +161,7 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                           _buildTextField(
                             controller: _namaProdukController,
                             hint: 'Masukkan Nama Produk',
+                            enabled: !viewModel.isProductNameLocked,
                           ),
                           const SizedBox(height: 20),
 
@@ -341,23 +351,26 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
     TextInputType keyboardType = TextInputType.text,
     bool required = true,
     bool isCurrency = false,
+    bool enabled = true,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      enabled: enabled,
       inputFormatters:
           isCurrency // ← tambah formatter
           ? [CurrencyInputFormatter()]
           : null,
       decoration: InputDecoration(
         hintText: hint,
+
         hintStyle: const TextStyle(
           color: AppColors.darkGray,
           fontWeight: FontWeight.w600,
           fontSize: 17,
         ),
         filled: true,
-        fillColor: AppColors.white,
+        fillColor: enabled ? Colors.white : Colors.grey.shade200,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 18,
           vertical: 16,

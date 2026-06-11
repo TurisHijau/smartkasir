@@ -47,4 +47,16 @@ class ProductService {
     // Product not found
     return null;
   }
+
+  Future<String?> getProductNameByBarcode(String barcode) async {
+    final response = await _api.getNameByBarcode(barcode);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['status'] == 1) {
+        return data['product']['product_name'] as String?;
+      }
+    }
+    return null;
+  }
 }

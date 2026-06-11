@@ -11,6 +11,8 @@ class ApiClient {
 
   static const String baseUrl = "https://smartkasir-api.erzet.site";
   static const String _tokenKey = "smartkasir_prefs/authToken";
+  static const String productBaseUrl =
+      "https://world.openfoodfacts.org/api/v0/product";
 
   String? _cachedToken;
 
@@ -100,6 +102,17 @@ class ApiClient {
     final uri = Uri.parse("$baseUrl$path");
     print("[API] DELETE $uri");
     final response = await http.delete(uri, headers: await _headers());
+    _logResponse(response);
+    return response;
+  }
+
+  Future<http.Response> getNameByBarcode(
+    String barcode, {
+    bool auth = false,
+  }) async {
+    final uri = Uri.parse("$productBaseUrl/$barcode.json");
+    print("[API] GET $uri");
+    final response = await http.get(uri, headers: await _headers(auth: auth));
     _logResponse(response);
     return response;
   }
