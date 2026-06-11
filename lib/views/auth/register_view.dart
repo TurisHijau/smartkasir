@@ -76,7 +76,7 @@ class RegisterView extends StatelessWidget {
                                   "DAFTAR",
                                   style: TextStyle(
                                     fontSize: 35,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w900,
                                     color: AppColors.primary,
                                   ),
                                 ),
@@ -106,7 +106,10 @@ class RegisterView extends StatelessWidget {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.error_outline, color: Colors.red[700]),
+                                  Icon(
+                                    Icons.error_outline,
+                                    color: Colors.red[700],
+                                  ),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
@@ -130,19 +133,33 @@ class RegisterView extends StatelessWidget {
                           const SizedBox(height: 24),
 
                           buildLabel("Nama Lengkap"),
-                          buildTextField("Masukkan nama lengkap Anda", controller: viewModel.ownerNameController),
+                          buildTextField(
+                            "Masukkan nama lengkap Anda",
+                            controller: viewModel.ownerNameController,
+                          ),
                           const SizedBox(height: 20),
 
                           buildLabel("Username"),
-                          buildTextField("Masukkan username", controller: viewModel.usernameController),
+                          buildTextField(
+                            "Masukkan username",
+                            controller: viewModel.usernameController,
+                          ),
                           const SizedBox(height: 20),
 
                           buildLabel("Email"),
-                          buildTextField("Masukkan email Anda", controller: viewModel.emailController, type: TextInputType.emailAddress),
+                          buildTextField(
+                            "Masukkan email Anda",
+                            controller: viewModel.emailController,
+                            type: TextInputType.emailAddress,
+                          ),
                           const SizedBox(height: 20),
 
                           buildLabel("No Handphone"),
-                          buildTextField("Masukkan no HP Anda", controller: viewModel.ownerPhoneController, type: TextInputType.phone),
+                          buildTextField(
+                            "Masukkan no HP Anda",
+                            controller: viewModel.ownerPhoneController,
+                            type: TextInputType.phone,
+                          ),
                           const SizedBox(height: 20),
 
                           buildLabel("Password"),
@@ -151,7 +168,11 @@ class RegisterView extends StatelessWidget {
                             controller: viewModel.passwordController,
                             obscure: viewModel.obscurePassword,
                             suffixIcon: IconButton(
-                              icon: Icon(viewModel.obscurePassword ? Icons.visibility_off : Icons.visibility),
+                              icon: Icon(
+                                viewModel.obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
                               color: AppColors.gray,
                               onPressed: viewModel.togglePasswordVisibility,
                             ),
@@ -164,9 +185,14 @@ class RegisterView extends StatelessWidget {
                             controller: viewModel.confirmPasswordController,
                             obscure: viewModel.obscureConfirmPassword,
                             suffixIcon: IconButton(
-                              icon: Icon(viewModel.obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
+                              icon: Icon(
+                                viewModel.obscureConfirmPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
                               color: AppColors.gray,
-                              onPressed: viewModel.toggleConfirmPasswordVisibility,
+                              onPressed:
+                                  viewModel.toggleConfirmPasswordVisibility,
                             ),
                           ),
                           const SizedBox(height: 40),
@@ -183,15 +209,25 @@ class RegisterView extends StatelessWidget {
                           const SizedBox(height: 24),
 
                           buildLabel("Nama Toko"),
-                          buildTextField("Masukkan nama toko Anda", controller: viewModel.storeNameController),
+                          buildTextField(
+                            "Masukkan nama toko Anda",
+                            controller: viewModel.storeNameController,
+                          ),
                           const SizedBox(height: 20),
 
                           buildLabel("Alamat Toko"),
-                          buildTextField("Masukkan alamat toko Anda", controller: viewModel.storeAddressController),
+                          buildTextField(
+                            "Masukkan alamat toko Anda",
+                            controller: viewModel.storeAddressController,
+                          ),
                           const SizedBox(height: 20),
 
                           buildLabel("No Telepon Toko"),
-                          buildTextField("Masukkan no telepon toko Anda", controller: viewModel.storePhoneController, type: TextInputType.phone),
+                          buildTextField(
+                            "Masukkan no telepon toko Anda",
+                            controller: viewModel.storePhoneController,
+                            type: TextInputType.phone,
+                          ),
                           const SizedBox(height: 40),
 
                           // Button
@@ -202,24 +238,35 @@ class RegisterView extends StatelessWidget {
                               onPressed: viewModel.isLoading
                                   ? null
                                   : () async {
-                                      final success = await viewModel.register();
+                                      final success = await viewModel
+                                          .register();
                                       if (success && context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Registrasi berhasil! Silakan login.'), backgroundColor: Colors.green),
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Registrasi berhasil! Silakan login.',
+                                            ),
+                                            backgroundColor: Colors.green,
+                                          ),
                                         );
                                         viewModel.navigateToLogin(context);
                                       }
                                     },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
-                                disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                                disabledBackgroundColor: AppColors.primary
+                                    .withOpacity(0.6),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                               ),
                               child: viewModel.isLoading
-                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
                                   : const Text(
                                       "DAFTAR",
                                       style: TextStyle(
@@ -283,7 +330,8 @@ class RegisterView extends StatelessWidget {
     );
   }
 
-  Widget buildTextField(String hint, {
+  Widget buildTextField(
+    String hint, {
     bool obscure = false,
     TextEditingController? controller,
     Widget? suffixIcon,
@@ -297,17 +345,22 @@ class RegisterView extends StatelessWidget {
         keyboardType: type,
         decoration: InputDecoration(
           hintText: hint,
-          suffixIcon: suffixIcon,
+          suffixIcon: suffixIcon != null
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: suffixIcon,
+                )
+              : null,
           hintStyle: const TextStyle(
             color: AppColors.darkGray,
             fontWeight: FontWeight.w700,
             fontSize: 18,
           ),
           filled: true,
-          fillColor: AppColors.white,
+          fillColor: AppColors.lightGray,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 18,
-            vertical: 14,
+            horizontal: 24,
+            vertical: 22,
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),

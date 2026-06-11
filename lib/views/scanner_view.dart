@@ -826,8 +826,8 @@ class _ScannerViewState extends State<ScannerView> {
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey[400], fontSize: 18),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+          horizontal: 24,
+          vertical: 20,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -1074,9 +1074,15 @@ class _ScannerViewState extends State<ScannerView> {
 
                                   if (context.mounted) {
                                     Navigator.pop(context);
-                                    final cartItemsCopy = List<_CartItem>.from(_cartItems);
+                                    final cartItemsCopy = List<_CartItem>.from(
+                                      _cartItems,
+                                    );
                                     setState(() => _cartItems.clear());
-                                    _showTransactionSuccess(transaction, effectivePaid, cartItemsCopy);
+                                    _showTransactionSuccess(
+                                      transaction,
+                                      effectivePaid,
+                                      cartItemsCopy,
+                                    );
                                   }
                                 } catch (e) {
                                   if (context.mounted) {
@@ -1138,7 +1144,11 @@ class _ScannerViewState extends State<ScannerView> {
     });
   }
 
-  void _showTransactionSuccess(Transaction transaction, double actualPaid, List<_CartItem> cartItems) {
+  void _showTransactionSuccess(
+    Transaction transaction,
+    double actualPaid,
+    List<_CartItem> cartItems,
+  ) {
     double kembalian = actualPaid - transaction.totalAmount;
     if (kembalian < 0) kembalian = 0;
 
@@ -1171,14 +1181,19 @@ class _ScannerViewState extends State<ScannerView> {
                   final profile = await _authService.getProfile();
                   await _printerHelper.printStrukBelanja(
                     namaToko: profile.store.businessName,
-                    alamatToko: profile.store.address ?? 'Alamat tidak tersedia',
+                    alamatToko:
+                        profile.store.address ?? 'Alamat tidak tersedia',
                     noTelpToko: profile.user.phone ?? '',
-                    items: cartItems.map((item) => {
-                      'name': item.product.name,
-                      'qty': item.quantity,
-                      'price': item.product.sellingPrice,
-                      'total': item.product.sellingPrice * item.quantity,
-                    }).toList(),
+                    items: cartItems
+                        .map(
+                          (item) => {
+                            'name': item.product.name,
+                            'qty': item.quantity,
+                            'price': item.product.sellingPrice,
+                            'total': item.product.sellingPrice * item.quantity,
+                          },
+                        )
+                        .toList(),
                     totalSemuanya: transaction.totalAmount,
                     uangBayar: actualPaid,
                     kembalian: kembalian,

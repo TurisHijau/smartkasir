@@ -146,7 +146,7 @@ class _SettingsContent extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 24),
 
                               // Manajemen Toko Section
                               const Padding(
@@ -157,7 +157,7 @@ class _SettingsContent extends StatelessWidget {
                                 child: Text(
                                   'Manajemen Toko',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.darkGray,
                                   ),
@@ -216,7 +216,7 @@ class _SettingsContent extends StatelessWidget {
                                 child: Text(
                                   'Pengaturan Perangkat',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.darkGray,
                                   ),
@@ -226,7 +226,7 @@ class _SettingsContent extends StatelessWidget {
                               _buildMenuTile(
                                 icon: Icons.print,
                                 title: 'Printer Struk',
-                                subtitle: viewModel.isPrinterConnected 
+                                subtitle: viewModel.isPrinterConnected
                                     ? 'Terhubung: ${viewModel.connectedPrinterName}'
                                     : 'Tidak ada koneksi',
                                 trailing: Row(
@@ -247,12 +247,15 @@ class _SettingsContent extends StatelessWidget {
                                         Icons.settings,
                                         color: AppColors.gray,
                                       ),
-                                      onPressed: () => _showPrinterDialog(context, viewModel),
+                                      onPressed: () => _showPrinterDialog(
+                                        context,
+                                        viewModel,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 8),
                               const Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 20),
                                 child: Text(
@@ -362,19 +365,19 @@ class _SettingsContent extends StatelessWidget {
     Widget? trailing,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 6,
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -382,12 +385,12 @@ class _SettingsContent extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.lightGray,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: AppColors.primary),
+                child: Icon(icon, color: AppColors.primary, size: 32),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -412,7 +415,7 @@ class _SettingsContent extends StatelessWidget {
                   ],
                 ),
               ),
-                trailing != null
+              trailing != null
                   ? trailing
                   : const Icon(Icons.chevron_right, color: AppColors.gray),
             ],
@@ -459,14 +462,19 @@ class _SettingsContent extends StatelessWidget {
                   if (vm.isScanningPrinter)
                     const Center(child: CircularProgressIndicator())
                   else if (vm.availableBluetoothDevices.isEmpty)
-                    const Center(child: Text('Tidak ada perangkat ditemukan.\nPastikan Bluetooth menyala.'))
+                    const Center(
+                      child: Text(
+                        'Tidak ada perangkat ditemukan.\nPastikan Bluetooth menyala.',
+                      ),
+                    )
                   else
                     Expanded(
                       child: ListView.builder(
                         itemCount: vm.availableBluetoothDevices.length,
                         itemBuilder: (context, index) {
                           final device = vm.availableBluetoothDevices[index];
-                          final isConnected = vm.connectedPrinterMac == device.macAdress;
+                          final isConnected =
+                              vm.connectedPrinterMac == device.macAdress;
                           return ListTile(
                             leading: const Icon(Icons.print),
                             title: Text(device.name),
@@ -474,11 +482,17 @@ class _SettingsContent extends StatelessWidget {
                             trailing: isConnected
                                 ? TextButton(
                                     onPressed: () => vm.disconnectPrinter(),
-                                    child: const Text('Putuskan', style: TextStyle(color: Colors.red)),
+                                    child: const Text(
+                                      'Putuskan',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                   )
                                 : ElevatedButton(
                                     onPressed: () {
-                                      vm.connectPrinter(device.macAdress, device.name);
+                                      vm.connectPrinter(
+                                        device.macAdress,
+                                        device.name,
+                                      );
                                       Navigator.pop(context);
                                     },
                                     child: const Text('Hubungkan'),
