@@ -71,7 +71,10 @@ class _TransactionContent extends StatelessWidget {
                           ),
                           filled: true,
                           fillColor: Colors.white,
-                          prefixIcon: const Icon(Icons.search, color: AppColors.gray),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: AppColors.gray,
+                          ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 14,
@@ -97,21 +100,21 @@ class _TransactionContent extends StatelessWidget {
                         child: viewModel.isLoading
                             ? const Center(child: CircularProgressIndicator())
                             : viewModel.errorMessage != null
-                                ? _buildErrorState(viewModel)
-                                : viewModel.transactions.isEmpty
-                                    ? const _EmptyTransactionState()
-                                    : RefreshIndicator(
-                                        onRefresh: viewModel.loadTransactions,
-                                        child: ListView.separated(
-                                          itemCount: viewModel.transactions.length,
-                                          separatorBuilder: (_, __) =>
-                                              const SizedBox(height: 14),
-                                          itemBuilder: (context, index) {
-                                            final tx = viewModel.transactions[index];
-                                            return _TransactionCard(tx: tx);
-                                          },
-                                        ),
-                                      ),
+                            ? _buildErrorState(viewModel)
+                            : viewModel.transactions.isEmpty
+                            ? const _EmptyTransactionState()
+                            : RefreshIndicator(
+                                onRefresh: viewModel.loadTransactions,
+                                child: ListView.separated(
+                                  itemCount: viewModel.transactions.length,
+                                  separatorBuilder: (_, __) =>
+                                      const SizedBox(height: 14),
+                                  itemBuilder: (context, index) {
+                                    final tx = viewModel.transactions[index];
+                                    return _TransactionCard(tx: tx);
+                                  },
+                                ),
+                              ),
                       ),
                     ],
                   ),
@@ -169,7 +172,10 @@ class _TransactionContent extends StatelessWidget {
           Text(
             viewModel.errorMessage ?? "Terjadi kesalahan",
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.darkGray, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              color: AppColors.darkGray,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -254,10 +260,6 @@ class _TransactionCard extends StatelessWidget {
           return AppColors.green;
         case PaymentMethod.QRIS:
           return AppColors.primary;
-        case PaymentMethod.DEBIT:
-          return Colors.purple;
-        case PaymentMethod.CREDIT:
-          return Colors.orange;
       }
     }
 
@@ -298,7 +300,8 @@ class _TransactionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    tx.transactionCode ?? "TX-${tx.id?.substring(0, 8) ?? 'UNKNOWN'}",
+                    tx.transactionCode ??
+                        "TX-${tx.id?.substring(0, 8) ?? 'UNKNOWN'}",
                     style: const TextStyle(
                       color: AppColors.primary,
                       fontSize: 15,
@@ -316,9 +319,14 @@ class _TransactionCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: getPaymentColor(tx.paymentMethod).withOpacity(0.15),
+                      color: getPaymentColor(
+                        tx.paymentMethod,
+                      ).withOpacity(0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -347,7 +355,10 @@ class _TransactionCard extends StatelessWidget {
     );
   }
 
-  void _showDetailBottomSheet(BuildContext context, TransactionViewModel viewModel) {
+  void _showDetailBottomSheet(
+    BuildContext context,
+    TransactionViewModel viewModel,
+  ) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -385,12 +396,25 @@ class _TransactionCard extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               _buildDetailRow("Kode Transaksi", tx.transactionCode ?? "-"),
-              _buildDetailRow("Waktu Transaksi", viewModel.formatDate(tx.transactionDate)),
+              _buildDetailRow(
+                "Waktu Transaksi",
+                viewModel.formatDate(tx.transactionDate),
+              ),
               _buildDetailRow("Metode Pembayaran", tx.paymentMethod.name),
               const Divider(height: 24),
-              _buildDetailRow("Total Belanja", "Rp${viewModel.formatRupiah(tx.totalAmount)}", isBold: true),
-              _buildDetailRow("Jumlah Bayar", "Rp${viewModel.formatRupiah(tx.amountPaid)}"),
-              _buildDetailRow("Kembalian", "Rp${viewModel.formatRupiah(tx.changeAmount)}"),
+              _buildDetailRow(
+                "Total Belanja",
+                "Rp${viewModel.formatRupiah(tx.totalAmount)}",
+                isBold: true,
+              ),
+              _buildDetailRow(
+                "Jumlah Bayar",
+                "Rp${viewModel.formatRupiah(tx.amountPaid)}",
+              ),
+              _buildDetailRow(
+                "Kembalian",
+                "Rp${viewModel.formatRupiah(tx.changeAmount)}",
+              ),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
