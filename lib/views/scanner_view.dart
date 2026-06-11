@@ -5,6 +5,8 @@ import 'package:smartkasir/models/transaction.dart';
 import 'package:smartkasir/services/product_service.dart';
 import 'package:smartkasir/services/transaction_service.dart';
 import 'package:smartkasir/utils/currency_input_formatter.dart';
+import 'package:smartkasir/utils/printer_helper.dart';
+import 'package:smartkasir/services/auth_service.dart';
 import 'package:smartkasir/views/settings_view.dart';
 import 'package:vibration/vibration.dart';
 import 'package:smartkasir/constants/app_colors.dart';
@@ -23,8 +25,10 @@ class _ScannerViewState extends State<ScannerView> {
   );
   final ProductService _productService = ProductService();
   final TransactionService _transactionService = TransactionService();
+  final PrinterHelper _printerHelper = PrinterHelper();
+  final AuthService _authService = AuthService();
 
-  bool _isCameraOn = false; // ← default mati
+  bool _isCameraOn = false;
   bool _isFlashOn = false;
   bool _isProcessingScan = false;
 
@@ -701,12 +705,12 @@ class _ScannerViewState extends State<ScannerView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _dialogFieldLabel('Kode Produk / Barcode'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     _dialogTextField(
                       controller: kodeController,
                       hint: 'Masukkan Kode Produk / Barcode',
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
                       height: 52,
@@ -804,7 +808,7 @@ class _ScannerViewState extends State<ScannerView> {
       style: const TextStyle(
         color: AppColors.primary,
         fontWeight: FontWeight.bold,
-        fontSize: 14,
+        fontSize: 18,
       ),
     );
   }
@@ -816,11 +820,11 @@ class _ScannerViewState extends State<ScannerView> {
   }) {
     return TextField(
       controller: controller,
-      style: const TextStyle(color: Colors.black87, fontSize: 14),
+      style: const TextStyle(color: Colors.black87, fontSize: 18),
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 18),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -1070,8 +1074,9 @@ class _ScannerViewState extends State<ScannerView> {
 
                                   if (context.mounted) {
                                     Navigator.pop(context);
+                                    final cartItemsCopy = List<_CartItem>.from(_cartItems);
                                     setState(() => _cartItems.clear());
-                                    _showTransactionSuccess(transaction);
+                                    _showTransactionSuccess(transaction, effectivePaid, cartItemsCopy);
                                   }
                                 } catch (e) {
                                   if (context.mounted) {
@@ -1133,7 +1138,10 @@ class _ScannerViewState extends State<ScannerView> {
     });
   }
 
-  void _showTransactionSuccess(Transaction transaction) {
+  void _showTransactionSuccess(Transaction transaction, double actualPaid, List<_CartItem> cartItems) {
+    double kembalian = actualPaid - transaction.totalAmount;
+    if (kembalian < 0) kembalian = 0;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1150,12 +1158,46 @@ class _ScannerViewState extends State<ScannerView> {
             const SizedBox(height: 12),
             Text('Kode: ${transaction.transactionCode ?? "-"}'),
             Text('Total: Rp${_formatRupiah(transaction.totalAmount)}'),
-            Text('Bayar: Rp${_formatRupiah(transaction.amountPaid)}'),
-            Text('Kembalian: Rp${_formatRupiah(transaction.changeAmount)}'),
+            Text('Bayar: Rp${_formatRupiah(actualPaid)}'),
+            Text('Kembalian: Rp${_formatRupiah(kembalian)}'),
             Text('Metode: ${transaction.paymentMethod.name}'),
           ],
         ),
         actions: [
+          if (_printerHelper.isConnected)
+            TextButton(
+              onPressed: () async {
+                try {
+                  final profile = await _authService.getProfile();
+                  await _printerHelper.printStrukBelanja(
+                    namaToko: profile.store.businessName,
+                    alamatToko: profile.store.address ?? 'Alamat tidak tersedia',
+                    noTelpToko: profile.user.phone ?? '',
+                    items: cartItems.map((item) => {
+                      'name': item.product.name,
+                      'qty': item.quantity,
+                      'price': item.product.sellingPrice,
+                      'total': item.product.sellingPrice * item.quantity,
+                    }).toList(),
+                    totalSemuanya: transaction.totalAmount,
+                    uangBayar: actualPaid,
+                    kembalian: kembalian,
+                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Mencetak struk...')),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Gagal mencetak struk: $e')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Cetak Struk'),
+            ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('OK'),

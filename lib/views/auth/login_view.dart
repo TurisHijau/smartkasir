@@ -127,18 +127,18 @@ class _LoginViewState extends State<LoginView> {
                               filled: true,
                               fillColor: AppColors.lightGray,
                               contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 16,
+                                horizontal: 24,
+                                vertical: 36,
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
                                   color: AppColors.darkGray,
                                   width: 2,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
                                   color: AppColors.primary,
                                   width: 2,
@@ -178,18 +178,18 @@ class _LoginViewState extends State<LoginView> {
                               filled: true,
                               fillColor: AppColors.lightGray,
                               contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 16,
+                                horizontal: 24,
+                                vertical: 36,
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
                                   color: AppColors.darkGray,
                                   width: 2,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
                                   color: AppColors.primary,
                                   width: 2,
@@ -216,7 +216,8 @@ class _LoginViewState extends State<LoginView> {
                                     },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
-                                disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                                disabledBackgroundColor: AppColors.primary
+                                    .withOpacity(0.6),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),

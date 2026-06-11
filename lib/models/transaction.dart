@@ -1,4 +1,4 @@
-enum PaymentMethod { CASH, QRIS, DEBIT, CREDIT }
+enum PaymentMethod { CASH, QRIS }
 
 class Transaction {
   final String? id;
@@ -50,10 +50,7 @@ class TransactionItemRequest {
   TransactionItemRequest({required this.productId, required this.quantity});
 
   Map<String, dynamic> toJson() {
-    return {
-      'productId': productId,
-      'quantity': quantity,
-    };
+    return {'productId': productId, 'quantity': quantity};
   }
 }
 
