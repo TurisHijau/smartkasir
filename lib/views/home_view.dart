@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/viewmodels/home_viewmodel.dart';
@@ -24,10 +25,12 @@ class _HomeContent extends StatefulWidget {
 }
 
 class _HomeContentState extends State<_HomeContent>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+
+  late AnimationController _ringController;
 
   @override
   void initState() {
@@ -53,11 +56,26 @@ class _HomeContentState extends State<_HomeContent>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.read<HomeViewModel>().checkAuth(context);
     });
+
+    _ringController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _startRingLoop();
+  }
+
+  void _startRingLoop() async {
+    while (mounted) {
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) break;
+      await _ringController.forward(from: 0.0);
+    }
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _ringController.dispose();
     super.dispose();
   }
 
@@ -105,10 +123,19 @@ class _HomeContentState extends State<_HomeContent>
                     ),
 
                     // Icon keranjang
-                    Image.asset(
-                      'assets/images/logo.png',
-                      width: 230,
-                      height: 230,
+                    AnimatedBuilder(
+                      animation: _ringController,
+                      builder: (context, child) {
+                        final angle =
+                            math.sin(_ringController.value * math.pi * 2) *
+                            0.08;
+                        return Transform.rotate(angle: angle, child: child);
+                      },
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 230,
+                        height: 230,
+                      ),
                     ),
 
                     // Tombol

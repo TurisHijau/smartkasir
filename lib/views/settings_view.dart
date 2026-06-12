@@ -433,10 +433,11 @@ class _SettingsContent extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            final vm = Provider.of<SettingsViewModel>(context);
-            return Container(
+        return ChangeNotifierProvider.value(
+          value: viewModel,
+          child: Consumer<SettingsViewModel>(
+            builder: (context, vm, child) {
+              return Container(
               padding: const EdgeInsets.all(20),
               height: 400,
               child: Column(
@@ -504,7 +505,8 @@ class _SettingsContent extends StatelessWidget {
                 ],
               ),
             );
-          },
+            },
+          ),
         );
       },
     );
