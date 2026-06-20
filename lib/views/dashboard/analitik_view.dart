@@ -22,6 +22,12 @@ class _AnalitikViewState extends State<AnalitikView> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _vm.loadData(); // initial load
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: _vm,
@@ -321,7 +327,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Pendapatan 7 hari terakhir',
+            'Grafik Pendapatan',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -581,7 +587,7 @@ class _AnalitikViewState extends State<AnalitikView> {
                           ),
                         ),
                         Text(
-                          'Pegawai : ${t.cashier}',
+                          'Metode : ${t.cashier}',
                           style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.darkGray,
@@ -704,18 +710,31 @@ class LineChartPainter extends CustomPainter {
     final double minVal = 0;
     final double range = maxVal - minVal;
     final double chartH = size.height - 24;
+    final double effectiveMax = maxVal == 0 ? 1.0 : maxVal;
+    final double effectiveRange = range == 0 ? 1.0 : range;
 
     final yAxisPaint = Paint()
       ..color = const Color(0xFF9CA3AF)
       ..strokeWidth = 0.5;
     const textStyle = TextStyle(fontSize: 10, color: Color(0xFF9CA3AF));
 
-    for (final yVal in [0.0, 35000.0, 70000.0]) {
-      final dy = chartH - (yVal / maxVal) * chartH;
+    for (final yVal in [0.0, effectiveMax / 2, effectiveMax]) {
+      final dy = chartH - (yVal / effectiveMax) * chartH;
       canvas.drawLine(Offset(28, dy), Offset(size.width, dy), yAxisPaint);
+      
+      String labelText = '0';
+      if (yVal > 0) {
+        if (yVal >= 1000000) {
+          labelText = '${(yVal / 1000000).toStringAsFixed(1)}jt';
+        } else if (yVal >= 1000) {
+          labelText = '${(yVal / 1000).toStringAsFixed(0)}rb';
+        } else {
+          labelText = yVal.toInt().toString();
+        }
+      }
       final tp = TextPainter(
         text: TextSpan(
-          text: yVal == 0 ? '0' : '${(yVal / 1000).round()}000',
+          text: labelText,
           style: textStyle,
         ),
         textDirection: TextDirection.ltr,
@@ -725,14 +744,18 @@ class LineChartPainter extends CustomPainter {
 
     List<Offset> points = [];
     for (int i = 0; i < values.length; i++) {
-      final x = 28 + i * ((size.width - 28) / (values.length - 1));
-      final y = chartH - ((values[i] - minVal) / range) * chartH;
+      final double x = values.length > 1
+          ? 28 + i * ((size.width - 28) / (values.length - 1))
+          : size.width / 2;
+      final double y = chartH - ((values[i] - minVal) / effectiveRange) * chartH;
       points.add(Offset(x, y));
     }
 
     // Gradient fill
     final fillPath = Path()..moveTo(points.first.dx, chartH);
-    for (final p in points) fillPath.lineTo(p.dx, p.dy);
+    for (final p in points) {
+      fillPath.lineTo(p.dx, p.dy);
+    }
     fillPath.lineTo(points.last.dx, chartH);
     fillPath.close();
     canvas.drawPath(
@@ -750,8 +773,9 @@ class LineChartPainter extends CustomPainter {
 
     // Line
     final linePath = Path()..moveTo(points.first.dx, points.first.dy);
-    for (int i = 1; i < points.length; i++)
+    for (int i = 1; i < points.length; i++) {
       linePath.lineTo(points[i].dx, points[i].dy);
+    }
     canvas.drawPath(
       linePath,
       Paint()
@@ -777,7 +801,9 @@ class LineChartPainter extends CustomPainter {
 
     // X labels
     for (int i = 0; i < labels.length; i++) {
-      final x = 28 + i * ((size.width - 28) / (labels.length - 1));
+      final double x = labels.length > 1
+          ? 28 + i * ((size.width - 28) / (labels.length - 1))
+          : size.width / 2;
       final tp = TextPainter(
         text: TextSpan(text: labels[i], style: textStyle),
         textDirection: TextDirection.ltr,

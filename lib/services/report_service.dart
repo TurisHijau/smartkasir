@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:smartkasir/models/report.dart';
 import 'package:smartkasir/services/api_client.dart';
 
@@ -40,5 +41,15 @@ class ReportService {
       return data.map((json) => TopProductDTO.fromJson(json)).toList();
     }
     throw Exception("Gagal memuat produk terlaris: ${response.statusCode}");
+  }
+
+  /// Get unified dashboard report data for a specific period.
+  Future<DashboardModel> getDashboard(String period) async {
+    final response = await _api.get('/reports/dashboard', queryParams: {'period': period});
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return DashboardModel.fromJson(data);
+    }
+    throw Exception("Gagal memuat dashboard: ${response.statusCode}");
   }
 }

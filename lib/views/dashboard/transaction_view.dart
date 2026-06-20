@@ -251,13 +251,9 @@ class _TransactionCard extends StatelessWidget {
     Color getPaymentColor(PaymentMethod method) {
       switch (method) {
         case PaymentMethod.CASH:
-          return AppColors.green;
+          return AppColors.secondary;
         case PaymentMethod.QRIS:
           return AppColors.primary;
-        case PaymentMethod.DEBIT:
-          return Colors.purple;
-        case PaymentMethod.CREDIT:
-          return Colors.orange;
       }
     }
 

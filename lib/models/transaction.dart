@@ -1,4 +1,4 @@
-enum PaymentMethod { CASH, QRIS, DEBIT, CREDIT }
+enum PaymentMethod { CASH, QRIS }
 
 class Transaction {
   final String? id;
