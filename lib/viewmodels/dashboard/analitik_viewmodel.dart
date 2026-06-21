@@ -64,17 +64,13 @@ class TopProductItem {
 class PaymentMethodData {
   final int cash;
   final int qris;
-  final int debit;
-  final int credit;
 
   const PaymentMethodData({
     required this.cash,
     required this.qris,
-    this.debit = 0,
-    this.credit = 0,
   });
 
-  int get total => cash + qris + debit + credit;
+  int get total => cash + qris;
   double get cashRatio => total > 0 ? cash / total : 0;
   double get qrisRatio => total > 0 ? qris / total : 0;
 }
@@ -152,6 +148,19 @@ class AnalitikViewModel extends ChangeNotifier {
     loadData();
   }
 
+  String get _periodString {
+    switch (_selectedPeriod) {
+      case 0:
+        return 'daily';
+      case 1:
+        return 'weekly';
+      case 2:
+        return 'monthly';
+      default:
+        return 'daily';
+    }
+  }
+
   void returnToSettings(BuildContext context) {
     Navigator.pop(context);
   }
@@ -162,36 +171,38 @@ class AnalitikViewModel extends ChangeNotifier {
       errorMessage = null;
       notifyListeners();
 
-      final now = DateTime.now();
-      final todayStr = _formatDate(now);
+      final period = _periodString;
 
       // Load data in parallel
       final results = await Future.wait([
-        _reportService.getDailySales(date: todayStr).catchError((_) => <String, dynamic>{}),
+        _reportService.getDashboard(period),
         _transactionService.getAll().catchError((_) => <Transaction>[]),
         _productService.getAll().catchError((_) => <Product>[]),
-        _reportService.getTopProducts(
-              startDate: _formatDate(now.subtract(const Duration(days: 30))),
-              endDate: todayStr,
-            ).catchError((_) => <TopProductDTO>[]),
-        _reportService.getMonthlySales(month: now.month, year: now.year).catchError((_) => <String, dynamic>{}),
-        _authService.getProfile().catchError((_) => null),
+        _authService.getProfile().then<AuthResponse?>((val) => val, onError: (_) => null),
       ]);
 
-      final dailySales = results[0] as Map<String, dynamic>;
+      final dashboardData = results[0] as DashboardModel;
       final transactions = results[1] as List<Transaction>;
       final products = results[2] as List<Product>;
-      final topProductsData = results[3] as List<TopProductDTO>;
-      final monthlySales = results[4] as Map<String, dynamic>;
-      final profile = results[5] as AuthResponse?;
+      final profile = results[3] as AuthResponse?;
 
       if (profile != null) {
         storeName = profile.store.businessName.toUpperCase();
       }
 
       // ── Stat cards ──
-      final revenue = (dailySales['totalRevenue'] ?? 0).toDouble();
-      final txCount = (dailySales['transactionCount'] ?? 0);
+      // 
+      Color getBadgeColor(int growth) {
+        return growth >= 0 ?  AppColors.green : AppColors.red; 
+      }
+      
+      Color getBadgeBgColor(int growth) {
+        return growth >= 0 ? AppColors.lightGreen : AppColors.lightRed;
+      }
+      final revenue = dashboardData.summary.revenue;
+      final revenueChange = dashboardData.summary.revenueChange;
+      final txCount = dashboardData.summary.transactionCount;
+      final txCountChange = dashboardData.summary.transactionCountChange;
 
       String formatRevenue(double val) {
         if (val >= 1000000) {
@@ -205,74 +216,50 @@ class AnalitikViewModel extends ChangeNotifier {
         StatCardData(
           label: 'Pendapatan',
           value: formatRevenue(revenue),
-          badge: 'Hari ini',
-          badgeColor: AppColors.green,
-          badgeBg: AppColors.lightGreen,
+          badge: '$revenueChange %',
+          badgeColor: getBadgeColor(revenueChange),
+          badgeBg: getBadgeBgColor(revenueChange),
         ),
         StatCardData(
           label: 'Transaksi',
           value: '$txCount',
-          badge: '$txCount transaksi',
-          badgeColor: const Color(0xFF22C55E),
-          badgeBg: const Color(0xFFDCFCE7),
+          badge: '$txCountChange %',
+          badgeColor: getBadgeColor(txCountChange),
+          badgeBg: getBadgeBgColor(txCountChange),
         ),
       ];
 
-      // Calculate products sold today
-      final todayTx = transactions.where((t) {
-        if (t.transactionDate == null) return false;
-        return t.transactionDate!.year == now.year &&
-            t.transactionDate!.month == now.month &&
-            t.transactionDate!.day == now.day;
-      }).toList();
-
-      final avgTransaction = todayTx.isNotEmpty
-          ? todayTx.fold<double>(0, (s, t) => s + t.totalAmount) /
-                todayTx.length
-          : 0.0;
+      final avgTransaction = dashboardData.summary.avgTransaction;
+      final avgTransactionChange = dashboardData.summary.avgTransactionChange;
+      final netProfit = dashboardData.summary.netProfit;
+      final netProfitChange = dashboardData.summary.netProfitChange;
 
       statCardsRow2 = [
         StatCardData(
           label: 'Rata - Rata',
           value: formatRevenue(avgTransaction),
-          badge: 'Per transaksi',
-          badgeColor: const Color(0xFF22C55E),
-          badgeBg: const Color(0xFFDCFCE7),
+          badge: '$avgTransactionChange %',
+          badgeColor: getBadgeColor(avgTransactionChange),
+          badgeBg: getBadgeBgColor(avgTransactionChange),
         ),
         StatCardData(
-          label: 'Total Produk',
-          value: '${products.length}',
-          badge: '${products.where((p) => p.stock < 20).length} stok rendah',
-          badgeColor: AppColors.red,
-          badgeBg: AppColors.lightRed,
+          label: 'Laba Bersih',
+          value: '$netProfit',
+          badge: '$netProfitChange %',
+          badgeColor: getBadgeColor(netProfitChange),
+          badgeBg: getBadgeBgColor(netProfitChange),
         ),
       ];
 
-      // ── Revenue chart (last 7 days) ──
-      chartDays = [];
-      chartValues = [];
-      final dayLabels = ['min', 'sen', 'sel', 'rab', 'kam', 'jum', 'sab'];
+      // ── Revenue chart ──
+      chartDays = dashboardData.salesChart.map((e) => e.label).toList();
+      chartValues = dashboardData.salesChart.map((e) => e.value).toList();
 
-      // Fetch 7 hari secara parallel
-      final dailyFutures = List.generate(7, (i) {
-        final day = now.subtract(Duration(days: 6 - i));
-        return _reportService
-            .getDailySales(date: _formatDate(day))
-            .catchError((_) => <String, dynamic>{});
-      });
-
-      final dailyResults = await Future.wait(dailyFutures);
-
-      for (int i = 0; i < 7; i++) {
-        final day = now.subtract(Duration(days: 6 - i));
-        final data = dailyResults[i] as Map<String, dynamic>;
-        chartDays.add(dayLabels[day.weekday % 7]);
-        chartValues.add((data['totalRevenue'] ?? 0).toDouble());
-      }
-
-      // Prevent division by zero
-      if (chartValues.every((v) => v == 0)) {
-        chartValues = List.filled(7, 1.0);
+      if (chartValues.isEmpty) {
+        chartDays = ['Data'];
+        chartValues = [1.0];
+      } else if (chartValues.every((v) => v == 0)) {
+        chartValues = List.filled(chartValues.length, 1.0);
       }
 
       // ── Payment method breakdown ──
@@ -286,7 +273,7 @@ class AnalitikViewModel extends ChangeNotifier {
       }
       paymentMethod = PaymentMethodData(
         cash: cashCount,
-        qris: qrisCount
+        qris: qrisCount,
       );
 
       // ── Low stock ──
@@ -310,7 +297,7 @@ class AnalitikViewModel extends ChangeNotifier {
         return bDate.compareTo(aDate);
       });
       recentTransactions = sortedTx.take(5).map((t) {
-        return TransaksiItem(
+        return TransaksiItem(   
           items: t.transactionCode ?? '-',
           cashier: t.paymentMethod.name,
           amount: 'Rp${_formatRupiah(t.totalAmount)}',
@@ -318,8 +305,8 @@ class AnalitikViewModel extends ChangeNotifier {
       }).toList();
 
       // ── Top products ──
-      topProducts = topProductsData.take(10).map((tp) {
-        return TopProductItem(name: tp.productName, pcs: tp.quantitySold);
+      topProducts = dashboardData.topProducts.take(10).map((tp) {
+        return TopProductItem(name: tp.productName, pcs: tp.totalQuantity);
       }).toList();
     } catch (e) {
       errorMessage = e.toString().replaceAll("Exception: ", "");
@@ -327,10 +314,6 @@ class AnalitikViewModel extends ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
   String _formatRupiah(double value) {
