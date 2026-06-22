@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/viewmodels/home_viewmodel.dart';
@@ -23,13 +24,59 @@ class _HomeContent extends StatefulWidget {
   State<_HomeContent> createState() => _HomeContentState();
 }
 
-class _HomeContentState extends State<_HomeContent> {
+class _HomeContentState extends State<_HomeContent>
+    with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  late AnimationController _ringController;
+
   @override
   void initState() {
     super.initState();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutQuart),
+    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0.0, 0.15), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutQuart,
+          ),
+        );
+
+    _animationController.forward();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<HomeViewModel>().checkAuth(context);
+      if (mounted) context.read<HomeViewModel>().checkAuth(context);
     });
+
+    _ringController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _startRingLoop();
+  }
+
+  void _startRingLoop() async {
+    while (mounted) {
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) break;
+      await _ringController.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _ringController.dispose();
+    super.dispose();
   }
 
   @override
@@ -40,139 +87,123 @@ class _HomeContentState extends State<_HomeContent> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.tertiary,
-                  AppColors.primary,
-                  AppColors.secondary,
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-          Positioned(
-            left: -270,
-            bottom: -100,
-            child: Opacity(
-              opacity: 0.20,
-              child: ImageFiltered(
-                imageFilter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  width: 650,
-                  height: 650,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-          ),
+          Image.asset('assets/images/background.png', fit: BoxFit.cover),
           SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                const SizedBox(height: 1),
-
-                // Judul
-                const Column(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "SMARTKASIR",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 45,
-                        fontWeight: FontWeight.w900,
+                    // Judul
+                    const Padding(
+                      padding: EdgeInsets.only(top: 60.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            "SMARTKASIR",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 40,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "Bisnis Pintar, Mulai dari Sini.",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Text(
-                      "Bisnis Pintar, Mulai dari Sini.",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 22,
+
+                    // Icon keranjang
+                    AnimatedBuilder(
+                      animation: _ringController,
+                      builder: (context, child) {
+                        final angle =
+                            math.sin(_ringController.value * math.pi * 2) *
+                            0.08;
+                        return Transform.rotate(angle: angle, child: child);
+                      },
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 230,
+                        height: 230,
                       ),
                     ),
-                    SizedBox(height: 15),
+
+                    // Tombol
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30,
+                        vertical: 40,
+                      ),
+                      child: Column(
+                        children: [
+                          // Tombol MASUK
+                          SizedBox(
+                            width: double.infinity,
+                            height: 55,
+                            child: ElevatedButton(
+                              onPressed: () =>
+                                  viewModel.navigateToLogin(context),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.lightGray,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              child: const Text(
+                                "MASUK",
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          // Tombol DAFTAR TOKO
+                          SizedBox(
+                            width: double.infinity,
+                            height: 55,
+                            child: OutlinedButton(
+                              onPressed: () =>
+                                  viewModel.navigateToRegister(context),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                  color: AppColors.white,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              child: const Text(
+                                "DAFTAR TOKO",
+                                style: TextStyle(
+                                  color: AppColors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-
-                // Icon keranjang
-                Column(
-                  children: [
-                    Image.asset(
-                      'assets/images/logo.png',
-                      width: 230,
-                      height: 230,
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-
-                // Tombol
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 30,
-                    vertical: 40,
-                  ),
-                  child: Column(
-                    children: [
-                      // Tombol MASUK
-                      SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: ElevatedButton(
-                          onPressed: () => viewModel.navigateToLogin(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.lightGray,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: const Text(
-                            "MASUK",
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      // Tombol DAFTAR TOKO
-                      SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: OutlinedButton(
-                          onPressed: () =>
-                              viewModel.navigateToRegister(context),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: AppColors.white,
-                              width: 1.5,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: const Text(
-                            "DAFTAR TOKO",
-                            style: TextStyle(
-                              color: AppColors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],

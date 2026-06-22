@@ -8,6 +8,12 @@ class LoginViewmodel extends ChangeNotifier {
 
   bool loading = false;
   String? errorMessage;
+  bool obscurePassword = true;
+
+  void togglePasswordVisibility() {
+    obscurePassword = !obscurePassword;
+    notifyListeners();
+  }
 
   Future<void> login(
     BuildContext context,

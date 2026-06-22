@@ -127,18 +127,18 @@ class _LoginViewState extends State<LoginView> {
                               filled: true,
                               fillColor: AppColors.lightGray,
                               contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 16,
+                                horizontal: 24,
+                                vertical: 22,
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(16),
                                 borderSide: const BorderSide(
                                   color: AppColors.darkGray,
                                   width: 2,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(16),
                                 borderSide: const BorderSide(
                                   color: AppColors.primary,
                                   width: 2,
@@ -167,9 +167,21 @@ class _LoginViewState extends State<LoginView> {
                           // Password Field
                           TextField(
                             controller: passwordController,
-                            obscureText: true,
+                            obscureText: viewModel.obscurePassword,
                             decoration: InputDecoration(
                               hintText: "Masukkan password Anda",
+                              suffixIcon: Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: IconButton(
+                                  icon: Icon(
+                                    viewModel.obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                  ),
+                                  color: AppColors.gray,
+                                  onPressed: viewModel.togglePasswordVisibility,
+                                ),
+                              ),
                               hintStyle: const TextStyle(
                                 color: AppColors.darkGray,
                                 fontWeight: FontWeight.w600,
@@ -178,18 +190,18 @@ class _LoginViewState extends State<LoginView> {
                               filled: true,
                               fillColor: AppColors.lightGray,
                               contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 16,
+                                horizontal: 24,
+                                vertical: 22,
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(16),
                                 borderSide: const BorderSide(
                                   color: AppColors.darkGray,
                                   width: 2,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(16),
                                 borderSide: const BorderSide(
                                   color: AppColors.primary,
                                   width: 2,
@@ -216,7 +228,8 @@ class _LoginViewState extends State<LoginView> {
                                     },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
-                                disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                                disabledBackgroundColor: AppColors.primary
+                                    .withOpacity(0.6),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),

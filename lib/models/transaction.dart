@@ -50,10 +50,7 @@ class TransactionItemRequest {
   TransactionItemRequest({required this.productId, required this.quantity});
 
   Map<String, dynamic> toJson() {
-    return {
-      'productId': productId,
-      'quantity': quantity,
-    };
+    return {'productId': productId, 'quantity': quantity};
   }
 }
 
