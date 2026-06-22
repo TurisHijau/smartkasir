@@ -59,7 +59,7 @@ class _SettingsContent extends StatelessWidget {
                   ),
                   child: viewModel.isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : viewModel.errorMessage != null
+                      : viewModel.profileData == null
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -71,7 +71,7 @@ class _SettingsContent extends StatelessWidget {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                viewModel.errorMessage!,
+                                viewModel.errorMessage ?? 'Gagal memuat profil',
                                 style: const TextStyle(
                                   color: AppColors.darkGray,
                                 ),

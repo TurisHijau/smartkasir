@@ -200,6 +200,13 @@ class _ScannerViewState extends State<ScannerView> {
                     },
                   ),
                   const SizedBox(height: 12),
+                  _overlayButton(
+                    icon: _isCameraOn
+                        ? Icons.camera_alt_outlined
+                        : Icons.no_photography_outlined,
+                    onTap: _toggleCamera,
+                  ),
+                  if (_isCameraOn) const SizedBox(height: 12),
                   if (_isCameraOn)
                     _overlayButton(
                       icon: _isFlashOn
@@ -210,13 +217,6 @@ class _ScannerViewState extends State<ScannerView> {
                         _scannerController.toggleTorch();
                       },
                     ),
-                  if (_isCameraOn) const SizedBox(height: 12),
-                  _overlayButton(
-                    icon: _isCameraOn
-                        ? Icons.camera_alt_outlined
-                        : Icons.no_photography_outlined,
-                    onTap: _toggleCamera,
-                  ),
                 ],
               ),
             ),
@@ -690,31 +690,38 @@ class _ScannerViewState extends State<ScannerView> {
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+        builder: (context, setDialogState) => AnimatedPadding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _dialogFieldLabel('Kode Produk / Barcode'),
-                    const SizedBox(height: 12),
-                    _dialogTextField(
-                      controller: kodeController,
-                      hint: 'Masukkan Kode Produk / Barcode',
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          child: Dialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _dialogFieldLabel('Kode Produk / Barcode'),
+                      const SizedBox(height: 12),
+                      _dialogTextField(
+                        controller: kodeController,
+                        hint: 'Masukkan Kode Produk / Barcode',
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
                         onPressed: isSearching
                             ? null
                             : () async {
@@ -786,16 +793,17 @@ class _ScannerViewState extends State<ScannerView> {
                 ),
               ),
 
-              // TOMBOL CLOSE (XMARK)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Colors.grey, size: 22),
+                // TOMBOL CLOSE (XMARK)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, color: Colors.grey, size: 22),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

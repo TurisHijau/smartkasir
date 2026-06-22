@@ -23,8 +23,17 @@ class AuthService {
       }
       return token;
     } else {
-      final body = response.body;
-      throw Exception("Login gagal: ${response.statusCode} - $body");
+      try {
+        final body = jsonDecode(response.body);
+        final msg = body["message"] as String?;
+        if (response.statusCode == 401) {
+          throw Exception("Username atau password salah");
+        }
+        throw Exception(msg ?? "Login gagal, coba lagi");
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception("Login gagal, coba lagi");
+      }
     }
   }
 
