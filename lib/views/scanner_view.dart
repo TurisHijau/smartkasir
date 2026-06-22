@@ -690,14 +690,15 @@ class _ScannerViewState extends State<ScannerView> {
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AnimatedPadding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          duration: const Duration(milliseconds: 150),
-          curve: Curves.easeOut,
-          child: Dialog(
-            insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        builder: (context, setDialogState) {
+          final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
+          return Dialog(
+            insetPadding: EdgeInsets.fromLTRB(
+              24,
+              24,
+              24,
+              24 + keyboardHeight,
+            ),
             backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
@@ -713,85 +714,110 @@ class _ScannerViewState extends State<ScannerView> {
                     children: [
                       _dialogFieldLabel('Kode Produk / Barcode'),
                       const SizedBox(height: 12),
-                      _dialogTextField(
+                      TextField(
                         controller: kodeController,
-                        hint: 'Masukkan Kode Produk / Barcode',
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton(
-                        onPressed: isSearching
-                            ? null
-                            : () async {
-                                final barcode = kodeController.text.trim();
-                                if (barcode.isEmpty) return;
-
-                                setDialogState(() => isSearching = true);
-                                try {
-                                  final product = await _productService
-                                      .findByBarcode(barcode);
-                                  if (product != null && context.mounted) {
-                                    _addProductToCart(product);
-                                    Navigator.pop(context);
-                                    _showBarcodeSnackBar(
-                                      'Produk "${product.name}" ditambahkan',
-                                    );
-                                  } else if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Produk tidak ditemukan'),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error: $e'),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                } finally {
-                                  if (context.mounted) {
-                                    setDialogState(() => isSearching = false);
-                                  }
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: AppColors.primary
-                              .withOpacity(0.6),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                        style: const TextStyle(color: Colors.black87, fontSize: 16),
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.search,
+                        decoration: InputDecoration(
+                          hintText: 'Masukkan Kode Produk / Barcode',
+                          hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
                           ),
                         ),
-                        child: isSearching
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2.5,
-                                ),
-                              )
-                            : const Text(
-                                'Cari & Tambah Produk',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: isSearching
+                              ? null
+                              : () async {
+                                  final barcode = kodeController.text.trim();
+                                  if (barcode.isEmpty) return;
+
+                                  setDialogState(() => isSearching = true);
+                                  try {
+                                    final product = await _productService
+                                        .findByBarcode(barcode);
+                                    if (product != null && context.mounted) {
+                                      _addProductToCart(product);
+                                      Navigator.pop(context);
+                                      _showBarcodeSnackBar(
+                                        'Produk "${product.name}" ditambahkan',
+                                      );
+                                    } else if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Produk tidak ditemukan'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Error: $e'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  } finally {
+                                    if (context.mounted) {
+                                      setDialogState(() => isSearching = false);
+                                    }
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor:
+                                AppColors.primary.withValues(alpha: 0.6),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: isSearching
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : const Text(
+                                  'Cari & Tambah Produk',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
                 // TOMBOL CLOSE (XMARK)
                 Positioned(
@@ -804,11 +830,12 @@ class _ScannerViewState extends State<ScannerView> {
                 ),
               ],
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
+
 
   Widget _dialogFieldLabel(String label) {
     return Text(
