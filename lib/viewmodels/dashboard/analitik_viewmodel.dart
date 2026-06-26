@@ -9,7 +9,7 @@ import 'package:smartkasir/services/report_service.dart';
 import 'package:smartkasir/services/transaction_service.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 
-//  Model Classes 
+//  Model Classes
 
 class StatCardData {
   final String label;
@@ -55,27 +55,21 @@ class TopProductItem {
   final String name;
   final int pcs;
 
-  const TopProductItem({
-    required this.name, 
-    required this.pcs
-    });
+  const TopProductItem({required this.name, required this.pcs});
 }
 
 class PaymentMethodData {
   final int cash;
   final int qris;
 
-  const PaymentMethodData({
-    required this.cash,
-    required this.qris,
-  });
+  const PaymentMethodData({required this.cash, required this.qris});
 
   int get total => cash + qris;
   double get cashRatio => total > 0 ? cash / total : 0;
   double get qrisRatio => total > 0 ? qris / total : 0;
 }
 
-// ViewModel 
+// ViewModel
 
 class AnalitikViewModel extends ChangeNotifier {
   final ReportService _reportService = ReportService();
@@ -113,7 +107,6 @@ class AnalitikViewModel extends ChangeNotifier {
 
   // ── Top products ──
   List<TopProductItem> topProducts = [];
-
 
   AnalitikViewModel() {
     _initDate();
@@ -178,7 +171,10 @@ class AnalitikViewModel extends ChangeNotifier {
         _reportService.getDashboard(period),
         _transactionService.getAll().catchError((_) => <Transaction>[]),
         _productService.getAll().catchError((_) => <Product>[]),
-        _authService.getProfile().then<AuthResponse?>((val) => val, onError: (_) => null),
+        _authService.getProfile().then<AuthResponse?>(
+          (val) => val,
+          onError: (_) => null,
+        ),
       ]);
 
       final dashboardData = results[0] as DashboardModel;
@@ -191,14 +187,15 @@ class AnalitikViewModel extends ChangeNotifier {
       }
 
       // ── Stat cards ──
-      // 
+      //
       Color getBadgeColor(int growth) {
-        return growth >= 0 ?  AppColors.green : AppColors.red; 
+        return growth >= 0 ? AppColors.green : AppColors.red;
       }
-      
+
       Color getBadgeBgColor(int growth) {
         return growth >= 0 ? AppColors.lightGreen : AppColors.lightRed;
       }
+
       final revenue = dashboardData.summary.revenue;
       final revenueChange = dashboardData.summary.revenueChange;
       final txCount = dashboardData.summary.transactionCount;
@@ -214,7 +211,7 @@ class AnalitikViewModel extends ChangeNotifier {
 
       statCards = [
         StatCardData(
-          label: 'Pendapatan',
+          label: 'Total Pemasukan',
           value: formatRevenue(revenue),
           badge: '$revenueChange %',
           badgeColor: getBadgeColor(revenueChange),
@@ -243,8 +240,8 @@ class AnalitikViewModel extends ChangeNotifier {
           badgeBg: getBadgeBgColor(avgTransactionChange),
         ),
         StatCardData(
-          label: 'Laba Bersih',
-          value: '$netProfit',
+          label: 'Keuntungan',
+          value: formatRevenue(netProfit),
           badge: '$netProfitChange %',
           badgeColor: getBadgeColor(netProfitChange),
           badgeBg: getBadgeBgColor(netProfitChange),
@@ -271,10 +268,7 @@ class AnalitikViewModel extends ChangeNotifier {
           qrisCount++;
         }
       }
-      paymentMethod = PaymentMethodData(
-        cash: cashCount,
-        qris: qrisCount,
-      );
+      paymentMethod = PaymentMethodData(cash: cashCount, qris: qrisCount);
 
       // ── Low stock ──
       lowStockItems = products
@@ -284,7 +278,11 @@ class AnalitikViewModel extends ChangeNotifier {
             (p) => LowStockItem(
               name: p.name,
               count: '${p.stock} items',
-              color: p.stock < 5 ? AppColors.red : p.stock < 10 ? const Color(0xFFF97316) : const Color(0xFFFACC15),
+              color: p.stock < 5
+                  ? AppColors.red
+                  : p.stock < 10
+                  ? const Color(0xFFF97316)
+                  : const Color(0xFFFACC15),
             ),
           )
           .toList();
@@ -297,7 +295,7 @@ class AnalitikViewModel extends ChangeNotifier {
         return bDate.compareTo(aDate);
       });
       recentTransactions = sortedTx.take(5).map((t) {
-        return TransaksiItem(   
+        return TransaksiItem(
           items: t.transactionCode ?? '-',
           cashier: t.paymentMethod.name,
           amount: 'Rp${_formatRupiah(t.totalAmount)}',

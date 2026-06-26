@@ -12,7 +12,7 @@ class AnalitikView extends StatefulWidget {
 }
 
 class _AnalitikViewState extends State<AnalitikView> {
-  final _vm  = AnalitikViewModel();
+  final _vm = AnalitikViewModel();
   final vm = SettingsViewModel();
 
   @override
@@ -66,44 +66,60 @@ class _AnalitikViewState extends State<AnalitikView> {
                       child: _vm.isLoading
                           ? const Center(child: CircularProgressIndicator())
                           : _vm.errorMessage != null
-                              ? Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(Icons.error_outline, size: 48, color: AppColors.gray),
-                                      const SizedBox(height: 12),
-                                      Text(_vm.errorMessage!, style: const TextStyle(color: AppColors.darkGray)),
-                                      const SizedBox(height: 12),
-                                      ElevatedButton(
-                                        onPressed: () => _vm.loadData(),
-                                        child: const Text("Coba Lagi"),
-                                      ),
-                                    ],
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.error_outline,
+                                    size: 48,
+                                    color: AppColors.gray,
                                   ),
-                                )
-                              : SingleChildScrollView(
-                          padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildStoreInfo(),
-                              const SizedBox(height: 16),
-                              _buildStatCards(_vm.statCards),
-                              const SizedBox(height: 12),
-                              _buildStatCards(_vm.statCardsRow2),
-                              const SizedBox(height: 16),
-                              if (_vm.chartValues.isNotEmpty) _buildRevenueChart(),
-                              if (_vm.chartValues.isNotEmpty) const SizedBox(height: 16),
-                              _buildPaymentMethod(),
-                              const SizedBox(height: 16),
-                              _buildLowStock(),
-                              const SizedBox(height: 16),
-                              _buildRecentTransactions(),
-                              const SizedBox(height: 16),
-                              _buildTopProducts(),
-                            ],
-                          ),
-                        ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    _vm.errorMessage!,
+                                    style: const TextStyle(
+                                      color: AppColors.darkGray,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  ElevatedButton(
+                                    onPressed: () => _vm.loadData(),
+                                    child: const Text("Coba Lagi"),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : SingleChildScrollView(
+                              padding: const EdgeInsets.fromLTRB(
+                                20,
+                                30,
+                                20,
+                                30,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildStoreInfo(),
+                                  const SizedBox(height: 16),
+                                  _buildStatCards(_vm.statCards),
+                                  const SizedBox(height: 12),
+                                  _buildStatCards(_vm.statCardsRow2),
+                                  const SizedBox(height: 16),
+                                  if (_vm.chartValues.isNotEmpty)
+                                    _buildRevenueChart(),
+                                  if (_vm.chartValues.isNotEmpty)
+                                    const SizedBox(height: 16),
+                                  _buildPaymentMethod(),
+                                  const SizedBox(height: 16),
+                                  _buildLowStock(),
+                                  const SizedBox(height: 16),
+                                  _buildRecentTransactions(),
+                                  const SizedBox(height: 16),
+                                  _buildTopProducts(),
+                                ],
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -157,6 +173,7 @@ class _AnalitikViewState extends State<AnalitikView> {
   Widget _buildStoreInfo() {
     return Container(
       width: double.infinity,
+      margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -314,7 +331,7 @@ class _AnalitikViewState extends State<AnalitikView> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
@@ -334,7 +351,7 @@ class _AnalitikViewState extends State<AnalitikView> {
               color: AppColors.primary,
             ),
           ),
-          const SizedBox(height: 50),
+          const SizedBox(height: 32),
           SizedBox(
             height: 164,
             child: CustomPaint(
@@ -355,10 +372,10 @@ class _AnalitikViewState extends State<AnalitikView> {
   Widget _buildPaymentMethod() {
     final pm = _vm.paymentMethod;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
@@ -378,13 +395,13 @@ class _AnalitikViewState extends State<AnalitikView> {
               color: AppColors.primary,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
-                width: 120,
-                height: 120,
+                width: 140,
+                height: 140,
                 child: CustomPaint(
                   painter: DonutChartPainter(
                     values: [pm.cashRatio, pm.qrisRatio],
@@ -411,6 +428,7 @@ class _AnalitikViewState extends State<AnalitikView> {
               ),
             ],
           ),
+          const SizedBox(height: 4),
         ],
       ),
     );
@@ -453,10 +471,10 @@ class _AnalitikViewState extends State<AnalitikView> {
 
   Widget _buildLowStock() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
@@ -477,41 +495,72 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 12),
-          ..._vm.lowStockItems.map(
-            (item) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: item.color,
-                      shape: BoxShape.circle,
-                    ),
+          if (_vm.lowStockItems.isEmpty)
+            Center(
+              child: Column(
+                children: const [
+                  SizedBox(height: 32),
+                  Icon(
+                    Icons.inventory_2_outlined,
+                    size: 48,
+                    color: AppColors.gray,
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      item.name,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
+                  SizedBox(height: 12),
                   Text(
-                    item.count,
+                    'Semua stok aman',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: item.color,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.darkGray,
                     ),
                   ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Tidak ada produk yang hampir habis saat ini',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+                  ),
+                  SizedBox(height: 48),
                 ],
               ),
+            )
+          else
+            ..._vm.lowStockItems.map(
+              (item) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: item.color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      item.count,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: item.color,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
           const SizedBox(height: 8),
           GestureDetector(
             onTap: () => vm.navigateToProducts(context),
@@ -531,10 +580,10 @@ class _AnalitikViewState extends State<AnalitikView> {
 
   Widget _buildRecentTransactions() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
@@ -547,17 +596,17 @@ class _AnalitikViewState extends State<AnalitikView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Transaksi terakhir',
+            'Transaksi Terakhir',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppColors.primary,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           ..._vm.recentTransactions.map(
             (t) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Row(
                 children: [
                   Container(
@@ -581,7 +630,7 @@ class _AnalitikViewState extends State<AnalitikView> {
                         Text(
                           t.items,
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primary,
                           ),
@@ -589,7 +638,7 @@ class _AnalitikViewState extends State<AnalitikView> {
                         Text(
                           'Metode : ${t.cashier}',
                           style: const TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             color: AppColors.darkGray,
                           ),
                         ),
@@ -599,7 +648,7 @@ class _AnalitikViewState extends State<AnalitikView> {
                   Text(
                     t.amount,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.primary,
                     ),
@@ -608,13 +657,13 @@ class _AnalitikViewState extends State<AnalitikView> {
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 24),
           GestureDetector(
             onTap: () => vm.TransactionHistory(context),
             child: const Center(
               child: Text(
                 'Lihat Selengkapnya →',
-                style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+                style: TextStyle(fontSize: 14, color: AppColors.darkGray),
               ),
             ),
           ),
@@ -628,10 +677,10 @@ class _AnalitikViewState extends State<AnalitikView> {
   Widget _buildTopProducts() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
@@ -644,7 +693,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Produk Terlaris Hari Ini',
+            'Produk Terlaris',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -652,42 +701,75 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 12),
-          ..._vm.topProducts.asMap().entries.map(
-            (e) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 7),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 24,
-                    child: Text(
-                      '${e.key + 1}',
+          if (_vm.topProducts.isEmpty)
+            Center(
+              child: Column(
+                children: const [
+                  SizedBox(height: 32),
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 48,
+                    color: AppColors.gray,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Produk Kosong',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.darkGray,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Belum ada produk terlaris saat ini',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+                  ),
+                  SizedBox(height: 24),
+                ],
+              ),
+            )
+          else
+            ..._vm.topProducts.asMap().entries.map(
+              (e) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      child: Text(
+                        '${e.key + 1}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.darkGray,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        e.value.name,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.darkGray,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${e.value.pcs} pcs',
                       style: const TextStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         color: AppColors.darkGray,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      e.value.name,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '${e.value.pcs} pcs',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.darkGray,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -721,7 +803,7 @@ class LineChartPainter extends CustomPainter {
     for (final yVal in [0.0, effectiveMax / 2, effectiveMax]) {
       final dy = chartH - (yVal / effectiveMax) * chartH;
       canvas.drawLine(Offset(28, dy), Offset(size.width, dy), yAxisPaint);
-      
+
       String labelText = '0';
       if (yVal > 0) {
         if (yVal >= 1000000) {
@@ -733,10 +815,7 @@ class LineChartPainter extends CustomPainter {
         }
       }
       final tp = TextPainter(
-        text: TextSpan(
-          text: labelText,
-          style: textStyle,
-        ),
+        text: TextSpan(text: labelText, style: textStyle),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(0, dy - 6));
@@ -747,7 +826,8 @@ class LineChartPainter extends CustomPainter {
       final double x = values.length > 1
           ? 28 + i * ((size.width - 28) / (values.length - 1))
           : size.width / 2;
-      final double y = chartH - ((values[i] - minVal) / effectiveRange) * chartH;
+      final double y =
+          chartH - ((values[i] - minVal) / effectiveRange) * chartH;
       points.add(Offset(x, y));
     }
 
