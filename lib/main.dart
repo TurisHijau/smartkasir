@@ -39,17 +39,17 @@ class MainApp extends StatelessWidget {
               sliderTheme: const SliderThemeData(),
               useMaterial3: true,
             ),
-            darkTheme: ThemeData(
-              fontFamily: GoogleFonts.poppins().fontFamily,
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: themeService.seedColor,
-                brightness: Brightness.dark,
-                dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
-              ),
-              progressIndicatorTheme: const ProgressIndicatorThemeData(),
-              sliderTheme: const SliderThemeData(),
-              useMaterial3: true,
-            ),
+            // darkTheme: ThemeData(
+            //   fontFamily: GoogleFonts.poppins().fontFamily,
+            //   colorScheme: ColorScheme.fromSeed(
+            //     seedColor: themeService.seedColor,
+            //     brightness: Brightness.dark,
+            //     dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
+            //   ),
+            //   progressIndicatorTheme: const ProgressIndicatorThemeData(),
+            //   sliderTheme: const SliderThemeData(),
+            //   useMaterial3: true,
+            // ),
             home: HomeView(), // arahkan ke HomePage
           );
         },
