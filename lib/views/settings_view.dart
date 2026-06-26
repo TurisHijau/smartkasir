@@ -111,7 +111,7 @@ class _SettingsContent extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: 16),
                                     Text(
                                       viewModel.profileData != null
                                           ? viewModel
@@ -119,7 +119,7 @@ class _SettingsContent extends StatelessWidget {
                                                 .store
                                                 .businessName
                                                 .toUpperCase()
-                                          : 'TOKO',
+                                          : 'TOKO KU',
                                       style: const TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
@@ -128,6 +128,16 @@ class _SettingsContent extends StatelessWidget {
                                       textAlign: TextAlign.center,
                                     ),
                                     TextButton.icon(
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 2,
+                                        ),
+                                        minimumSize: const Size(0, 0),
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        foregroundColor: AppColors.primary,
+                                      ),
                                       onPressed: () =>
                                           viewModel.navigateToProfile(context),
                                       icon: const Icon(
@@ -147,7 +157,7 @@ class _SettingsContent extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 24),
 
                               // Manajemen Toko Section
                               const Text(
