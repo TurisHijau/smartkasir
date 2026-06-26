@@ -998,6 +998,7 @@ class _ScannerViewState extends State<ScannerView> {
     );
     final amountPaidController = TextEditingController();
     PaymentMethod selectedMethod = PaymentMethod.CASH;
+    String? paymentError;
     bool isProcessing = false;
 
     showModalBottomSheet(
@@ -1118,9 +1119,15 @@ class _ScannerViewState extends State<ScannerView> {
                       controller: amountPaidController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [CurrencyInputFormatter()],
+                      onChanged: (_) {
+                        if (paymentError != null) {
+                          setSheetState(() => paymentError = null);
+                        }
+                      },
                       decoration: InputDecoration(
                         labelText: 'Jumlah Bayar',
                         hintText: 'Masukkan jumlah uang',
+                        errorText: paymentError,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -1200,25 +1207,21 @@ class _ScannerViewState extends State<ScannerView> {
                             ? null
                             : () async {
                                 final rawText = amountPaidController.text
-                                    .replaceAll('.', '')
-                                    .replaceAll(',', '');
+                                    .replaceAll(RegExp(r'[^0-9]'), '');
                                 final paid = double.tryParse(rawText) ?? 0;
 
-                                if (paid < totalAmount &&
-                                    selectedMethod == PaymentMethod.CASH) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Jumlah bayar kurang!'),
-                                      backgroundColor: Colors.red,
-                                    ),
+                                if (selectedMethod == PaymentMethod.CASH &&
+                                    paid < totalAmount) {
+                                  setSheetState(
+                                    () => paymentError = 'Uang bayar kurang',
                                   );
                                   return;
                                 }
 
                                 final effectivePaid =
-                                    selectedMethod != PaymentMethod.CASH
-                                    ? totalAmount
-                                    : paid;
+                                    selectedMethod == PaymentMethod.CASH
+                                    ? paid
+                                    : totalAmount;
 
                                 setSheetState(() => isProcessing = true);
                                 try {
@@ -1321,70 +1324,153 @@ class _ScannerViewState extends State<ScannerView> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+        contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+        title: Column(
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 64),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.14),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.check_circle,
+                  color: AppColors.primary,
+                  size: 42,
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             const Text(
               'Transaksi Berhasil!',
+              textAlign: TextAlign.center,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            Text('Kode: ${transaction.transactionCode ?? "-"}'),
-            Text('Total: Rp${_formatRupiah(transaction.totalAmount)}'),
-            Text('Bayar: Rp${_formatRupiah(actualPaid)}'),
-            Text('Kembalian: Rp${_formatRupiah(kembalian)}'),
-            Text('Metode: ${transaction.paymentMethod.name}'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildSuccessRow('Kode', transaction.transactionCode ?? '-'),
+            const SizedBox(height: 10),
+            _buildSuccessRow(
+              'Total',
+              'Rp${_formatRupiah(transaction.totalAmount)}',
+            ),
+            const SizedBox(height: 8),
+            _buildSuccessRow('Bayar', 'Rp${_formatRupiah(actualPaid)}'),
+            const SizedBox(height: 8),
+            _buildSuccessRow('Kembalian', 'Rp${_formatRupiah(kembalian)}'),
+            const SizedBox(height: 8),
+            _buildSuccessRow('Metode', transaction.paymentMethod.name),
           ],
         ),
         actions: [
-          if (_printerHelper.isConnected)
-            TextButton(
-              onPressed: () async {
-                try {
-                  final profile = await _authService.getProfile();
-                  await _printerHelper.printStrukBelanja(
-                    namaToko: profile.store.businessName,
-                    alamatToko:
-                        profile.store.address ?? 'Alamat tidak tersedia',
-                    noTelpToko: profile.user.phone ?? '',
-                    items: cartItems
-                        .map(
-                          (item) => {
-                            'name': item.product.name,
-                            'qty': item.quantity,
-                            'price': item.product.sellingPrice,
-                            'total': item.product.sellingPrice * item.quantity,
-                          },
-                        )
-                        .toList(),
-                    totalSemuanya: transaction.totalAmount,
-                    uangBayar: actualPaid,
-                    kembalian: kembalian,
-                  );
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Mencetak struk...')),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Gagal mencetak struk: $e')),
-                    );
-                  }
-                }
-              },
-              child: const Text('Cetak Struk'),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: const Text(
+                'Selesai',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK'),
           ),
+          if (_printerHelper.isConnected) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  try {
+                    final profile = await _authService.getProfile();
+                    await _printerHelper.printStrukBelanja(
+                      namaToko: profile.store.businessName,
+                      alamatToko:
+                          profile.store.address ?? 'Alamat tidak tersedia',
+                      noTelpToko: profile.user.phone ?? '',
+                      items: cartItems
+                          .map(
+                            (item) => {
+                              'name': item.product.name,
+                              'qty': item.quantity,
+                              'price': item.product.sellingPrice,
+                              'total':
+                                  item.product.sellingPrice * item.quantity,
+                            },
+                          )
+                          .toList(),
+                      totalSemuanya: transaction.totalAmount,
+                      uangBayar: actualPaid,
+                      kembalian: kembalian,
+                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Mencetak struk...')),
+                      );
+                      Navigator.pop(ctx);
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Gagal mencetak struk: $e')),
+                      );
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryDark,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text(
+                  'Cetak Struk',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildSuccessRow(String label, String value) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            '$label',
+            style: const TextStyle(color: AppColors.gray, fontSize: 14),
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          ),
+        ),
+      ],
     );
   }
 
