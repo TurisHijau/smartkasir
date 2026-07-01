@@ -80,7 +80,7 @@ class RegisterView extends StatelessWidget {
                                     color: AppColors.primary,
                                   ),
                                 ),
-                                SizedBox(height: 5),
+                                SizedBox(height: 2),
                                 Text(
                                   "Buat akun untuk mengelola toko Anda",
                                   style: TextStyle(
@@ -228,12 +228,12 @@ class RegisterView extends StatelessWidget {
                             controller: viewModel.storePhoneController,
                             type: TextInputType.phone,
                           ),
-                          const SizedBox(height: 40),
+                          const SizedBox(height: 28),
 
                           // Button
                           SizedBox(
                             width: double.infinity,
-                            height: 58,
+                            height: 64,
                             child: ElevatedButton(
                               onPressed: viewModel.isLoading
                                   ? null
@@ -260,7 +260,7 @@ class RegisterView extends StatelessWidget {
                                     .withOpacity(0.6),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(28),
                                 ),
                               ),
                               child: viewModel.isLoading
@@ -278,7 +278,7 @@ class RegisterView extends StatelessWidget {
                             ),
                           ),
 
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 72),
 
                           // Login Text
                           Row(
@@ -360,14 +360,14 @@ class RegisterView extends StatelessWidget {
           fillColor: AppColors.lightGray,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 24,
-            vertical: 22,
+            vertical: 20,
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(28),
             borderSide: const BorderSide(color: AppColors.darkGray, width: 2),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(28),
             borderSide: const BorderSide(color: AppColors.primary, width: 2),
           ),
         ),

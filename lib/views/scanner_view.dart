@@ -68,11 +68,15 @@ class _ScannerViewState extends State<ScannerView> {
         } else if (mounted) {
           _showBarcodeSnackBar(
             'Produk dengan barcode "$rawValue" tidak ditemukan',
+            backgroundColor: Colors.red,
           );
         }
       } catch (e) {
         if (mounted) {
-          _showBarcodeSnackBar('Gagal mencari produk: $e');
+          _showBarcodeSnackBar(
+            'Gagal mencari produk: $e',
+            backgroundColor: Colors.red,
+          );
         }
       } finally {
         _isProcessingScan = false;
@@ -97,14 +101,24 @@ class _ScannerViewState extends State<ScannerView> {
     });
   }
 
-  void _showBarcodeSnackBar(String value) {
+  void _showBarcodeSnackBar(
+    String value, {
+    Color backgroundColor = AppColors.primary,
+    bool anchorToBottom = false,
+  }) {
+    // If caller wants to anchor to the bottom buttons area (e.g. after
+    // manual input), ignore the keyboard inset and use a fixed offset
+    // above the bottom area. Otherwise position above the keyboard.
+    final bottomInset = anchorToBottom
+        ? (MediaQuery.of(context).padding.bottom + 100)
+        : MediaQuery.of(context).viewInsets.bottom + 16;
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
             const Icon(Icons.qr_code_scanner, color: Colors.white, size: 20),
-            const SizedBox(width: 12),
+            const SizedBox(width: 12, height: 14),
             Expanded(
               child: Text(
                 value,
@@ -115,10 +129,10 @@ class _ScannerViewState extends State<ScannerView> {
             ),
           ],
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: backgroundColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        margin: EdgeInsets.fromLTRB(16, 0, 16, bottomInset),
         duration: const Duration(seconds: 3),
       ),
     );
@@ -130,6 +144,7 @@ class _ScannerViewState extends State<ScannerView> {
     final cameraHeight = screenHeight * 0.42;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body: Stack(
         children: [
@@ -200,6 +215,13 @@ class _ScannerViewState extends State<ScannerView> {
                     },
                   ),
                   const SizedBox(height: 12),
+                  _overlayButton(
+                    icon: _isCameraOn
+                        ? Icons.camera_alt_outlined
+                        : Icons.no_photography_outlined,
+                    onTap: _toggleCamera,
+                  ),
+                  if (_isCameraOn) const SizedBox(height: 12),
                   if (_isCameraOn)
                     _overlayButton(
                       icon: _isFlashOn
@@ -210,13 +232,6 @@ class _ScannerViewState extends State<ScannerView> {
                         _scannerController.toggleTorch();
                       },
                     ),
-                  if (_isCameraOn) const SizedBox(height: 12),
-                  _overlayButton(
-                    icon: _isCameraOn
-                        ? Icons.camera_alt_outlined
-                        : Icons.no_photography_outlined,
-                    onTap: _toggleCamera,
-                  ),
                 ],
               ),
             ),
@@ -418,7 +433,7 @@ class _ScannerViewState extends State<ScannerView> {
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -428,14 +443,14 @@ class _ScannerViewState extends State<ScannerView> {
               const Text(
                 'Barang yang dibeli',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: Colors.black54,
                 ),
               ),
               Text(
                 'Total $totalItems items',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -445,7 +460,7 @@ class _ScannerViewState extends State<ScannerView> {
               Text(
                 'Total Harga',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.grey[600],
                   letterSpacing: 0.5,
@@ -454,7 +469,7 @@ class _ScannerViewState extends State<ScannerView> {
               Text(
                 'Rp${_formatRupiah(totalHarga)}',
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.w900,
                   color: AppColors.primary,
                 ),
@@ -634,7 +649,7 @@ class _ScannerViewState extends State<ScannerView> {
               // Tombol Input Manual
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: _showInputManualSheet,
                   style: ElevatedButton.styleFrom(
@@ -642,7 +657,7 @@ class _ScannerViewState extends State<ScannerView> {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
                   child: const Text(
@@ -656,7 +671,7 @@ class _ScannerViewState extends State<ScannerView> {
               // Tombol Review Belanja
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: isEmpty ? null : _showReviewSheet,
                   style: ElevatedButton.styleFrom(
@@ -666,7 +681,7 @@ class _ScannerViewState extends State<ScannerView> {
                     disabledForegroundColor: Colors.white38,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
                   child: const Text(
@@ -686,118 +701,245 @@ class _ScannerViewState extends State<ScannerView> {
   void _showInputManualSheet() {
     final kodeController = TextEditingController();
     bool isSearching = false;
+    String? lookupError;
+    String? lookupSuccess;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _dialogFieldLabel('Kode Produk / Barcode'),
-                    const SizedBox(height: 12),
-                    _dialogTextField(
-                      controller: kodeController,
-                      hint: 'Masukkan Kode Produk / Barcode',
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: isSearching
-                            ? null
-                            : () async {
-                                final barcode = kodeController.text.trim();
-                                if (barcode.isEmpty) return;
-
-                                setDialogState(() => isSearching = true);
-                                try {
-                                  final product = await _productService
-                                      .findByBarcode(barcode);
-                                  if (product != null && context.mounted) {
-                                    _addProductToCart(product);
-                                    Navigator.pop(context);
-                                    _showBarcodeSnackBar(
-                                      'Produk "${product.name}" ditambahkan',
-                                    );
-                                  } else if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Produk tidak ditemukan'),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error: $e'),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                } finally {
-                                  if (context.mounted) {
-                                    setDialogState(() => isSearching = false);
-                                  }
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: AppColors.primary
-                              .withOpacity(0.6),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: isSearching
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2.5,
-                                ),
-                              )
-                            : const Text(
-                                'Cari & Tambah Produk',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+        builder: (context, setDialogState) {
+          final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+          return AnimatedPadding(
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOut,
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              bottom: keyboardHeight + 24,
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: Material(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _dialogFieldLabel('Kode Produk'),
+                              const SizedBox(height: 12),
+                              TextField(
+                                controller: kodeController,
+                                style: const TextStyle(
+                                  color: Colors.black87,
                                   fontSize: 16,
                                 ),
+                                keyboardType: TextInputType.text,
+                                textInputAction: TextInputAction.search,
+                                onChanged: (_) {
+                                  if (lookupError != null ||
+                                      lookupSuccess != null) {
+                                    setDialogState(() {
+                                      lookupError = null;
+                                      lookupSuccess = null;
+                                    });
+                                  }
+                                },
+                                decoration: InputDecoration(
+                                  hintText: 'Masukkan Kode Produk',
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 14,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 16,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey[300]!,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                    borderSide: const BorderSide(
+                                      color: AppColors.primary,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
                               ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                              if (lookupSuccess != null) ...[
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  height: 52,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.check_circle,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            lookupSuccess!,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ] else if (lookupError != null) ...[
+                                const SizedBox(height: 10),
+                                Text(
+                                  lookupError!,
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: ElevatedButton(
+                                  onPressed: isSearching
+                                      ? null
+                                      : () async {
+                                          final barcode = kodeController.text
+                                              .trim();
+                                          if (barcode.isEmpty) return;
 
-              // TOMBOL CLOSE (XMARK)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Colors.grey, size: 22),
+                                          setDialogState(() {
+                                            isSearching = true;
+                                            lookupError = null;
+                                          });
+                                          try {
+                                            final product =
+                                                await _productService
+                                                    .findByBarcode(barcode);
+                                            if (product != null &&
+                                                context.mounted) {
+                                              // Add immediately, show inline success attached
+                                              _addProductToCart(product);
+                                              setDialogState(() {
+                                                lookupSuccess =
+                                                    'Produk "${product.name}" ditambahkan';
+                                                isSearching = false;
+                                              });
+                                              await Future.delayed(
+                                                const Duration(
+                                                  milliseconds: 700,
+                                                ),
+                                              );
+                                              if (context.mounted)
+                                                Navigator.pop(context);
+                                            } else if (context.mounted) {
+                                              setDialogState(
+                                                () => lookupError =
+                                                    'Produk tidak ditemukan',
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              _showBarcodeSnackBar(
+                                                'Error: $e',
+                                                backgroundColor: Colors.red,
+                                              );
+                                            }
+                                          } finally {
+                                            if (context.mounted) {
+                                              setDialogState(
+                                                () => isSearching = false,
+                                              );
+                                            }
+                                          }
+                                        },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: AppColors.primary
+                                        .withValues(alpha: 0.6),
+                                    elevation: 0,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ),
+                                  child: isSearching
+                                      ? const SizedBox(
+                                          width: 22,
+                                          height: 22,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2.5,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Cari & Tambah Produk',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.grey,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -830,15 +972,15 @@ class _ScannerViewState extends State<ScannerView> {
           vertical: 20,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide(color: Colors.grey[300]!),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide(color: Colors.grey[300]!),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(30),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
@@ -856,6 +998,7 @@ class _ScannerViewState extends State<ScannerView> {
     );
     final amountPaidController = TextEditingController();
     PaymentMethod selectedMethod = PaymentMethod.CASH;
+    String? paymentError;
     bool isProcessing = false;
 
     showModalBottomSheet(
@@ -912,8 +1055,11 @@ class _ScannerViewState extends State<ScannerView> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: _cartItems.length,
-                      separatorBuilder: (_, __) =>
-                          Divider(color: Colors.grey[300]),
+                      separatorBuilder: (_, __) => const Divider(
+                        color: Color(0xFFEEEEEE),
+                        height: 1,
+                        thickness: 1,
+                      ),
                       itemBuilder: (_, i) {
                         final item = _cartItems[i];
                         return ListTile(
@@ -928,7 +1074,8 @@ class _ScannerViewState extends State<ScannerView> {
                           trailing: Text(
                             'Rp${_formatRupiah(item.product.sellingPrice * item.quantity)}',
                             style: const TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
                               color: AppColors.primary,
                             ),
                           ),
@@ -936,7 +1083,13 @@ class _ScannerViewState extends State<ScannerView> {
                       },
                     ),
 
-                    Divider(color: Colors.grey[400]),
+                    const Divider(
+                      color: Color(0xFFB0B0B0),
+                      height: 1,
+                      thickness: 1,
+                    ),
+
+                    const SizedBox(height: 8),
 
                     // Total row
                     Row(
@@ -959,58 +1112,22 @@ class _ScannerViewState extends State<ScannerView> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-
-                    // Payment method label
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Metode Pembayaran',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Payment method chips
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: PaymentMethod.values.map((method) {
-                          final isSelected = selectedMethod == method;
-                          return ChoiceChip(
-                            label: Text(method.name),
-                            selected: isSelected,
-                            selectedColor: AppColors.primary,
-                            labelStyle: TextStyle(
-                              color: isSelected
-                                  ? Colors.white
-                                  : AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            onSelected: (selected) {
-                              if (selected) {
-                                setSheetState(() => selectedMethod = method);
-                              }
-                            },
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 32),
 
                     // Amount paid field
                     TextField(
                       controller: amountPaidController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [CurrencyInputFormatter()],
+                      onChanged: (_) {
+                        if (paymentError != null) {
+                          setSheetState(() => paymentError = null);
+                        }
+                      },
                       decoration: InputDecoration(
                         labelText: 'Jumlah Bayar',
                         hintText: 'Masukkan jumlah uang',
+                        errorText: paymentError,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -1023,7 +1140,63 @@ class _ScannerViewState extends State<ScannerView> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+
+                    const SizedBox(height: 12),
+
+                    // Payment method label
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Metode Pembayaran',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Payment method buttons (simple buttons + text)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: PaymentMethod.values.map((method) {
+                          final isSelected = selectedMethod == method;
+                          return SizedBox(
+                            height: 40,
+                            child: ElevatedButton(
+                              onPressed: () =>
+                                  setSheetState(() => selectedMethod = method),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isSelected
+                                    ? AppColors.primary
+                                    : Colors.grey[200],
+                                foregroundColor: isSelected
+                                    ? Colors.white
+                                    : AppColors.primary,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
+                              ),
+                              child: Text(
+                                method.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 36),
 
                     // Process button
                     SizedBox(
@@ -1034,25 +1207,21 @@ class _ScannerViewState extends State<ScannerView> {
                             ? null
                             : () async {
                                 final rawText = amountPaidController.text
-                                    .replaceAll('.', '')
-                                    .replaceAll(',', '');
+                                    .replaceAll(RegExp(r'[^0-9]'), '');
                                 final paid = double.tryParse(rawText) ?? 0;
 
-                                if (paid < totalAmount &&
-                                    selectedMethod == PaymentMethod.CASH) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Jumlah bayar kurang!'),
-                                      backgroundColor: Colors.red,
-                                    ),
+                                if (selectedMethod == PaymentMethod.CASH &&
+                                    paid < totalAmount) {
+                                  setSheetState(
+                                    () => paymentError = 'Uang bayar kurang',
                                   );
                                   return;
                                 }
 
                                 final effectivePaid =
-                                    selectedMethod != PaymentMethod.CASH
-                                    ? totalAmount
-                                    : paid;
+                                    selectedMethod == PaymentMethod.CASH
+                                    ? paid
+                                    : totalAmount;
 
                                 setSheetState(() => isProcessing = true);
                                 try {
@@ -1155,70 +1324,153 @@ class _ScannerViewState extends State<ScannerView> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+        contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+        title: Column(
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 64),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.14),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.check_circle,
+                  color: AppColors.primary,
+                  size: 42,
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             const Text(
               'Transaksi Berhasil!',
+              textAlign: TextAlign.center,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            Text('Kode: ${transaction.transactionCode ?? "-"}'),
-            Text('Total: Rp${_formatRupiah(transaction.totalAmount)}'),
-            Text('Bayar: Rp${_formatRupiah(actualPaid)}'),
-            Text('Kembalian: Rp${_formatRupiah(kembalian)}'),
-            Text('Metode: ${transaction.paymentMethod.name}'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildSuccessRow('Kode', transaction.transactionCode ?? '-'),
+            const SizedBox(height: 10),
+            _buildSuccessRow(
+              'Total',
+              'Rp${_formatRupiah(transaction.totalAmount)}',
+            ),
+            const SizedBox(height: 8),
+            _buildSuccessRow('Bayar', 'Rp${_formatRupiah(actualPaid)}'),
+            const SizedBox(height: 8),
+            _buildSuccessRow('Kembalian', 'Rp${_formatRupiah(kembalian)}'),
+            const SizedBox(height: 8),
+            _buildSuccessRow('Metode', transaction.paymentMethod.name),
           ],
         ),
         actions: [
-          if (_printerHelper.isConnected)
-            TextButton(
-              onPressed: () async {
-                try {
-                  final profile = await _authService.getProfile();
-                  await _printerHelper.printStrukBelanja(
-                    namaToko: profile.store.businessName,
-                    alamatToko:
-                        profile.store.address ?? 'Alamat tidak tersedia',
-                    noTelpToko: profile.user.phone ?? '',
-                    items: cartItems
-                        .map(
-                          (item) => {
-                            'name': item.product.name,
-                            'qty': item.quantity,
-                            'price': item.product.sellingPrice,
-                            'total': item.product.sellingPrice * item.quantity,
-                          },
-                        )
-                        .toList(),
-                    totalSemuanya: transaction.totalAmount,
-                    uangBayar: actualPaid,
-                    kembalian: kembalian,
-                  );
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Mencetak struk...')),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Gagal mencetak struk: $e')),
-                    );
-                  }
-                }
-              },
-              child: const Text('Cetak Struk'),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: const Text(
+                'Selesai',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK'),
           ),
+          if (_printerHelper.isConnected) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  try {
+                    final profile = await _authService.getProfile();
+                    await _printerHelper.printStrukBelanja(
+                      namaToko: profile.store.businessName,
+                      alamatToko:
+                          profile.store.address ?? 'Alamat tidak tersedia',
+                      noTelpToko: profile.user.phone ?? '',
+                      items: cartItems
+                          .map(
+                            (item) => {
+                              'name': item.product.name,
+                              'qty': item.quantity,
+                              'price': item.product.sellingPrice,
+                              'total':
+                                  item.product.sellingPrice * item.quantity,
+                            },
+                          )
+                          .toList(),
+                      totalSemuanya: transaction.totalAmount,
+                      uangBayar: actualPaid,
+                      kembalian: kembalian,
+                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Mencetak struk...')),
+                      );
+                      Navigator.pop(ctx);
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Gagal mencetak struk: $e')),
+                      );
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryDark,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text(
+                  'Cetak Struk',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildSuccessRow(String label, String value) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            '$label',
+            style: const TextStyle(color: AppColors.gray, fontSize: 14),
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          ),
+        ),
+      ],
     );
   }
 

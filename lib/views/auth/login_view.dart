@@ -86,7 +86,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
 
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 2),
 
                           const Text(
                             "Masuk dengan akun toko/pegawai",
@@ -97,13 +97,13 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
 
-                          const SizedBox(height: 45),
+                          const SizedBox(height: 36),
 
                           // Email Label
                           const Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              "Email / Username",
+                              "Username",
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w800,
@@ -118,7 +118,7 @@ class _LoginViewState extends State<LoginView> {
                           TextField(
                             controller: usernameController,
                             decoration: InputDecoration(
-                              hintText: "Masukkan email/username Anda",
+                              hintText: "Masukkan username Anda",
                               hintStyle: const TextStyle(
                                 color: AppColors.darkGray,
                                 fontWeight: FontWeight.w600,
@@ -128,17 +128,17 @@ class _LoginViewState extends State<LoginView> {
                               fillColor: AppColors.lightGray,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 24,
-                                vertical: 22,
+                                vertical: 20,
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(28),
                                 borderSide: const BorderSide(
                                   color: AppColors.darkGray,
                                   width: 2,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(28),
                                 borderSide: const BorderSide(
                                   color: AppColors.primary,
                                   width: 2,
@@ -147,7 +147,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
 
-                          const SizedBox(height: 25),
+                          const SizedBox(height: 20),
 
                           // Password Label
                           const Align(
@@ -191,17 +191,17 @@ class _LoginViewState extends State<LoginView> {
                               fillColor: AppColors.lightGray,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 24,
-                                vertical: 22,
+                                vertical: 20,
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(28),
                                 borderSide: const BorderSide(
                                   color: AppColors.darkGray,
                                   width: 2,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(28),
                                 borderSide: const BorderSide(
                                   color: AppColors.primary,
                                   width: 2,
@@ -210,12 +210,12 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
 
-                          const SizedBox(height: 35),
+                          const SizedBox(height: 24),
 
                           // Login Button
                           SizedBox(
                             width: double.infinity,
-                            height: 58,
+                            height: 64,
                             child: ElevatedButton(
                               onPressed: viewModel.loading
                                   ? null
@@ -232,7 +232,7 @@ class _LoginViewState extends State<LoginView> {
                                     .withOpacity(0.6),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(28),
                                 ),
                               ),
                               child: viewModel.loading
@@ -255,7 +255,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
 
-                          const SizedBox(height: 55),
+                          const SizedBox(height: 72),
 
                           // Register Text
                           Row(

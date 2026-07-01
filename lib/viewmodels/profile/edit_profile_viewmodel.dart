@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smartkasir/models/auth.dart';
 import 'package:smartkasir/services/auth_service.dart';
 
 class EditProfileViewModel extends ChangeNotifier {

@@ -97,9 +97,26 @@ class SettingsViewModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     connectedPrinterMac = prefs.getString('printer_mac');
     connectedPrinterName = prefs.getString('printer_name');
-    
+
     if (connectedPrinterMac != null) {
-      await connectPrinter(connectedPrinterMac!, connectedPrinterName ?? 'Unknown');
+      // Cek apakah printer masih terhubung tanpa reconnect paksa
+      try {
+        final isConnected = await PrintBluetoothThermal.connectionStatus;
+        if (isConnected) {
+          isPrinterConnected = true;
+        } else {
+          // Printer tercatat tapi tidak terhubung — coba reconnect diam-diam
+          final success = await _printerHelper.connect(connectedPrinterMac!);
+          isPrinterConnected = success;
+          if (!success) {
+            // Jangan set errorMessage — biarkan tampil "Tidak ada koneksi" saja
+            connectedPrinterMac = null;
+            connectedPrinterName = null;
+          }
+        }
+      } catch (_) {
+        isPrinterConnected = false;
+      }
     }
     notifyListeners();
   }
@@ -124,7 +141,7 @@ class SettingsViewModel extends ChangeNotifier {
   }
 
   Future<void> connectPrinter(String mac, String name) async {
-    isLoading = true;
+    isScanningPrinter = true;
     notifyListeners();
 
     try {
@@ -139,13 +156,12 @@ class SettingsViewModel extends ChangeNotifier {
         await prefs.setString('printer_name', name);
       } else {
         isPrinterConnected = false;
-        errorMessage = 'Gagal terhubung ke printer';
+        // Tidak set errorMessage agar tidak memblokir UI halaman settings
       }
     } catch (e) {
       isPrinterConnected = false;
-      errorMessage = 'Error: $e';
     } finally {
-      isLoading = false;
+      isScanningPrinter = false;
       notifyListeners();
     }
   }

@@ -49,17 +49,17 @@ class _SettingsContent extends StatelessWidget {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.only(top: 18),
-                  padding: const EdgeInsets.fromLTRB(20, 35, 20, 20),
+                  margin: const EdgeInsets.only(top: 12),
+                  padding: const EdgeInsets.fromLTRB(16, 28, 16, 20),
                   decoration: const BoxDecoration(
                     color: AppColors.lightGray,
                     borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(45),
+                      top: Radius.circular(36),
                     ),
                   ),
                   child: viewModel.isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : viewModel.errorMessage != null
+                      : viewModel.profileData == null
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -71,7 +71,7 @@ class _SettingsContent extends StatelessWidget {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                viewModel.errorMessage!,
+                                viewModel.errorMessage ?? 'Gagal memuat profil',
                                 style: const TextStyle(
                                   color: AppColors.darkGray,
                                 ),
@@ -93,7 +93,7 @@ class _SettingsContent extends StatelessWidget {
                                 child: Column(
                                   children: [
                                     CircleAvatar(
-                                      radius: 50,
+                                      radius: 42,
                                       backgroundColor: AppColors.primary,
                                       child: Text(
                                         viewModel.profileData != null
@@ -105,7 +105,7 @@ class _SettingsContent extends StatelessWidget {
                                               )
                                             : 'U',
                                         style: const TextStyle(
-                                          fontSize: 32,
+                                          fontSize: 28,
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -119,20 +119,30 @@ class _SettingsContent extends StatelessWidget {
                                                 .store
                                                 .businessName
                                                 .toUpperCase()
-                                          : 'TOKO',
+                                          : 'TOKO KU',
                                       style: const TextStyle(
-                                        fontSize: 24,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.black,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
                                     TextButton.icon(
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 2,
+                                        ),
+                                        minimumSize: const Size(0, 0),
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        foregroundColor: AppColors.primary,
+                                      ),
                                       onPressed: () =>
                                           viewModel.navigateToProfile(context),
                                       icon: const Icon(
                                         Icons.edit,
-                                        size: 18,
+                                        size: 16,
                                         color: AppColors.primary,
                                       ),
                                       label: const Text(
@@ -140,6 +150,7 @@ class _SettingsContent extends StatelessWidget {
                                         style: TextStyle(
                                           color: AppColors.primary,
                                           fontWeight: FontWeight.w600,
+                                          fontSize: 13,
                                         ),
                                       ),
                                     ),
@@ -149,21 +160,16 @@ class _SettingsContent extends StatelessWidget {
                               const SizedBox(height: 24),
 
                               // Manajemen Toko Section
-                              const Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 8,
-                                ),
-                                child: Text(
-                                  'Manajemen Toko',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.darkGray,
-                                  ),
+                              const Text(
+                                'Manajemen Toko',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.darkGray,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 10),
 
                               // Analitik - semua role
                               _buildMenuTile(
@@ -205,24 +211,19 @@ class _SettingsContent extends StatelessWidget {
                                       viewModel.navigateToSaldo(context),
                                 ),
 
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 20),
 
                               // Pengaturan Perangkat Section
-                              const Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 8,
-                                ),
-                                child: Text(
-                                  'Pengaturan Perangkat',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.darkGray,
-                                  ),
+                              const Text(
+                                'Pengaturan Perangkat',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.darkGray,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 10),
                               _buildMenuTile(
                                 icon: Icons.print,
                                 title: 'Printer Struk',
@@ -266,11 +267,11 @@ class _SettingsContent extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 24),
                               // Logout Button
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
+                                  horizontal: 10,
                                   vertical: 6,
                                 ),
                                 child: InkWell(
@@ -278,8 +279,7 @@ class _SettingsContent extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(14),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 16,
+                                      vertical: 14,
                                     ),
                                     decoration: BoxDecoration(
                                       color: const Color.fromARGB(
@@ -309,7 +309,7 @@ class _SettingsContent extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 24),
                             ],
                           ),
                         ),
@@ -365,18 +365,18 @@ class _SettingsContent extends StatelessWidget {
     Widget? trailing,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -385,14 +385,14 @@ class _SettingsContent extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: AppColors.lightGray,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 32),
+                child: Icon(icon, color: AppColors.primary, size: 24),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,14 +401,14 @@ class _SettingsContent extends StatelessWidget {
                       title,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
                       style: const TextStyle(
-                        fontSize: 13,
+                        fontSize: 12,
                         color: AppColors.gray,
                       ),
                     ),
@@ -438,73 +438,73 @@ class _SettingsContent extends StatelessWidget {
           child: Consumer<SettingsViewModel>(
             builder: (context, vm, child) {
               return Container(
-              padding: const EdgeInsets.all(20),
-              height: 400,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Pilih Printer Bluetooth',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                padding: const EdgeInsets.all(20),
+                height: 400,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Pilih Printer Bluetooth',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: () => vm.scanPrinters(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    if (vm.isScanningPrinter)
+                      const Center(child: CircularProgressIndicator())
+                    else if (vm.availableBluetoothDevices.isEmpty)
+                      const Center(
+                        child: Text(
+                          'Tidak ada perangkat ditemukan.\nPastikan Bluetooth menyala.',
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: vm.availableBluetoothDevices.length,
+                          itemBuilder: (context, index) {
+                            final device = vm.availableBluetoothDevices[index];
+                            final isConnected =
+                                vm.connectedPrinterMac == device.macAdress;
+                            return ListTile(
+                              leading: const Icon(Icons.print),
+                              title: Text(device.name),
+                              subtitle: Text(device.macAdress),
+                              trailing: isConnected
+                                  ? TextButton(
+                                      onPressed: () => vm.disconnectPrinter(),
+                                      child: const Text(
+                                        'Putuskan',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    )
+                                  : ElevatedButton(
+                                      onPressed: () {
+                                        vm.connectPrinter(
+                                          device.macAdress,
+                                          device.name,
+                                        );
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('Hubungkan'),
+                                    ),
+                            );
+                          },
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.refresh),
-                        onPressed: () => vm.scanPrinters(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  if (vm.isScanningPrinter)
-                    const Center(child: CircularProgressIndicator())
-                  else if (vm.availableBluetoothDevices.isEmpty)
-                    const Center(
-                      child: Text(
-                        'Tidak ada perangkat ditemukan.\nPastikan Bluetooth menyala.',
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: vm.availableBluetoothDevices.length,
-                        itemBuilder: (context, index) {
-                          final device = vm.availableBluetoothDevices[index];
-                          final isConnected =
-                              vm.connectedPrinterMac == device.macAdress;
-                          return ListTile(
-                            leading: const Icon(Icons.print),
-                            title: Text(device.name),
-                            subtitle: Text(device.macAdress),
-                            trailing: isConnected
-                                ? TextButton(
-                                    onPressed: () => vm.disconnectPrinter(),
-                                    child: const Text(
-                                      'Putuskan',
-                                      style: TextStyle(color: Colors.red),
-                                    ),
-                                  )
-                                : ElevatedButton(
-                                    onPressed: () {
-                                      vm.connectPrinter(
-                                        device.macAdress,
-                                        device.name,
-                                      );
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('Hubungkan'),
-                                  ),
-                          );
-                        },
-                      ),
-                    ),
-                ],
-              ),
-            );
+                  ],
+                ),
+              );
             },
           ),
         );
