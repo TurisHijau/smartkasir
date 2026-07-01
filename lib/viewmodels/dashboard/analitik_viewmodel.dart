@@ -214,7 +214,7 @@ class AnalitikViewModel extends ChangeNotifier {
 
       statCards = [
         StatCardData(
-          label: 'Pendapatan',
+          label: 'Total Pemasukan',
           value: formatRevenue(revenue),
           badge: '$revenueChange %',
           badgeColor: getBadgeColor(revenueChange),
@@ -243,8 +243,8 @@ class AnalitikViewModel extends ChangeNotifier {
           badgeBg: getBadgeBgColor(avgTransactionChange),
         ),
         StatCardData(
-          label: 'Laba Bersih',
-          value: '$netProfit',
+          label: 'Keuntungan',
+          value: formatRevenue(netProfit),
           badge: '$netProfitChange %',
           badgeColor: getBadgeColor(netProfitChange),
           badgeBg: getBadgeBgColor(netProfitChange),

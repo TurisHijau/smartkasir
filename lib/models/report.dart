@@ -43,16 +43,24 @@ class SummaryModel {
     required this.netProfitChange,
   });
 
+  static int _parseInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String)
+      return int.tryParse(value) ?? double.tryParse(value)?.toInt() ?? 0;
+    return 0;
+  }
+
   factory SummaryModel.fromJson(Map<String, dynamic> json) {
-    return SummaryModel(    
+    return SummaryModel(
       revenue: (json['revenue'] as num).toDouble(),
-      revenueChange: json['revenueChange'] as int,
-      transactionCount: json['transactionCount'] as int,
-      transactionCountChange: json['transactionCountChange'] as int,
+      revenueChange: _parseInt(json['revenueChange']),
+      transactionCount: _parseInt(json['transactionCount']),
+      transactionCountChange: _parseInt(json['transactionCountChange']),
       avgTransaction: (json['avgTransaction'] as num).toDouble(),
-      avgTransactionChange: json['avgTransactionChange'] as int,
+      avgTransactionChange: _parseInt(json['avgTransactionChange']),
       netProfit: (json['netProfit'] as num).toDouble(),
-      netProfitChange: json['netProfitChange'] as int,
+      netProfitChange: _parseInt(json['netProfitChange']),
     );
   }
 }
@@ -80,7 +88,8 @@ class TopProductModel {
   factory TopProductModel.fromJson(Map<String, dynamic> json) {
     return TopProductModel(
       productName: json['productName'] as String,
-      totalQuantity: ((json['quantitySold'] ?? json['totalQuantity'] ?? 0) as num).toInt(),
+      totalQuantity:
+          ((json['quantitySold'] ?? json['totalQuantity'] ?? 0) as num).toInt(),
     );
   }
 }
