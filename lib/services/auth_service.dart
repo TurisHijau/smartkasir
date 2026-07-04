@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:smartkasir/models/auth.dart';
 import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/services/api_client.dart';
+import 'package:smartkasir/exceptions/auth_exception.dart';
 
 class AuthService {
   final ApiClient _api = ApiClient();
@@ -61,6 +62,12 @@ class AuthService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return AuthResponse.fromJson(data);
+    } else if (response.statusCode == 401) {
+      // Session expired - clear token and throw UnauthorizedException
+      await logout();
+      throw UnauthorizedException(
+        "Sesi login sudah habis. Silahkan login kembali.",
+      );
     } else {
       final body = response.body;
       throw Exception(

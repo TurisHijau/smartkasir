@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smartkasir/services/auth_service.dart';
+import 'package:smartkasir/exceptions/auth_exception.dart';
 import 'package:smartkasir/views/tambah_bank_view.dart';
+import 'package:smartkasir/views/auth/login_view.dart';
 
 class SaldoViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -36,6 +38,9 @@ class SaldoViewModel extends ChangeNotifier {
       final authResponse = await _authService.getProfile();
       _saldo = authResponse.user.saldo;
       _errorMessage = null;
+    } on UnauthorizedException catch (e) {
+      _errorMessage = e.message;
+      _saldo = 0;
     } catch (e) {
       _errorMessage = e.toString().replaceAll("Exception: ", "");
       _saldo = 0;
@@ -62,6 +67,14 @@ class SaldoViewModel extends ChangeNotifier {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const TambahBankView()),
+    );
+  }
+
+  void redirectToLogin(BuildContext context) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginView()),
+      (route) => false,
     );
   }
 }

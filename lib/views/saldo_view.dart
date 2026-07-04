@@ -118,6 +118,19 @@ class SaldoView extends StatelessWidget {
                                             color: AppColors.red,
                                           ),
                                         ),
+                                        const SizedBox(height: 12),
+                                        // Show login button if session expired
+                                        if (viewModel.errorMessage?.contains(
+                                              'habis',
+                                            ) ??
+                                            false)
+                                          ElevatedButton(
+                                            onPressed: () => viewModel
+                                                .redirectToLogin(context),
+                                            child: const Text(
+                                              "Kembali ke Login",
+                                            ),
+                                          ),
                                       ],
                                     )
                                   : Text(

@@ -75,12 +75,22 @@ class _SettingsContent extends StatelessWidget {
                                 style: const TextStyle(
                                   color: AppColors.darkGray,
                                 ),
+                                textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 12),
-                              ElevatedButton(
-                                onPressed: () => viewModel.loadProfile(),
-                                child: const Text("Coba Lagi"),
-                              ),
+                              const SizedBox(height: 20),
+                              // Check if it's a session expiration error
+                              if (viewModel.errorMessage?.contains('habis') ??
+                                  false)
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      viewModel.redirectToLogin(context),
+                                  child: const Text("Kembali ke Login"),
+                                )
+                              else
+                                ElevatedButton(
+                                  onPressed: () => viewModel.loadProfile(),
+                                  child: const Text("Coba Lagi"),
+                                ),
                             ],
                           ),
                         )
