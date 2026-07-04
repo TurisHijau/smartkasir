@@ -79,7 +79,7 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                 child: Container(
                   width: double.infinity,
                   margin: const EdgeInsets.only(top: 18),
-                  padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(24, 40, 24, 30),
                   decoration: const BoxDecoration(
                     color: AppColors.lightGray,
                     borderRadius: BorderRadius.vertical(
@@ -97,14 +97,14 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                             controller: _namaPegawaiController,
                             hint: 'Masukkan Nama Pegawai',
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           _buildLabel('Username'),
                           _buildTextField(
                             controller: _usernameController,
                             hint: 'Masukkan Username',
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           _buildLabel('No Telp'),
                           _buildTextField(
@@ -113,11 +113,11 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                             keyboardType: TextInputType.phone,
                             required: false,
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           _buildLabel('Role'),
                           _buildRoleDropdown(viewModel),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           _buildLabel('Password'),
                           _buildTextField(
@@ -129,7 +129,7 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                             onSuffixIconTap: viewModel.togglePasswordVisibility,
                             required: !viewModel.isEditMode,
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           _buildLabel('Konfirmasi Password'),
                           _buildTextField(
@@ -260,9 +260,9 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Colors.white.withOpacity(0.7),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.gray, width: 2),
+        border: Border.all(color: AppColors.primary, width: 2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<Role>(
@@ -274,9 +274,11 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
             fontSize: 17,
           ),
           items: const [
-            DropdownMenuItem(value: Role.CASHIER, child: Text('Kasir')),
-            DropdownMenuItem(value: Role.MANAGER, child: Text('Manajer')),
-            DropdownMenuItem(value: Role.OWNER, child: Text('Pemilik')),
+            DropdownMenuItem(value: Role.CASHIER, child: Text('Staff / Kasir')),
+            DropdownMenuItem(
+              value: Role.MANAGER,
+              child: Text('Manajer / Kepala Toko'),
+            ),
           ],
           onChanged: (role) {
             if (role != null) viewModel.setRole(role);
@@ -323,12 +325,12 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
 
   Widget _buildLabel(String label) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         label,
         style: const TextStyle(
-          fontSize: 19,
-          fontWeight: FontWeight.w800,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
           color: AppColors.primary,
         ),
       ),
@@ -352,34 +354,35 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
         hintStyle: const TextStyle(
           color: AppColors.darkGray,
           fontWeight: FontWeight.w600,
-          fontSize: 17,
+          fontSize: 16,
         ),
         filled: true,
-        fillColor: AppColors.white,
+        fillColor: Colors.white.withOpacity(0.7),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 18,
-          vertical: 16,
+          vertical: 15,
         ),
         suffixIcon: onSuffixIconTap != null
             ? IconButton(
                 icon: Icon(
                   obscureText ? Icons.visibility_off : Icons.visibility,
-                  color: AppColors.gray,
+                  color: AppColors.primary,
+                  size: 22,
                 ),
                 onPressed: onSuffixIconTap,
               )
             : null,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.gray, width: 2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.gray, width: 2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2.5),
         ),
       ),
       validator: required

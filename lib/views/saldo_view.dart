@@ -70,7 +70,7 @@ class SaldoView extends StatelessWidget {
                           ),
                         ),
                         child: SingleChildScrollView(
-                          padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+                          padding: const EdgeInsets.fromLTRB(24, 40, 24, 30),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -78,88 +78,117 @@ class SaldoView extends StatelessWidget {
                               const Text(
                                 'Total Saldo Anda',
                                 style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
                                   color: AppColors.primary,
                                 ),
                               ),
+                              const SizedBox(height: 8),
+                              viewModel.isLoading
+                                  ? const SizedBox(
+                                      height: 35,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                AppColors.primary,
+                                              ),
+                                        ),
+                                      ),
+                                    )
+                                  : viewModel.errorMessage != null
+                                  ? Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Rp0',
+                                          style: const TextStyle(
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppColors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          viewModel.errorMessage!,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.red,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Text(
+                                      viewModel.formattedSaldo,
+                                      style: const TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.black,
+                                      ),
+                                    ),
+                              const SizedBox(height: 12),
+                              Divider(
+                                color: AppColors.darkGray.withOpacity(0.3),
+                                thickness: 1,
+                              ),
+                              const SizedBox(height: 20),
 
-                              Text(
-                                viewModel.formattedSaldo,
-                                style: const TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.black,
+                              // INPUT PENARIKAN
+                              const Text(
+                                'Jumlah Penarikan',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primary,
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              Divider(
-                                color: AppColors.darkGray.withOpacity(0.7),
-                                thickness: 1,
-                              ),
-                              const SizedBox(height: 15),
-
-                              // INPUT PENARIKAN
-                              const Padding(
-                                padding: EdgeInsets.only(left: 8),
-                                child: Text(
-                                  'Jumlah Penarikan',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
                               TextField(
                                 keyboardType: TextInputType.number,
                                 inputFormatters: [CurrencyInputFormatter()],
                                 decoration: InputDecoration(
                                   hintText: 'Masukkan Jumlah Penarikan',
                                   hintStyle: const TextStyle(
-                                    color: AppColors.gray,
+                                    color: AppColors.darkGray,
                                     fontWeight: FontWeight.w600,
+                                    fontSize: 15,
                                   ),
                                   filled: true,
-                                  fillColor: AppColors.lightGray,
+                                  fillColor: Colors.white.withOpacity(0.7),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 18,
-                                    vertical: 18,
+                                    vertical: 15,
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: BorderSide(
-                                      color: AppColors.darkGray.withOpacity(
-                                        0.4,
-                                      ),
-                                      width: 2,
+                                    borderRadius: BorderRadius.circular(14),
+                                    borderSide: const BorderSide(
+                                      color: AppColors.primary,
+                                      width: 1.5,
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(14),
                                     borderSide: const BorderSide(
                                       color: AppColors.primary,
-                                      width: 2,
+                                      width: 2.5,
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 15),
+                              const SizedBox(height: 20),
 
                               // PILIH AKUN
-                              const Padding(
-                                padding: EdgeInsets.only(left: 8),
-                                child: Text(
-                                  'Pilih Akun Bank',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.primary,
-                                  ),
+                              const Text(
+                                'Pilih Akun Bank',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primary,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 10),
 
                               // CARD BANK
                               ...List.generate(viewModel.bankAccounts.length, (
@@ -167,15 +196,15 @@ class SaldoView extends StatelessWidget {
                               ) {
                                 final bank = viewModel.bankAccounts[index];
                                 return Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
+                                  padding: const EdgeInsets.only(bottom: 12),
                                   child: Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: AppColors.lightGray,
-                                      borderRadius: BorderRadius.circular(18),
+                                      color: Colors.white.withOpacity(0.7),
+                                      borderRadius: BorderRadius.circular(14),
                                       border: Border.all(
-                                        color: AppColors.gray.withOpacity(0.6),
-                                        width: 2,
+                                        color: AppColors.primary,
+                                        width: 1.5,
                                       ),
                                     ),
                                     child: Row(
@@ -199,17 +228,17 @@ class SaldoView extends StatelessWidget {
                                               Text(
                                                 bank["name"] as String,
                                                 style: const TextStyle(
-                                                  fontSize: 16,
+                                                  fontSize: 15,
                                                   fontWeight: FontWeight.w700,
                                                   color: AppColors.black,
                                                 ),
                                               ),
-                                              const SizedBox(height: 4),
+                                              const SizedBox(height: 3),
                                               Text(
                                                 bank["number"] as String,
                                                 style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
                                                   color: AppColors.primary,
                                                 ),
                                               ),
@@ -221,91 +250,88 @@ class SaldoView extends StatelessWidget {
                                   ),
                                 );
                               }),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 12),
 
                               // BUTTON TAMBAH BANK
                               SizedBox(
                                 width: double.infinity,
-                                height: 56,
+                                height: 50,
                                 child: OutlinedButton(
                                   onPressed: () =>
                                       viewModel.navigateToBank(context),
                                   style: OutlinedButton.styleFrom(
                                     side: const BorderSide(
                                       color: AppColors.primary,
-                                      width: 2,
+                                      width: 1.5,
                                     ),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
                                   child: const Text(
                                     'TAMBAH AKUN BANK',
                                     style: TextStyle(
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
                                       color: AppColors.primary,
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 36),
+                              const SizedBox(height: 28),
 
                               // CATATAN
                               const Text(
                                 'Catatan :',
                                 style: TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.gray,
+                                  color: AppColors.darkGray,
                                 ),
                               ),
-                              const SizedBox(height: 5),
-                              const Padding(
-                                padding: EdgeInsets.only(left: 8),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '1. Saldo yang ditarik min. Rp10.000,00',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.gray,
-                                      ),
+                              const SizedBox(height: 8),
+                              const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '1. Saldo yang ditarik min. Rp10.000,00',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.darkGray,
                                     ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      '2. Pencairan dana dikirim max 2 x 24 jam',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.gray,
-                                      ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    '2. Pencairan dana dikirim max 2 x 24 jam',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.darkGray,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 24),
 
                               // BUTTON TARIK SALDO
                               SizedBox(
                                 width: double.infinity,
-                                height: 58,
+                                height: 54,
                                 child: ElevatedButton(
                                   onPressed: () {},
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.primary,
                                     elevation: 0,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
                                   child: const Text(
                                     'TARIK SALDO',
                                     style: TextStyle(
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.w800,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
                                       color: AppColors.white,
                                     ),
                                   ),

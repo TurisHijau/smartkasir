@@ -41,7 +41,7 @@ class _ListPegawaiContent extends StatelessWidget {
                 child: Container(
                   width: double.infinity,
                   margin: const EdgeInsets.only(top: 18),
-                  padding: const EdgeInsets.fromLTRB(20, 35, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(24, 30, 24, 20),
                   decoration: const BoxDecoration(
                     color: AppColors.lightGray,
                     borderRadius: BorderRadius.vertical(
@@ -55,11 +55,11 @@ class _ListPegawaiContent extends StatelessWidget {
                         "Cari Pegawai",
                         style: TextStyle(
                           color: AppColors.primary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       TextField(
                         onChanged: viewModel.search,
                         decoration: InputDecoration(
@@ -70,7 +70,7 @@ class _ListPegawaiContent extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                           filled: true,
-                          fillColor: AppColors.lightGray,
+                          fillColor: Colors.white.withOpacity(0.7),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 14,
@@ -78,15 +78,15 @@ class _ListPegawaiContent extends StatelessWidget {
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: AppColors.gray,
-                              width: 1.8,
+                              color: AppColors.primary,
+                              width: 1.5,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
                               color: AppColors.primary,
-                              width: 1.8,
+                              width: 2,
                             ),
                           ),
                         ),
@@ -96,21 +96,21 @@ class _ListPegawaiContent extends StatelessWidget {
                         child: viewModel.isLoading
                             ? const Center(child: CircularProgressIndicator())
                             : viewModel.errorMessage != null
-                                ? _errorState(viewModel)
-                                : viewModel.employees.isEmpty
-                                    ? const _EmptyEmployeeState()
-                                    : RefreshIndicator(
-                                        onRefresh: viewModel.loadUsers,
-                                        child: ListView.separated(
-                                          itemCount: viewModel.employees.length,
-                                          separatorBuilder: (_, __) =>
-                                              const SizedBox(height: 14),
-                                          itemBuilder: (context, index) {
-                                            final user = viewModel.employees[index];
-                                            return _EmployeeCard(user: user);
-                                          },
-                                        ),
-                                      ),
+                            ? _errorState(viewModel)
+                            : viewModel.employees.isEmpty
+                            ? const _EmptyEmployeeState()
+                            : RefreshIndicator(
+                                onRefresh: viewModel.loadUsers,
+                                child: ListView.separated(
+                                  itemCount: viewModel.employees.length,
+                                  separatorBuilder: (_, __) =>
+                                      const SizedBox(height: 14),
+                                  itemBuilder: (context, index) {
+                                    final user = viewModel.employees[index];
+                                    return _EmployeeCard(user: user);
+                                  },
+                                ),
+                              ),
                       ),
                     ],
                   ),
@@ -128,7 +128,11 @@ class _ListPegawaiContent extends StatelessWidget {
                   shape: const CircleBorder(),
                   elevation: 4,
                   onPressed: () => viewModel.navigateToAddEmployee(context),
-                  child: const Icon(Icons.add, size: 50, color: AppColors.white),
+                  child: const Icon(
+                    Icons.add,
+                    size: 50,
+                    color: AppColors.white,
+                  ),
                 ),
               )
             : null,
@@ -315,7 +319,10 @@ class _EmployeeCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -385,11 +392,7 @@ class _ActionButton extends StatelessWidget {
           color: backgroundColor,
           borderRadius: BorderRadius.circular(4),
         ),
-        child: Icon(
-          icon,
-          size: 25,
-          color: iconColor,
-        ),
+        child: Icon(icon, size: 25, color: iconColor),
       ),
     );
   }

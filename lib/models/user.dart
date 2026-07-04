@@ -8,6 +8,7 @@ class User {
   final String username;
   final Role role;
   final String? phone;
+  final double saldo;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -19,6 +20,7 @@ class User {
     required this.username,
     required this.role,
     this.phone,
+    this.saldo = 0,
     this.createdAt,
     this.updatedAt,
   });
@@ -35,8 +37,13 @@ class User {
         orElse: () => Role.CASHIER,
       ),
       phone: json['phone'],
-      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt']) : null,
-      updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt']) : null,
+      saldo: double.tryParse(json['saldo']?.toString() ?? '0') ?? 0,
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'])
+          : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'])
+          : null,
     );
   }
 }
