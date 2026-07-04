@@ -37,7 +37,7 @@ class Transaction {
         orElse: () => PaymentMethod.CASH,
       ),
       transactionDate: json['transactionDate'] != null
-          ? DateTime.tryParse(json['transactionDate'])
+          ? DateTime.tryParse(json['transactionDate'].toString())
           : null,
     );
   }
@@ -58,11 +58,13 @@ class TransactionRequest {
   final double amountPaid;
   final PaymentMethod paymentMethod;
   final List<TransactionItemRequest> items;
+  final DateTime? transactionDate;
 
   TransactionRequest({
     required this.amountPaid,
     required this.paymentMethod,
     required this.items,
+    this.transactionDate,
   });
 
   Map<String, dynamic> toJson() {
@@ -70,6 +72,8 @@ class TransactionRequest {
       'amountPaid': amountPaid,
       'paymentMethod': paymentMethod.name,
       'items': items.map((i) => i.toJson()).toList(),
+      if (transactionDate != null)
+        'transactionDate': transactionDate!.toIso8601String(),
     };
   }
 }

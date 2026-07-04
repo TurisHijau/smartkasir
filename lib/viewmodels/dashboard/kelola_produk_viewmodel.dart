@@ -31,12 +31,18 @@ class KelolaProdukViewModel extends ChangeNotifier {
       errorMessage = null;
       notifyListeners();
 
+      final parsedStock = int.tryParse(stock) ?? 0;
       final product = Product(
         name: name,
         barcode: barcode.isNotEmpty ? barcode : null,
         costPrice: double.tryParse(costPrice) ?? 0,
         sellingPrice: double.tryParse(sellingPrice) ?? 0,
-        stock: int.tryParse(stock) ?? 0,
+        stock: isEditMode ? editingProduct!.stock + parsedStock : parsedStock,
+        initialStock: isEditMode
+            ? (parsedStock > 0
+                  ? editingProduct!.stock + parsedStock
+                  : editingProduct!.initialStock)
+            : parsedStock,
       );
 
       if (isEditMode) {

@@ -85,6 +85,12 @@ class PrinterHelper {
       decimalDigits: 0,
     );
 
+    // Hitung total dari items
+    double calculatedTotal = items.fold<double>(
+      0,
+      (sum, item) => sum + (double.tryParse(item['total'].toString()) ?? 0),
+    );
+
     bytes += EscPos.init;
 
     // Header - Nama Toko
@@ -108,7 +114,7 @@ class PrinterHelper {
 
     // Tanggal
     String formattedDate = DateFormat(
-      'dd-MM-yyyy HH:mm',
+      'dd MMMM yyyy HH:mm',
     ).format(DateTime.now());
     bytes += _textToBytes(formattedDate);
     bytes += EscPos.lineFeed;
@@ -148,7 +154,7 @@ class PrinterHelper {
     bytes += EscPos.lineFeed;
 
     // Total
-    String totalStr = currencyFormatter.format(totalSemuanya);
+    String totalStr = currencyFormatter.format(calculatedTotal);
     int totalSpaces = 32 - 6 - totalStr.length;
     bytes += EscPos.boldOn;
     bytes += _textToBytes(
@@ -166,7 +172,8 @@ class PrinterHelper {
     bytes += EscPos.lineFeed;
 
     // Kembali
-    String kembaliStr = currencyFormatter.format(kembalian);
+    double calculatedKembali = uangBayar - calculatedTotal;
+    String kembaliStr = currencyFormatter.format(calculatedKembali);
     int kembaliSpaces = 32 - 8 - kembaliStr.length;
     bytes += _textToBytes(
       'KEMBALI:' + (' ' * (kembaliSpaces > 0 ? kembaliSpaces : 1)) + kembaliStr,

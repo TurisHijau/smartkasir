@@ -16,15 +16,11 @@ class RegisterView extends StatelessWidget {
             backgroundColor: AppColors.white,
             body: Stack(
               children: [
-                // Background Gradient
-                Container(
-                  height: MediaQuery.of(context).size.height * 0.28,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.tertiary, AppColors.secondary],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
+                // Background Image
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/images/background.png',
+                    fit: BoxFit.cover,
                   ),
                 ),
 

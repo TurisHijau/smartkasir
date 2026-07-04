@@ -106,9 +106,6 @@ class _ScannerViewState extends State<ScannerView> {
     Color backgroundColor = AppColors.primary,
     bool anchorToBottom = false,
   }) {
-    // If caller wants to anchor to the bottom buttons area (e.g. after
-    // manual input), ignore the keyboard inset and use a fixed offset
-    // above the bottom area. Otherwise position above the keyboard.
     final bottomInset = anchorToBottom
         ? (MediaQuery.of(context).padding.bottom + 100)
         : MediaQuery.of(context).viewInsets.bottom + 16;
@@ -140,8 +137,8 @@ class _ScannerViewState extends State<ScannerView> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final cameraHeight = screenHeight * 0.42;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cameraHeight = screenWidth / 5 * 4;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -263,8 +260,8 @@ class _ScannerViewState extends State<ScannerView> {
   Widget _buildScanOverlay() {
     return Center(
       child: Container(
-        width: 220,
-        height: 220,
+        width: 250,
+        height: 190,
         decoration: BoxDecoration(
           border: Border.all(color: Colors.white24, width: 1.5),
           borderRadius: BorderRadius.circular(16),
@@ -1023,284 +1020,343 @@ class _ScannerViewState extends State<ScannerView> {
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              padding: const EdgeInsets.all(24),
-              child: SingleChildScrollView(
-                controller: scrollController,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Handle bar
-                    Container(
-                      width: 44,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Title
-                    const Text(
-                      'Review Belanja',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Cart items list
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _cartItems.length,
-                      separatorBuilder: (_, __) => const Divider(
-                        color: Color(0xFFEEEEEE),
-                        height: 1,
-                        thickness: 1,
-                      ),
-                      itemBuilder: (_, i) {
-                        final item = _cartItems[i];
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            item.product.name,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          subtitle: Text(
-                            'Rp${_formatRupiah(item.product.sellingPrice)} × ${item.quantity}',
-                          ),
-                          trailing: Text(
-                            'Rp${_formatRupiah(item.product.sellingPrice * item.quantity)}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                              color: AppColors.primary,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Handle bar
+                          Container(
+                            width: 44,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(2),
                             ),
                           ),
-                        );
-                      },
+                          const SizedBox(height: 16),
+
+                          // Title
+                          const Text(
+                            'Review Belanja',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          SizedBox(
+                            height: 218,
+                            child: ListView.builder(
+                              shrinkWrap: false,
+                              physics: const ClampingScrollPhysics(),
+                              itemCount: _cartItems.length < 3
+                                  ? 3
+                                  : _cartItems.length,
+                              itemBuilder: (_, i) {
+                                final isReal = i < _cartItems.length;
+                                final showDivider =
+                                    isReal && i < _cartItems.length - 1;
+
+                                Widget tile;
+                                if (isReal) {
+                                  final item = _cartItems[i];
+                                  tile = SizedBox(
+                                    height: 72,
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                item.product.name,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Rp${_formatRupiah(item.product.sellingPrice)} × ${item.quantity}',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.grey[600],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Text(
+                                          'Rp${_formatRupiah(item.product.sellingPrice * item.quantity)}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 15,
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                } else {
+                                  tile = const SizedBox(height: 72);
+                                }
+
+                                if (showDivider) {
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      tile,
+                                      const Divider(
+                                        color: Color(0xFFEEEEEE),
+                                        height: 1,
+                                        thickness: 1,
+                                      ),
+                                    ],
+                                  );
+                                }
+                                return tile;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
                     ),
+                  ),
 
-                    const Divider(
-                      color: Color(0xFFB0B0B0),
-                      height: 1,
-                      thickness: 1,
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Total row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Total
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Total',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Rp${_formatRupiah(totalAmount)}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        const Divider(height: 20),
+                        const SizedBox(height: 4),
+
+                        // Metode Pembayaran label
                         const Text(
-                          'Total',
+                          'Metode Pembayaran',
                           style: TextStyle(
+                            fontWeight: FontWeight.w600,
                             fontSize: 16,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(
-                          'Rp${_formatRupiah(totalAmount)}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.primary,
+                        const SizedBox(height: 8),
+
+                        // Payment method buttons
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: PaymentMethod.values.map((method) {
+                            final isSelected = selectedMethod == method;
+                            return SizedBox(
+                              height: 40,
+                              child: ElevatedButton(
+                                onPressed: () => setSheetState(
+                                  () => selectedMethod = method,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isSelected
+                                      ? AppColors.primary
+                                      : Colors.grey[200],
+                                  foregroundColor: isSelected
+                                      ? Colors.white
+                                      : AppColors.primary,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                  ),
+                                ),
+                                child: Text(
+                                  method.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+
+                        if (selectedMethod != PaymentMethod.QRIS) ...[
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: amountPaidController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [CurrencyInputFormatter()],
+                            onChanged: (_) {
+                              if (paymentError != null) {
+                                setSheetState(() => paymentError = null);
+                              }
+                            },
+                            decoration: InputDecoration(
+                              labelText: 'Jumlah Bayar',
+                              hintText: 'Masukkan jumlah uang',
+                              errorText: paymentError,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: AppColors.primary,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 16),
+
+                        // Process button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: isProcessing
+                                ? null
+                                : () async {
+                                    final rawText = amountPaidController.text
+                                        .replaceAll(RegExp(r'[^0-9]'), '');
+                                    final paid = double.tryParse(rawText) ?? 0;
+
+                                    if (selectedMethod == PaymentMethod.CASH &&
+                                        paid < totalAmount) {
+                                      setSheetState(
+                                        () =>
+                                            paymentError = 'Uang bayar kurang',
+                                      );
+                                      return;
+                                    }
+
+                                    final effectivePaid =
+                                        selectedMethod == PaymentMethod.CASH
+                                        ? paid
+                                        : totalAmount;
+
+                                    setSheetState(() => isProcessing = true);
+                                    try {
+                                      final request = TransactionRequest(
+                                        amountPaid: effectivePaid,
+                                        paymentMethod: selectedMethod,
+                                        items: _cartItems
+                                            .map(
+                                              (item) => TransactionItemRequest(
+                                                productId: item.product.id!,
+                                                quantity: item.quantity,
+                                              ),
+                                            )
+                                            .toList(),
+                                        transactionDate: DateTime.now(),
+                                      );
+
+                                      final transaction =
+                                          await _transactionService.create(
+                                            request,
+                                          );
+
+                                      if (context.mounted) {
+                                        Navigator.pop(context);
+                                        final cartItemsCopy =
+                                            List<_CartItem>.from(_cartItems);
+                                        setState(() => _cartItems.clear());
+                                        _showTransactionSuccess(
+                                          transaction,
+                                          effectivePaid,
+                                          cartItemsCopy,
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Gagal membuat transaksi: $e',
+                                            ),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    } finally {
+                                      if (context.mounted) {
+                                        setSheetState(
+                                          () => isProcessing = false,
+                                        );
+                                      }
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryDark,
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: AppColors.primaryDark
+                                  .withOpacity(0.6),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: isProcessing
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Proses Transaksi',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 32),
-
-                    // Amount paid field
-                    TextField(
-                      controller: amountPaidController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [CurrencyInputFormatter()],
-                      onChanged: (_) {
-                        if (paymentError != null) {
-                          setSheetState(() => paymentError = null);
-                        }
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Jumlah Bayar',
-                        hintText: 'Masukkan jumlah uang',
-                        errorText: paymentError,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.primary,
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Payment method label
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Metode Pembayaran',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Payment method buttons (simple buttons + text)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: PaymentMethod.values.map((method) {
-                          final isSelected = selectedMethod == method;
-                          return SizedBox(
-                            height: 40,
-                            child: ElevatedButton(
-                              onPressed: () =>
-                                  setSheetState(() => selectedMethod = method),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: isSelected
-                                    ? AppColors.primary
-                                    : Colors.grey[200],
-                                foregroundColor: isSelected
-                                    ? Colors.white
-                                    : AppColors.primary,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                ),
-                              ),
-                              child: Text(
-                                method.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-
-                    const SizedBox(height: 36),
-
-                    // Process button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: isProcessing
-                            ? null
-                            : () async {
-                                final rawText = amountPaidController.text
-                                    .replaceAll(RegExp(r'[^0-9]'), '');
-                                final paid = double.tryParse(rawText) ?? 0;
-
-                                if (selectedMethod == PaymentMethod.CASH &&
-                                    paid < totalAmount) {
-                                  setSheetState(
-                                    () => paymentError = 'Uang bayar kurang',
-                                  );
-                                  return;
-                                }
-
-                                final effectivePaid =
-                                    selectedMethod == PaymentMethod.CASH
-                                    ? paid
-                                    : totalAmount;
-
-                                setSheetState(() => isProcessing = true);
-                                try {
-                                  final request = TransactionRequest(
-                                    amountPaid: effectivePaid,
-                                    paymentMethod: selectedMethod,
-                                    items: _cartItems
-                                        .map(
-                                          (item) => TransactionItemRequest(
-                                            productId: item.product.id!,
-                                            quantity: item.quantity,
-                                          ),
-                                        )
-                                        .toList(),
-                                  );
-
-                                  final transaction = await _transactionService
-                                      .create(request);
-
-                                  if (context.mounted) {
-                                    Navigator.pop(context);
-                                    final cartItemsCopy = List<_CartItem>.from(
-                                      _cartItems,
-                                    );
-                                    setState(() => _cartItems.clear());
-                                    _showTransactionSuccess(
-                                      transaction,
-                                      effectivePaid,
-                                      cartItemsCopy,
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Gagal membuat transaksi: $e',
-                                        ),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                } finally {
-                                  if (context.mounted) {
-                                    setSheetState(() => isProcessing = false);
-                                  }
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryDark,
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: AppColors.primaryDark
-                              .withOpacity(0.6),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: isProcessing
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2.5,
-                                ),
-                              )
-                            : const Text(
-                                'Proses Transaksi',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

@@ -53,7 +53,7 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
       _namaProdukController.text = p.name;
       _hargaModalController.text = _formatter.format(p.costPrice.toInt());
       _hargaJualController.text = _formatter.format(p.sellingPrice.toInt());
-      _stokController.text = p.stock.toString();
+      _stokController.text = '0';
     }
   }
 
@@ -183,11 +183,24 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                           ),
                           const SizedBox(height: 20),
 
-                          _buildLabel('Stok'),
+                          _buildLabel(viewModel.isEditMode ? 'Tambah Stok' : 'Stok Awal'),
+                          if (viewModel.isEditMode)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+                              child: Text(
+                                'Stok saat ini: ${widget.product?.stock ?? 0} pcs',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.gray,
+                                ),
+                              ),
+                            ),
                           _buildTextField(
                             controller: _stokController,
                             isCurrency: false,
-                            hint: 'Masukkan Stok Awal',
+                            hint: viewModel.isEditMode
+                                ? 'Masukkan jumlah stok tambahan'
+                                : 'Masukkan Stok Awal',
                             keyboardType: TextInputType.number,
                           ),
 

@@ -168,13 +168,11 @@ class _AnalitikViewState extends State<AnalitikView> {
     );
   }
 
-  // ─── Store info + period toggle ───────────────────────────────────────────
-
   Widget _buildStoreInfo() {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
@@ -197,14 +195,14 @@ class _AnalitikViewState extends State<AnalitikView> {
                   text: _vm.storeName,
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                    fontSize: 18,
                   ),
                 ),
                 TextSpan(
                   text: ' - ${_vm.storeDate}',
                   style: const TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
                     color: AppColors.darkGray,
                   ),
                 ),
@@ -271,10 +269,10 @@ class _AnalitikViewState extends State<AnalitikView> {
 
   Widget _statCard(StatCardData data) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
@@ -289,21 +287,21 @@ class _AnalitikViewState extends State<AnalitikView> {
           Text(
             data.label,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 13,
               color: AppColors.darkGray,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            data.value,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppColors.black,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
+          Text(
+            data.value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: AppColors.black,
+            ),
+          ),
+          const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
@@ -346,8 +344,8 @@ class _AnalitikViewState extends State<AnalitikView> {
           const Text(
             'Grafik Pendapatan',
             style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
               color: AppColors.primary,
             ),
           ),
@@ -390,8 +388,8 @@ class _AnalitikViewState extends State<AnalitikView> {
           const Text(
             'Metode Pembayaran',
             style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
               color: AppColors.primary,
             ),
           ),
@@ -489,8 +487,8 @@ class _AnalitikViewState extends State<AnalitikView> {
           const Text(
             'Stok hampir habis',
             style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
               color: AppColors.primary,
             ),
           ),
@@ -598,8 +596,8 @@ class _AnalitikViewState extends State<AnalitikView> {
           const Text(
             'Transaksi Terakhir',
             style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
               color: AppColors.primary,
             ),
           ),
@@ -695,8 +693,8 @@ class _AnalitikViewState extends State<AnalitikView> {
           const Text(
             'Produk Terlaris',
             style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
               color: AppColors.primary,
             ),
           ),
