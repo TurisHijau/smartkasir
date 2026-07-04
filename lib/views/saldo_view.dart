@@ -94,7 +94,7 @@ class SaldoView extends StatelessWidget {
                               ),
                               const SizedBox(height: 10),
                               Divider(
-                                color: AppColors.darkGray.withOpacity(0.7),
+                                color: AppColors.darkGray.withValues(alpha: 0.7),
                                 thickness: 1,
                               ),
                               const SizedBox(height: 15),
@@ -130,7 +130,7 @@ class SaldoView extends StatelessWidget {
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: BorderSide(
-                                      color: AppColors.darkGray.withOpacity(
+                                      color: AppColors.darkGray.withValues(alpha: 
                                         0.4,
                                       ),
                                       width: 2,
@@ -174,7 +174,7 @@ class SaldoView extends StatelessWidget {
                                       color: AppColors.lightGray,
                                       borderRadius: BorderRadius.circular(18),
                                       border: Border.all(
-                                        color: AppColors.gray.withOpacity(0.6),
+                                        color: AppColors.gray.withValues(alpha: 0.6),
                                         width: 2,
                                       ),
                                     ),

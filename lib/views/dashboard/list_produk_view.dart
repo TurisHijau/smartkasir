@@ -47,7 +47,7 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: viewmodel.isCashier
+        floatingActionButton: (viewmodel.isLoading || viewmodel.isCashier)
             ? null
             : SizedBox(
                 width: 66,
@@ -194,7 +194,7 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
                               borderRadius: BorderRadius.circular(8),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 10,
                                 ),
                               ],
@@ -320,7 +320,7 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),

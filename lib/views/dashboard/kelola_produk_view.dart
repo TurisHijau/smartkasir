@@ -256,7 +256,7 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 disabledBackgroundColor: AppColors.primary
-                                    .withOpacity(0.6),
+                                    .withValues(alpha: 0.6),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),

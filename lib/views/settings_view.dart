@@ -114,12 +114,9 @@ class _SettingsContent extends StatelessWidget {
                                     const SizedBox(height: 16),
                                     Text(
                                       viewModel.profileData != null
-                                          ? viewModel
-                                                .profileData!
-                                                .store
-                                                .businessName
+                                          ? viewModel.profileData!.user.name
                                                 .toUpperCase()
-                                          : 'TOKO',
+                                          : 'AKUN',
                                       style: const TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
@@ -127,22 +124,39 @@ class _SettingsContent extends StatelessWidget {
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
-                                    TextButton.icon(
-                                      onPressed: () =>
-                                          viewModel.navigateToProfile(context),
-                                      icon: const Icon(
-                                        Icons.edit,
-                                        size: 18,
-                                        color: AppColors.primary,
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      viewModel.profileData != null
+                                          ? viewModel
+                                                .profileData!
+                                                .store
+                                                .businessName
+                                          : 'Toko',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.gray,
                                       ),
-                                      label: const Text(
-                                        'Profil Detail',
-                                        style: TextStyle(
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    if (viewModel.profileData?.user.role !=
+                                        Role.CASHIER)
+                                      TextButton.icon(
+                                        onPressed: () => viewModel
+                                            .navigateToProfile(context),
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          size: 18,
                                           color: AppColors.primary,
-                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        label: const Text(
+                                          'Profil Detail',
+                                          style: TextStyle(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ),
-                                    ),
                                   ],
                                 ),
                               ),
@@ -165,14 +179,16 @@ class _SettingsContent extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
 
-                              // Analitik - semua role
-                              _buildMenuTile(
-                                icon: Icons.analytics,
-                                title: 'Analitik',
-                                subtitle: 'Lihat analisis keuangan toko',
-                                onTap: () =>
-                                    viewModel.navigateToAnalitik(context),
-                              ),
+                              // Analitik - hanya OWNER dan MANAGER
+                              if (viewModel.profileData?.user.role !=
+                                  Role.CASHIER)
+                                _buildMenuTile(
+                                  icon: Icons.analytics,
+                                  title: 'Analitik',
+                                  subtitle: 'Lihat analisis keuangan toko',
+                                  onTap: () =>
+                                      viewModel.navigateToAnalitik(context),
+                                ),
 
                               // Pegawai - hanya OWNER dan MANAGER
                               if (viewModel.profileData?.user.role !=
@@ -376,7 +392,7 @@ class _SettingsContent extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -433,9 +449,10 @@ class _SettingsContent extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            final vm = Provider.of<SettingsViewModel>(context);
+        return ListenableBuilder(
+          listenable: viewModel,
+          builder: (context, child) {
+            final vm = viewModel;
             return Container(
               padding: const EdgeInsets.all(20),
               height: 400,

@@ -24,6 +24,16 @@ class ListPegawaiViewmodel extends ChangeNotifier {
     loadUsers();
   }
 
+  /// Fetches the current profile, swallowing errors to null so a failed
+  /// profile lookup doesn't abort the user load.
+  Future<AuthResponse?> _loadProfileOrNull() async {
+    try {
+      return await _authService.getProfile();
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> loadUsers() async {
     try {
       isLoading = true;
@@ -32,7 +42,7 @@ class ListPegawaiViewmodel extends ChangeNotifier {
 
       final results = await Future.wait([
         _userService.getAll(),
-        _authService.getProfile().catchError((_) => null),
+        _loadProfileOrNull(),
       ]);
 
       _allUsers = results[0] as List<User>;

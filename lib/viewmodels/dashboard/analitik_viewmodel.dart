@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:smartkasir/models/auth.dart';
 import 'package:smartkasir/models/product.dart';
 import 'package:smartkasir/models/report.dart';
@@ -161,6 +162,39 @@ class AnalitikViewModel extends ChangeNotifier {
     }
   }
 
+  /// True if [date] falls within the currently selected period
+  /// (daily = today, weekly = current week, monthly = current month),
+  /// so charts based on the raw transaction list match the period filter.
+  ///
+  /// Comparisons are done in UTC because the API stores `transactionDate`
+  /// as a UTC `Instant` and the dashboard buckets its periods on those UTC
+  /// values. Converting to device-local time would shift transactions across
+  /// midnight and make the breakdown disagree with the dashboard summary.
+  bool _isInSelectedPeriod(DateTime? date) {
+    if (date == null) return false;
+    final d = date.toUtc();
+    final now = DateTime.now().toUtc();
+    switch (_selectedPeriod) {
+      case 0: // daily — same UTC calendar day
+        return d.year == now.year && d.month == now.month && d.day == now.day;
+      case 1: // weekly — rolling last 7 days (today + previous 6), matching
+        // the backend's `period=weekly` window. The dashboard's weekly count
+        // is NOT a Monday-start calendar week; reproducing a Monday-start week
+        // here dropped every transaction before this Monday and made the
+        // payment breakdown disagree with the headline transaction count.
+        final startOfWindow = DateTime.utc(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(const Duration(days: 6));
+        return !d.isBefore(startOfWindow);
+      case 2: // monthly — same UTC calendar month
+        return d.year == now.year && d.month == now.month;
+      default:
+        return true;
+    }
+  }
+
   void returnToSettings(BuildContext context) {
     Navigator.pop(context);
   }
@@ -192,11 +226,11 @@ class AnalitikViewModel extends ChangeNotifier {
 
       // ── Stat cards ──
       // 
-      Color getBadgeColor(int growth) {
-        return growth >= 0 ?  AppColors.green : AppColors.red; 
+      Color getBadgeColor(num growth) {
+        return growth >= 0 ?  AppColors.green : AppColors.red;
       }
-      
-      Color getBadgeBgColor(int growth) {
+
+      Color getBadgeBgColor(num growth) {
         return growth >= 0 ? AppColors.lightGreen : AppColors.lightRed;
       }
       final revenue = dashboardData.summary.revenue;
@@ -204,26 +238,33 @@ class AnalitikViewModel extends ChangeNotifier {
       final txCount = dashboardData.summary.transactionCount;
       final txCountChange = dashboardData.summary.transactionCountChange;
 
-      String formatRevenue(double val) {
-        if (val >= 1000000) {
-          return 'Rp ${(val / 1000000).toStringAsFixed(1)} jt';
-        }
-        if (val >= 1000) return 'Rp ${(val / 1000).toStringAsFixed(0)} rb';
-        return 'Rp ${val.toInt()}';
+      final rupiahFormat = NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: 'Rp ',
+        decimalDigits: 0,
+      );
+
+      String formatRevenue(double val) => rupiahFormat.format(val);
+
+      String formatChange(num val) {
+        final rounded = val == val.roundToDouble()
+            ? val.toInt().toString()
+            : val.toStringAsFixed(1);
+        return '$rounded %';
       }
 
       statCards = [
         StatCardData(
           label: 'Pendapatan',
           value: formatRevenue(revenue),
-          badge: '$revenueChange %',
+          badge: formatChange(revenueChange),
           badgeColor: getBadgeColor(revenueChange),
           badgeBg: getBadgeBgColor(revenueChange),
         ),
         StatCardData(
           label: 'Transaksi',
           value: '$txCount',
-          badge: '$txCountChange %',
+          badge: formatChange(txCountChange),
           badgeColor: getBadgeColor(txCountChange),
           badgeBg: getBadgeBgColor(txCountChange),
         ),
@@ -238,14 +279,14 @@ class AnalitikViewModel extends ChangeNotifier {
         StatCardData(
           label: 'Rata - Rata',
           value: formatRevenue(avgTransaction),
-          badge: '$avgTransactionChange %',
+          badge: formatChange(avgTransactionChange),
           badgeColor: getBadgeColor(avgTransactionChange),
           badgeBg: getBadgeBgColor(avgTransactionChange),
         ),
         StatCardData(
           label: 'Laba Bersih',
-          value: '$netProfit',
-          badge: '$netProfitChange %',
+          value: formatRevenue(netProfit),
+          badge: formatChange(netProfitChange),
           badgeColor: getBadgeColor(netProfitChange),
           badgeBg: getBadgeBgColor(netProfitChange),
         ),
@@ -262,9 +303,15 @@ class AnalitikViewModel extends ChangeNotifier {
         chartValues = List.filled(chartValues.length, 1.0);
       }
 
-      // ── Payment method breakdown ──
+      // Transaksi yang termasuk dalam periode terpilih (hari/minggu/bulan ini),
+      // agar grafik metode pembayaran & transaksi terbaru sesuai dengan filter.
+      final periodTransactions = transactions
+          .where((t) => _isInSelectedPeriod(t.transactionDate))
+          .toList();
+
+      // ── Payment method breakdown (hanya CASH & QRIS) ──
       int cashCount = 0, qrisCount = 0;
-      for (final t in transactions) {
+      for (final t in periodTransactions) {
         if (t.paymentMethod == PaymentMethod.CASH) {
           cashCount++;
         } else if (t.paymentMethod == PaymentMethod.QRIS) {
@@ -290,7 +337,7 @@ class AnalitikViewModel extends ChangeNotifier {
           .toList();
 
       // ── Recent transactions ──
-      final sortedTx = List<Transaction>.from(transactions);
+      final sortedTx = List<Transaction>.from(periodTransactions);
       sortedTx.sort((a, b) {
         final aDate = a.transactionDate ?? DateTime(2000);
         final bDate = b.transactionDate ?? DateTime(2000);

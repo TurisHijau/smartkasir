@@ -383,7 +383,7 @@ class _ScannerViewState extends State<ScannerView> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 18,
             offset: const Offset(0, -4),
           ),
@@ -528,7 +528,7 @@ class _ScannerViewState extends State<ScannerView> {
         border: Border.all(color: const Color(0xFFEDEFF3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -758,7 +758,7 @@ class _ScannerViewState extends State<ScannerView> {
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           disabledBackgroundColor: AppColors.primary
-                              .withOpacity(0.6),
+                              .withValues(alpha: 0.6),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -1008,6 +1008,9 @@ class _ScannerViewState extends State<ScannerView> {
                       controller: amountPaidController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [CurrencyInputFormatter()],
+                      // Rebuild the sheet on every keystroke so the pay button's
+                      // enabled state tracks whether the cash amount is enough.
+                      onChanged: (_) => setSheetState(() {}),
                       decoration: InputDecoration(
                         labelText: 'Jumlah Bayar',
                         hintText: 'Masukkan jumlah uang',
@@ -1030,24 +1033,25 @@ class _ScannerViewState extends State<ScannerView> {
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: isProcessing
+                        // Disable while processing, or when paying CASH with an
+                        // amount below the total. QRIS pays exactly the total,
+                        // so it's always allowed.
+                        onPressed:
+                            isProcessing ||
+                                (selectedMethod == PaymentMethod.CASH &&
+                                    (double.tryParse(
+                                              amountPaidController.text
+                                                  .replaceAll('.', '')
+                                                  .replaceAll(',', ''),
+                                            ) ??
+                                            0) <
+                                        totalAmount)
                             ? null
                             : () async {
                                 final rawText = amountPaidController.text
                                     .replaceAll('.', '')
                                     .replaceAll(',', '');
                                 final paid = double.tryParse(rawText) ?? 0;
-
-                                if (paid < totalAmount &&
-                                    selectedMethod == PaymentMethod.CASH) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Jumlah bayar kurang!'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                  return;
-                                }
 
                                 final effectivePaid =
                                     selectedMethod != PaymentMethod.CASH
@@ -1105,7 +1109,7 @@ class _ScannerViewState extends State<ScannerView> {
                           backgroundColor: AppColors.primaryDark,
                           foregroundColor: Colors.white,
                           disabledBackgroundColor: AppColors.primaryDark
-                              .withOpacity(0.6),
+                              .withValues(alpha: 0.6),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),

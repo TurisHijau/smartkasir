@@ -24,13 +24,13 @@ class DashboardModel {
 
 class SummaryModel {
   final double revenue;
-  final int revenueChange;
+  final double revenueChange;
   final int transactionCount;
-  final int transactionCountChange;
+  final double transactionCountChange;
   final double avgTransaction;
-  final int avgTransactionChange;
+  final double avgTransactionChange;
   final double netProfit;
-  final int netProfitChange;
+  final double netProfitChange;
 
   SummaryModel({
     required this.revenue,
@@ -45,14 +45,16 @@ class SummaryModel {
 
   factory SummaryModel.fromJson(Map<String, dynamic> json) {
     return SummaryModel(    
-      revenue: (json['revenue'] as num).toDouble(),
-      revenueChange: json['revenueChange'] as int,
-      transactionCount: json['transactionCount'] as int,
-      transactionCountChange: json['transactionCountChange'] as int,
-      avgTransaction: (json['avgTransaction'] as num).toDouble(),
-      avgTransactionChange: json['avgTransactionChange'] as int,
-      netProfit: (json['netProfit'] as num).toDouble(),
-      netProfitChange: json['netProfitChange'] as int,
+      revenue: (json['revenue'] as num?)?.toDouble() ?? 0,
+      revenueChange: (json['revenueChange'] as num?)?.toDouble() ?? 0,
+      transactionCount: (json['transactionCount'] as num?)?.toInt() ?? 0,
+      transactionCountChange:
+          (json['transactionCountChange'] as num?)?.toDouble() ?? 0,
+      avgTransaction: (json['avgTransaction'] as num?)?.toDouble() ?? 0,
+      avgTransactionChange:
+          (json['avgTransactionChange'] as num?)?.toDouble() ?? 0,
+      netProfit: (json['netProfit'] as num?)?.toDouble() ?? 0,
+      netProfitChange: (json['netProfitChange'] as num?)?.toDouble() ?? 0,
     );
   }
 }

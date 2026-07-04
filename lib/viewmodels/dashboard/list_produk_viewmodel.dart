@@ -32,6 +32,16 @@ class ListProdukViewmodel extends ChangeNotifier {
     loadProducts();
   }
 
+  /// Fetches the current profile, swallowing errors to null so a failed
+  /// profile lookup doesn't abort the product load.
+  Future<AuthResponse?> _loadProfileOrNull() async {
+    try {
+      return await _authService.getProfile();
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> loadProducts() async {
     try {
       isLoading = true;
@@ -40,7 +50,7 @@ class ListProdukViewmodel extends ChangeNotifier {
 
       final results = await Future.wait([
         _productService.getAll(),
-        _authService.getProfile().catchError((_) => null),
+        _loadProfileOrNull(),
       ]);
 
       _allProducts = results[0] as List<Product>;
@@ -108,6 +118,7 @@ class ListProdukViewmodel extends ChangeNotifier {
   }
 
   void navigateToAddProduct(BuildContext context) {
+    if (isLoading || isCashier) return;
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const KelolaProdukView()),

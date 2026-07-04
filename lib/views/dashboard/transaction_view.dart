@@ -273,7 +273,7 @@ class _TransactionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -285,7 +285,7 @@ class _TransactionCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: getPaymentColor(tx.paymentMethod).withOpacity(0.1),
+                color: getPaymentColor(tx.paymentMethod).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -326,7 +326,7 @@ class _TransactionCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: getPaymentColor(
                         tx.paymentMethod,
-                      ).withOpacity(0.15),
+                      ).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(

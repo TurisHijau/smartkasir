@@ -105,7 +105,7 @@ class TambahBankView extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: BorderSide(
                                       width: 2,
-                                      color: AppColors.darkGray.withOpacity(
+                                      color: AppColors.darkGray.withValues(alpha: 
                                         0.4,
                                       ),
                                     ),
@@ -143,7 +143,7 @@ class TambahBankView extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     width: 2,
-                                    color: AppColors.darkGray.withOpacity(0.4),
+                                    color: AppColors.darkGray.withValues(alpha: 0.4),
                                   ),
                                 ),
                                 child: DropdownButtonHideUnderline(
@@ -250,7 +250,7 @@ class TambahBankView extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: BorderSide(
                                       width: 2,
-                                      color: AppColors.darkGray.withOpacity(
+                                      color: AppColors.darkGray.withValues(alpha: 
                                         0.4,
                                       ),
                                     ),

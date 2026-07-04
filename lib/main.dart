@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:smartkasir/services/app_navigator.dart';
 import 'package:smartkasir/services/preferences_service.dart';
 import 'package:smartkasir/services/theme_service.dart';
 import 'package:smartkasir/views/home_view.dart';
@@ -26,6 +27,8 @@ class MainApp extends StatelessWidget {
         builder: (context, themeService, child) {
           return MaterialApp(
             title: 'SMARTKASIR',
+            navigatorKey: appNavigatorKey,
+            scaffoldMessengerKey: appMessengerKey,
             debugShowCheckedModeBanner: false,
             themeMode: themeService.themeMode,
             theme: ThemeData(

@@ -195,7 +195,7 @@ class _ScanOverlayPainter extends CustomPainter {
     final top = (size.height - scanHeight) / 2;
     final scanRect = Rect.fromLTWH(left, top, scanWidth, scanHeight);
 
-    final paint = Paint()..color = Colors.black.withOpacity(0.6);
+    final paint = Paint()..color = Colors.black.withValues(alpha: 0.6);
 
     canvas.drawPath(
       Path.combine(
