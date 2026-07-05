@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartkasir/models/auth.dart';
+import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/models/product.dart';
 import 'package:smartkasir/models/report.dart';
 import 'package:smartkasir/models/transaction.dart';
@@ -79,6 +80,7 @@ class AnalitikViewModel extends ChangeNotifier {
 
   bool isLoading = false;
   String? errorMessage;
+  bool isCashier = false;
 
   // ── Store info ──
   String storeName = 'SMARTKASIR';
@@ -130,6 +132,7 @@ class AnalitikViewModel extends ChangeNotifier {
       'Okt',
       'Nov',
       'Des',
+      'Kas',
     ];
     storeDate =
         '${dayNames[now.weekday % 7]}, ${now.day} ${monthNames[now.month]} ${now.year}';
@@ -166,97 +169,137 @@ class AnalitikViewModel extends ChangeNotifier {
 
       final period = _periodString;
 
-      // Load data in parallel
-      final results = await Future.wait([
-        _reportService.getDashboard(period),
-        _transactionService.getAll().catchError((_) => <Transaction>[]),
-        _productService.getAll().catchError((_) => <Product>[]),
-        _authService.getProfile().then<AuthResponse?>(
-          (val) => val,
-          onError: (_) => null,
-        ),
-      ]);
-
-      final dashboardData = results[0] as DashboardModel;
-      final transactions = results[1] as List<Transaction>;
-      final products = results[2] as List<Product>;
-      final profile = results[3] as AuthResponse?;
+      // 1. Get profile first to check role
+      AuthResponse? profile;
+      try {
+        profile = await _authService.getProfile();
+      } catch (_) {
+        profile = null;
+      }
 
       if (profile != null) {
         storeName = profile.store.businessName.toUpperCase();
+        isCashier = profile.user.role == Role.CASHIER;
       }
+
+      DashboardModel? dashboardData;
+      if (!isCashier) {
+        dashboardData = await _reportService.getDashboard(period);
+      } else {
+        // If cashier, try to load top products from the range-based API
+        String? startDate;
+        String? endDate;
+        final now = DateTime.now();
+        final formatter = (DateTime dt) => "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}";
+        endDate = formatter(now);
+        if (period == 'daily') {
+          startDate = formatter(now);
+        } else if (period == 'weekly') {
+          startDate = formatter(now.subtract(const Duration(days: 7)));
+        } else if (period == 'monthly') {
+          startDate = formatter(DateTime(now.year, now.month, 1));
+        }
+
+        try {
+          final topDTOs = await _reportService.getTopProducts(startDate: startDate, endDate: endDate);
+          topProducts = topDTOs.map((e) => TopProductItem(name: e.productName, pcs: e.quantitySold)).toList();
+        } catch (_) {
+          topProducts = [];
+        }
+      }
+
+      // Load products and transactions in parallel
+      final results = await Future.wait([
+        _transactionService.getAll().catchError((_) => <Transaction>[]),
+        _productService.getAll().catchError((_) => <Product>[]),
+      ]);
+
+      final transactions = results[0] as List<Transaction>;
+      final products = results[1] as List<Product>;
 
       // ── Stat cards ──
       //
-      Color getBadgeColor(int growth) {
-        return growth >= 0 ? AppColors.green : AppColors.red;
-      }
-
-      Color getBadgeBgColor(int growth) {
-        return growth >= 0 ? AppColors.lightGreen : AppColors.lightRed;
-      }
-
-      final revenue = dashboardData.summary.revenue;
-      final revenueChange = dashboardData.summary.revenueChange;
-      final txCount = dashboardData.summary.transactionCount;
-      final txCountChange = dashboardData.summary.transactionCountChange;
-
-      String formatRevenue(double val) {
-        if (val >= 1000000) {
-          return 'Rp ${(val / 1000000).toStringAsFixed(1)} jt';
+      if (dashboardData != null) {
+        Color getBadgeColor(int growth) {
+          return growth >= 0 ? AppColors.green : AppColors.red;
         }
-        if (val >= 1000) return 'Rp ${(val / 1000).toStringAsFixed(0)} rb';
-        return 'Rp ${val.toInt()}';
-      }
 
-      statCards = [
-        StatCardData(
-          label: 'Total Pemasukan',
-          value: formatRevenue(revenue),
-          badge: '$revenueChange %',
-          badgeColor: getBadgeColor(revenueChange),
-          badgeBg: getBadgeBgColor(revenueChange),
-        ),
-        StatCardData(
-          label: 'Transaksi',
-          value: '$txCount',
-          badge: '$txCountChange %',
-          badgeColor: getBadgeColor(txCountChange),
-          badgeBg: getBadgeBgColor(txCountChange),
-        ),
-      ];
+        Color getBadgeBgColor(int growth) {
+          return growth >= 0 ? AppColors.lightGreen : AppColors.lightRed;
+        }
 
-      final avgTransaction = dashboardData.summary.avgTransaction;
-      final avgTransactionChange = dashboardData.summary.avgTransactionChange;
-      final netProfit = dashboardData.summary.netProfit;
-      final netProfitChange = dashboardData.summary.netProfitChange;
+        final revenue = dashboardData.summary.revenue;
+        final revenueChange = dashboardData.summary.revenueChange;
+        final txCount = dashboardData.summary.transactionCount;
+        final txCountChange = dashboardData.summary.transactionCountChange;
 
-      statCardsRow2 = [
-        StatCardData(
-          label: 'Rata - Rata',
-          value: formatRevenue(avgTransaction),
-          badge: '$avgTransactionChange %',
-          badgeColor: getBadgeColor(avgTransactionChange),
-          badgeBg: getBadgeBgColor(avgTransactionChange),
-        ),
-        StatCardData(
-          label: 'Keuntungan',
-          value: formatRevenue(netProfit),
-          badge: '$netProfitChange %',
-          badgeColor: getBadgeColor(netProfitChange),
-          badgeBg: getBadgeBgColor(netProfitChange),
-        ),
-      ];
+        String formatRevenue(double val) {
+          if (val >= 1000000) {
+            return 'Rp ${(val / 1000000).toStringAsFixed(1)} jt';
+          }
+          if (val >= 1000) return 'Rp ${(val / 1000).toStringAsFixed(0)} rb';
+          return 'Rp ${val.toInt()}';
+        }
 
-      // ── Revenue chart ──
-      chartDays = dashboardData.salesChart.map((e) => e.label).toList();
-      chartValues = dashboardData.salesChart.map((e) => e.value).toList();
+        statCards = [
+          StatCardData(
+            label: 'Total Pemasukan',
+            value: formatRevenue(revenue),
+            badge: '$revenueChange %',
+            badgeColor: getBadgeColor(revenueChange),
+            badgeBg: getBadgeBgColor(revenueChange),
+          ),
+          StatCardData(
+            label: 'Transaksi',
+            value: '$txCount',
+            badge: '$txCountChange %',
+            badgeColor: getBadgeColor(txCountChange),
+            badgeBg: getBadgeBgColor(txCountChange),
+          ),
+        ];
 
-      if (chartValues.isEmpty) {
-        chartDays = ['Data'];
-        chartValues = [1.0];
-      } else if (chartValues.every((v) => v == 0)) {
-        chartValues = List.filled(chartValues.length, 1.0);
+        final avgTransaction = dashboardData.summary.avgTransaction;
+        final avgTransactionChange = dashboardData.summary.avgTransactionChange;
+        final netProfit = dashboardData.summary.netProfit;
+        final netProfitChange = dashboardData.summary.netProfitChange;
+
+        statCardsRow2 = [
+          StatCardData(
+            label: 'Rata - Rata',
+            value: formatRevenue(avgTransaction),
+            badge: '$avgTransactionChange %',
+            badgeColor: getBadgeColor(avgTransactionChange),
+            badgeBg: getBadgeBgColor(avgTransactionChange),
+          ),
+          StatCardData(
+            label: 'Keuntungan',
+            value: formatRevenue(netProfit),
+            badge: '$netProfitChange %',
+            badgeColor: getBadgeColor(netProfitChange),
+            badgeBg: getBadgeBgColor(netProfitChange),
+          ),
+        ];
+
+        // ── Revenue chart ──
+        chartDays = dashboardData.salesChart.map((e) => e.label).toList();
+        chartValues = dashboardData.salesChart.map((e) => e.value).toList();
+
+        if (chartValues.isEmpty) {
+          chartDays = ['Data'];
+          chartValues = [1.0];
+        } else if (chartValues.every((v) => v == 0)) {
+          chartValues = List.filled(chartValues.length, 1.0);
+        }
+
+        // ── Top products ──
+        topProducts = dashboardData.topProducts.take(10).map((tp) {
+          return TopProductItem(name: tp.productName, pcs: tp.totalQuantity);
+        }).toList();
+      } else {
+        statCards = [];
+        statCardsRow2 = [];
+        chartDays = [];
+        chartValues = [];
       }
 
       // ── Payment method breakdown ──
@@ -300,11 +343,6 @@ class AnalitikViewModel extends ChangeNotifier {
           cashier: t.paymentMethod.name,
           amount: 'Rp${_formatRupiah(t.totalAmount)}',
         );
-      }).toList();
-
-      // ── Top products ──
-      topProducts = dashboardData.topProducts.take(10).map((tp) {
-        return TopProductItem(name: tp.productName, pcs: tp.totalQuantity);
       }).toList();
     } catch (e) {
       errorMessage = e.toString().replaceAll("Exception: ", "");

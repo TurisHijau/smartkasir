@@ -102,16 +102,18 @@ class _AnalitikViewState extends State<AnalitikView> {
                                 children: [
                                   _buildStoreInfo(),
                                   const SizedBox(height: 16),
-                                  _buildStatCards(_vm.statCards),
-                                  const SizedBox(height: 12),
-                                  _buildStatCards(_vm.statCardsRow2),
-                                  const SizedBox(height: 16),
-                                  if (_vm.chartValues.isNotEmpty)
-                                    _buildRevenueChart(),
-                                  if (_vm.chartValues.isNotEmpty)
+                                  if (!_vm.isCashier) ...[
+                                    _buildStatCards(_vm.statCards),
+                                    const SizedBox(height: 12),
+                                    _buildStatCards(_vm.statCardsRow2),
                                     const SizedBox(height: 16),
-                                  _buildPaymentMethod(),
-                                  const SizedBox(height: 16),
+                                    if (_vm.chartValues.isNotEmpty) ...[
+                                      _buildRevenueChart(),
+                                      const SizedBox(height: 16),
+                                    ],
+                                    _buildPaymentMethod(),
+                                    const SizedBox(height: 16),
+                                  ],
                                   _buildLowStock(),
                                   const SizedBox(height: 16),
                                   _buildRecentTransactions(),
