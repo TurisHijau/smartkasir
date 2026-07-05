@@ -53,7 +53,7 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
       _namaProdukController.text = p.name;
       _hargaModalController.text = _formatter.format(p.costPrice.toInt());
       _hargaJualController.text = _formatter.format(p.sellingPrice.toInt());
-      _stokController.text = p.stock.toString();
+      _stokController.text = '0';
     }
   }
 
@@ -89,7 +89,7 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                 child: Container(
                   width: double.infinity,
                   margin: const EdgeInsets.only(top: 18),
-                  padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(24, 40, 24, 30),
                   decoration: const BoxDecoration(
                     color: AppColors.lightGray,
                     borderRadius: BorderRadius.vertical(
@@ -155,7 +155,7 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           _buildLabel('Nama Produk'),
                           _buildTextField(
@@ -163,7 +163,7 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                             hint: 'Masukkan Nama Produk',
                             enabled: !viewModel.isProductNameLocked,
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           _buildLabel('Harga Modal'),
                           _buildTextField(
@@ -172,7 +172,7 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                             hint: 'Masukkan Harga Modal',
                             keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
                           _buildLabel('Harga Jual'),
                           _buildTextField(
@@ -181,13 +181,31 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                             hint: 'Masukkan Harga Jual',
                             keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
-                          _buildLabel('Stok'),
+                          _buildLabel(
+                            viewModel.isEditMode ? 'Tambah Stok' : 'Stok Awal',
+                          ),
+                          if (viewModel.isEditMode)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: 8.0,
+                                left: 4.0,
+                              ),
+                              child: Text(
+                                'Stok saat ini: ${widget.product?.stock ?? 0} pcs',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.gray,
+                                ),
+                              ),
+                            ),
                           _buildTextField(
                             controller: _stokController,
                             isCurrency: false,
-                            hint: 'Masukkan Stok Awal',
+                            hint: viewModel.isEditMode
+                                ? 'Masukkan jumlah stok tambahan'
+                                : 'Masukkan Stok Awal',
                             keyboardType: TextInputType.number,
                           ),
 
@@ -333,12 +351,12 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
 
   Widget _buildLabel(String label) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         label,
         style: const TextStyle(
-          fontSize: 19,
-          fontWeight: FontWeight.w800,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
           color: AppColors.primary,
         ),
       ),
@@ -363,29 +381,30 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
           : null,
       decoration: InputDecoration(
         hintText: hint,
-
         hintStyle: const TextStyle(
           color: AppColors.darkGray,
           fontWeight: FontWeight.w600,
-          fontSize: 17,
+          fontSize: 16,
         ),
         filled: true,
-        fillColor: enabled ? Colors.white : Colors.grey.shade200,
+        fillColor: enabled
+            ? Colors.white.withOpacity(0.7)
+            : Colors.grey.shade300,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 18,
-          vertical: 16,
+          vertical: 15,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.gray, width: 2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.gray, width: 2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2.5),
         ),
       ),
       validator: required

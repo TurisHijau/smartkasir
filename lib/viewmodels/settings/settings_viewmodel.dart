@@ -4,6 +4,7 @@ import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:smartkasir/utils/printer_helper.dart';
 import 'package:smartkasir/models/auth.dart';
 import 'package:smartkasir/services/auth_service.dart';
+import 'package:smartkasir/exceptions/auth_exception.dart';
 import 'package:smartkasir/views/dashboard/analitik_view.dart';
 import 'package:smartkasir/views/dashboard/list_pegawai_view.dart';
 import 'package:smartkasir/views/dashboard/list_produk_view.dart';
@@ -40,6 +41,9 @@ class SettingsViewModel extends ChangeNotifier {
       notifyListeners();
 
       profileData = await _authService.getProfile();
+    } on UnauthorizedException catch (e) {
+      errorMessage = e.message;
+      profileData = null;
     } catch (e) {
       errorMessage = e.toString().replaceAll("Exception: ", "");
     } finally {
@@ -53,6 +57,14 @@ class SettingsViewModel extends ChangeNotifier {
       context,
       MaterialPageRoute(builder: (context) => const ProfileView()),
     ).then((_) => loadProfile());
+  }
+
+  void redirectToLogin(BuildContext context) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginView()),
+      (route) => false,
+    );
   }
 
   void navigateToAnalitik(BuildContext context) {
@@ -86,9 +98,7 @@ class SettingsViewModel extends ChangeNotifier {
   void TransactionHistory(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const TransactionView(),
-      ),
+      MaterialPageRoute(builder: (context) => const TransactionView()),
     );
   }
 
@@ -124,7 +134,7 @@ class SettingsViewModel extends ChangeNotifier {
   Future<void> scanPrinters() async {
     isScanningPrinter = true;
     notifyListeners();
-    
+
     try {
       bool hasPermission = await _printerHelper.checkPermission();
       if (hasPermission) {
@@ -150,7 +160,7 @@ class SettingsViewModel extends ChangeNotifier {
         isPrinterConnected = true;
         connectedPrinterMac = mac;
         connectedPrinterName = name;
-        
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('printer_mac', mac);
         await prefs.setString('printer_name', name);
@@ -172,11 +182,11 @@ class SettingsViewModel extends ChangeNotifier {
       isPrinterConnected = false;
       connectedPrinterMac = null;
       connectedPrinterName = null;
-      
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('printer_mac');
       await prefs.remove('printer_name');
-      
+
       notifyListeners();
     } catch (e) {
       // Handle error
@@ -193,7 +203,7 @@ class SettingsViewModel extends ChangeNotifier {
 
   Future<void> testPrint() async {
     if (!isPrinterConnected) return;
-    
+
     await _printerHelper.printStrukBelanja(
       namaToko: profileData?.store.businessName ?? 'TOKO ANDA',
       alamatToko: 'Jl. Contoh No. 123',
@@ -210,13 +220,11 @@ class SettingsViewModel extends ChangeNotifier {
 
   // NGARAH KE SETTINGAN YA
   void navigateToSetting(BuildContext context) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const SettingsView(),
-    ),
-  );
-}
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SettingsView()),
+    );
+  }
 
   Future<void> logout(BuildContext context) async {
     try {

@@ -75,12 +75,22 @@ class _SettingsContent extends StatelessWidget {
                                 style: const TextStyle(
                                   color: AppColors.darkGray,
                                 ),
+                                textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 12),
-                              ElevatedButton(
-                                onPressed: () => viewModel.loadProfile(),
-                                child: const Text("Coba Lagi"),
-                              ),
+                              const SizedBox(height: 20),
+                              // Check if it's a session expiration error
+                              if (viewModel.errorMessage?.contains('habis') ??
+                                  false)
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      viewModel.redirectToLogin(context),
+                                  child: const Text("Kembali ke Login"),
+                                )
+                              else
+                                ElevatedButton(
+                                  onPressed: () => viewModel.loadProfile(),
+                                  child: const Text("Coba Lagi"),
+                                ),
                             ],
                           ),
                         )
@@ -200,17 +210,16 @@ class _SettingsContent extends StatelessWidget {
                                     viewModel.navigateToProducts(context),
                               ),
 
-                              // Saldo - hanya OWNER
-                              if (viewModel.profileData?.user.role ==
-                                  Role.OWNER)
-                                _buildMenuTile(
-                                  icon: Icons.account_balance_wallet,
-                                  title: 'Saldo',
-                                  subtitle: 'Lihat pembayaran via QRIS',
-                                  onTap: () =>
-                                      viewModel.navigateToSaldo(context),
-                                ),
-
+                              // Saldo
+                              // if (viewModel.profileData?.user.role ==
+                              //     Role.OWNER)
+                              //   _buildMenuTile(
+                              //     icon: Icons.account_balance_wallet,
+                              //     title: 'Saldo',
+                              //     subtitle: 'Lihat pembayaran via QRIS',
+                              //     onTap: () =>
+                              //         viewModel.navigateToSaldo(context),
+                              //   ),
                               const SizedBox(height: 20),
 
                               // Pengaturan Perangkat Section

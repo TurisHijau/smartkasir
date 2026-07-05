@@ -18,7 +18,13 @@ class EditProfileViewModel extends ChangeNotifier {
     required String phone,
   }) async {
     if (name.trim().isEmpty) {
-      errorMessage = "Nama toko tidak boleh kosong";
+      errorMessage = "Nama tidak boleh kosong";
+      notifyListeners();
+      return false;
+    }
+
+    if (username.trim().isEmpty) {
+      errorMessage = "Username tidak boleh kosong";
       notifyListeners();
       return false;
     }
@@ -28,13 +34,18 @@ class EditProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = {
+      final data = <String, dynamic>{
         "name": name.trim(),
-        "email": email.trim(),
-        "username": username.trim(),
         "role": role,
-        "phone": phone.trim(),
+        "username": username.trim(),
       };
+
+      if (email.trim().isNotEmpty) {
+        data["email"] = email.trim();
+      }
+      if (phone.trim().isNotEmpty) {
+        data["phone"] = phone.trim();
+      }
       if (password.isNotEmpty) {
         data["password"] = password;
       }

@@ -71,7 +71,7 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.only(top: 32, left: 22, right: 22),
+                  padding: const EdgeInsets.only(top: 30, left: 24, right: 24),
                   decoration: const BoxDecoration(
                     color: AppColors.lightGray,
                     borderRadius: BorderRadius.vertical(
@@ -86,12 +86,12 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
                           const Text(
                             "Cari Produk",
                             style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.primary,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           Row(
                             children: [
                               Expanded(

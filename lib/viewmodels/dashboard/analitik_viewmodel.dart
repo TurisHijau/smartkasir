@@ -304,11 +304,32 @@ class AnalitikViewModel extends ChangeNotifier {
 
       // ── Payment method breakdown ──
       int cashCount = 0, qrisCount = 0;
+      
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      
       for (final t in transactions) {
-        if (t.paymentMethod == PaymentMethod.CASH) {
-          cashCount++;
-        } else if (t.paymentMethod == PaymentMethod.QRIS) {
-          qrisCount++;
+        if (t.transactionDate != null) {
+          final tDate = t.transactionDate!;
+          final tDay = DateTime(tDate.year, tDate.month, tDate.day);
+          
+          bool include = false;
+          if (_selectedPeriod == 0) { // daily
+            include = tDay.isAtSameMomentAs(today);
+          } else if (_selectedPeriod == 1) { // weekly
+            final weekStart = today.subtract(Duration(days: today.weekday - 1));
+            include = tDay.isAfter(weekStart.subtract(const Duration(days: 1)));
+          } else if (_selectedPeriod == 2) { // monthly
+            include = tDate.year == today.year && tDate.month == today.month;
+          }
+          
+          if (include) {
+            if (t.paymentMethod == PaymentMethod.CASH) {
+              cashCount++;
+            } else if (t.paymentMethod == PaymentMethod.QRIS) {
+              qrisCount++;
+            }
+          }
         }
       }
       paymentMethod = PaymentMethodData(cash: cashCount, qris: qrisCount);
