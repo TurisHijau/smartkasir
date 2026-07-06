@@ -24,23 +24,25 @@ class Transaction {
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
-    return Transaction(
-      id: json['id'],
-      storeId: json['storeId'],
-      cashierId: json['cashierId'],
-      transactionCode: json['transactionCode'],
-      totalAmount: (json['totalAmount'] ?? 0).toDouble(),
-      amountPaid: (json['amountPaid'] ?? 0).toDouble(),
-      changeAmount: (json['changeAmount'] ?? 0).toDouble(),
-      paymentMethod: PaymentMethod.values.firstWhere(
-        (e) => e.name == json['paymentMethod'],
-        orElse: () => PaymentMethod.CASH,
-      ),
-      transactionDate: json['transactionDate'] != null
-          ? DateTime.tryParse(json['transactionDate'].toString())
-          : null,
-    );
-  }
+        return Transaction(
+          id: json['id'],
+          storeId: json['storeId'],
+          cashierId: json['cashierId'],
+          transactionCode: json['transactionCode'],
+          totalAmount: (json['totalAmount'] ?? 0).toDouble(),
+          amountPaid: (json['amountPaid'] ?? 0).toDouble(),
+          changeAmount: (json['changeAmount'] ?? 0).toDouble(),
+          paymentMethod: PaymentMethod.values.firstWhere(
+            (e) => e.name == json['paymentMethod'],
+            orElse: () => PaymentMethod.CASH,
+          ),
+          transactionDate: json['transactionDate'] != null
+              ? DateTime.tryParse(json['transactionDate'].toString().endsWith('Z')
+                  ? json['transactionDate'].toString()
+                  : '${json['transactionDate']}Z')?.toLocal()
+              : null,
+        );
+      }
 }
 
 class TransactionItemRequest {

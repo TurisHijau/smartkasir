@@ -71,20 +71,40 @@ class TransactionViewModel extends ChangeNotifier {
   }
 
   String formatDate(DateTime? date) {
-    if (date == null) return '-';
-    final dayNames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-    final monthNames = [
-      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-    ];
-    
-    final weekday = dayNames[date.weekday - 1];
-    final day = date.day.toString().padLeft(2, '0');
-    final month = monthNames[date.month];
-    final year = date.year;
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-
-    return '$weekday, $day $month $year $hour:$minute';
-  }
+      if (date == null) return '-';
+      final localDate = date.toLocal();
+      final dayNames = [
+        'Senin',
+        'Selasa',
+        'Rabu',
+        'Kamis',
+        'Jumat',
+        'Sabtu',
+        'Minggu',
+      ];
+      final monthNames = [
+        '',
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
+      ];
+  
+      final weekday = dayNames[localDate.weekday - 1];
+      final day = localDate.day.toString().padLeft(2, '0');
+      final month = monthNames[localDate.month];
+      final year = localDate.year;
+      final hour = localDate.hour.toString().padLeft(2, '0');
+      final minute = localDate.minute.toString().padLeft(2, '0');
+  
+      return '$weekday, $day $month $year $hour:$minute';
+    }
 }
