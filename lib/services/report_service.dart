@@ -10,7 +10,10 @@ class ReportService {
   Future<Map<String, dynamic>> getDailySales({String? date}) async {
     final params = <String, String>{};
     if (date != null) params['date'] = date;
-    final response = await _api.get('/reports/daily-sales', queryParams: params);
+    final response = await _api.get(
+      '/reports/daily-sales',
+      queryParams: params,
+    );
     if (response.statusCode == 200) {
       return jsonDecode(response.body) as Map<String, dynamic>;
     }
@@ -22,7 +25,10 @@ class ReportService {
     final params = <String, String>{};
     if (month != null) params['month'] = month.toString();
     if (year != null) params['year'] = year.toString();
-    final response = await _api.get('/reports/monthly-sales', queryParams: params);
+    final response = await _api.get(
+      '/reports/monthly-sales',
+      queryParams: params,
+    );
     if (response.statusCode == 200) {
       return jsonDecode(response.body) as Map<String, dynamic>;
     }
@@ -31,11 +37,17 @@ class ReportService {
 
   /// Get top selling products within a date range.
   /// [startDate] and [endDate] format: yyyy-MM-dd
-  Future<List<TopProductDTO>> getTopProducts({String? startDate, String? endDate}) async {
+  Future<List<TopProductDTO>> getTopProducts({
+    String? startDate,
+    String? endDate,
+  }) async {
     final params = <String, String>{};
     if (startDate != null) params['startDate'] = startDate;
     if (endDate != null) params['endDate'] = endDate;
-    final response = await _api.get('/reports/top-products', queryParams: params);
+    final response = await _api.get(
+      '/reports/top-products',
+      queryParams: params,
+    );
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((json) => TopProductDTO.fromJson(json)).toList();
@@ -43,9 +55,11 @@ class ReportService {
     throw Exception("Gagal memuat produk terlaris: ${response.statusCode}");
   }
 
-  /// Get unified dashboard report data for a specific period.
-  Future<DashboardModel> getDashboard(String period) async {
-    final response = await _api.get('/reports/dashboard', queryParams: {'period': period});
+  /// Get owner dashboard analytics. [date] format: yyyy-MM-dd.
+  Future<DashboardModel> getDashboard({String? date}) async {
+    final params = <String, String>{};
+    if (date != null) params['date'] = date;
+    final response = await _api.get('/reports/dashboard', queryParams: params);
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = jsonDecode(response.body);
       return DashboardModel.fromJson(data);

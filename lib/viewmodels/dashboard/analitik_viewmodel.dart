@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/models/auth.dart';
-import 'package:smartkasir/models/user.dart';
-import 'package:smartkasir/models/product.dart';
 import 'package:smartkasir/models/report.dart';
 import 'package:smartkasir/models/transaction.dart';
+import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/services/auth_service.dart';
-import 'package:smartkasir/services/product_service.dart';
 import 'package:smartkasir/services/report_service.dart';
 import 'package:smartkasir/services/transaction_service.dart';
-import 'package:smartkasir/constants/app_colors.dart';
-
-//  Model Classes
 
 class StatCardData {
   final String label;
@@ -59,56 +55,116 @@ class TopProductItem {
   const TopProductItem({required this.name, required this.pcs});
 }
 
+class ProductRevenueItem {
+  final String name;
+  final int pcs;
+  final String revenue;
+  final String profit;
+
+  const ProductRevenueItem({
+    required this.name,
+    required this.pcs,
+    required this.revenue,
+    required this.profit,
+  });
+}
+
+class CashierPerformanceItem {
+  final String name;
+  final int transactions;
+  final String revenue;
+  final String averageTransaction;
+
+  const CashierPerformanceItem({
+    required this.name,
+    required this.transactions,
+    required this.revenue,
+    required this.averageTransaction,
+  });
+}
+
+class SlowMovingItem {
+  final String name;
+  final int stock;
+  final int sold;
+
+  const SlowMovingItem({
+    required this.name,
+    required this.stock,
+    required this.sold,
+  });
+}
+
+class InsightItem {
+  final IconData icon;
+  final String title;
+  final String description;
+  final Color color;
+  final Color backgroundColor;
+
+  const InsightItem({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.color,
+    required this.backgroundColor,
+  });
+}
+
 class PaymentMethodData {
   final int cash;
   final int qris;
+  final double cashRevenue;
+  final double qrisRevenue;
 
-  const PaymentMethodData({required this.cash, required this.qris});
+  const PaymentMethodData({
+    required this.cash,
+    required this.qris,
+    required this.cashRevenue,
+    required this.qrisRevenue,
+  });
 
   int get total => cash + qris;
   double get cashRatio => total > 0 ? cash / total : 0;
   double get qrisRatio => total > 0 ? qris / total : 0;
 }
 
-// ViewModel
-
 class AnalitikViewModel extends ChangeNotifier {
   final ReportService _reportService = ReportService();
   final TransactionService _transactionService = TransactionService();
-  final ProductService _productService = ProductService();
   final AuthService _authService = AuthService();
 
   bool isLoading = false;
   String? errorMessage;
   bool isCashier = false;
 
-  // ── Store info ──
   String storeName = 'SMARTKASIR';
   String storeDate = '';
-  final List<String> periodLabels = ['Hari ini', 'Minggu ini', 'Bulan ini'];
+  final List<String> periodLabels = ['Hari ini', 'Bulan ini'];
 
   int _selectedPeriod = 0;
   int get selectedPeriod => _selectedPeriod;
 
-  // ── Stat cards ──
+  DashboardModel? _dashboard;
+
   List<StatCardData> statCards = [];
   List<StatCardData> statCardsRow2 = [];
-
-  // ── Revenue chart ──
   List<String> chartDays = [];
   List<double> chartValues = [];
-
-  // ── Payment method ──
-  PaymentMethodData paymentMethod = const PaymentMethodData(cash: 0, qris: 0);
-
-  // ── Low stock ──
+  PaymentMethodData paymentMethod = const PaymentMethodData(
+    cash: 0,
+    qris: 0,
+    cashRevenue: 0,
+    qrisRevenue: 0,
+  );
   List<LowStockItem> lowStockItems = [];
-
-  // ── Recent transactions ──
   List<TransaksiItem> recentTransactions = [];
-
-  // ── Top products ──
   List<TopProductItem> topProducts = [];
+  List<ProductRevenueItem> topRevenueProducts = [];
+  List<CashierPerformanceItem> cashierPerformance = [];
+  List<SlowMovingItem> slowMovingProducts = [];
+  List<InsightItem> businessInsights = [];
+  String slowMovingPeriodLabel = '30 hari terakhir';
 
   AnalitikViewModel() {
     _initDate();
@@ -132,7 +188,6 @@ class AnalitikViewModel extends ChangeNotifier {
       'Okt',
       'Nov',
       'Des',
-      'Kas',
     ];
     storeDate =
         '${dayNames[now.weekday % 7]}, ${now.day} ${monthNames[now.month]} ${now.year}';
@@ -140,21 +195,8 @@ class AnalitikViewModel extends ChangeNotifier {
 
   void selectPeriod(int index) {
     _selectedPeriod = index;
+    _applyDashboardData();
     notifyListeners();
-    loadData();
-  }
-
-  String get _periodString {
-    switch (_selectedPeriod) {
-      case 0:
-        return 'daily';
-      case 1:
-        return 'weekly';
-      case 2:
-        return 'monthly';
-      default:
-        return 'daily';
-    }
   }
 
   void returnToSettings(BuildContext context) {
@@ -167,224 +209,299 @@ class AnalitikViewModel extends ChangeNotifier {
       errorMessage = null;
       notifyListeners();
 
-      final period = _periodString;
+      await _loadProfile();
 
-      // 1. Get profile first to check role
-      AuthResponse? profile;
-      try {
-        profile = await _authService.getProfile();
-      } catch (_) {
-        profile = null;
-      }
-
-      if (profile != null) {
-        storeName = profile.store.businessName.toUpperCase();
-        isCashier = profile.user.role == Role.CASHIER;
-      }
-
-      DashboardModel? dashboardData;
       if (!isCashier) {
-        dashboardData = await _reportService.getDashboard(period);
-      } else {
-        // If cashier, try to load top products from the range-based API
-        String? startDate;
-        String? endDate;
-        final now = DateTime.now();
-        final formatter = (DateTime dt) =>
-            "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}";
-        endDate = formatter(now);
-        if (period == 'daily') {
-          startDate = formatter(now);
-        } else if (period == 'weekly') {
-          startDate = formatter(now.subtract(const Duration(days: 7)));
-        } else if (period == 'monthly') {
-          startDate = formatter(DateTime(now.year, now.month, 1));
-        }
-
-        try {
-          final topDTOs = await _reportService.getTopProducts(
-            startDate: startDate,
-            endDate: endDate,
-          );
-          topProducts = topDTOs
-              .map(
-                (e) => TopProductItem(name: e.productName, pcs: e.quantitySold),
-              )
-              .toList();
-        } catch (_) {
-          topProducts = [];
-        }
+        _dashboard = await _reportService.getDashboard();
+        _applyDashboardData();
       }
 
-      // Load products and transactions in parallel
-      final results = await Future.wait([
-        _transactionService.getAll().catchError((_) => <Transaction>[]),
-        _productService.getAll().catchError((_) => <Product>[]),
-      ]);
-
-      final transactions = results[0] as List<Transaction>;
-      final products = results[1] as List<Product>;
-
-      // ── Stat cards ──
-      //
-      if (dashboardData != null) {
-        Color getBadgeColor(int growth) {
-          return growth >= 0 ? AppColors.green : AppColors.red;
-        }
-
-        Color getBadgeBgColor(int growth) {
-          return growth >= 0 ? AppColors.lightGreen : AppColors.lightRed;
-        }
-
-        final revenue = dashboardData.summary.revenue;
-        final revenueChange = dashboardData.summary.revenueChange;
-        final txCount = dashboardData.summary.transactionCount;
-        final txCountChange = dashboardData.summary.transactionCountChange;
-
-        String formatRevenue(double val) {
-          if (val >= 1000000) {
-            return 'Rp ${(val / 1000000).toStringAsFixed(1)} jt';
-          }
-          if (val >= 1000) return 'Rp ${(val / 1000).toStringAsFixed(0)} rb';
-          return 'Rp ${val.toInt()}';
-        }
-
-        statCards = [
-          StatCardData(
-            label: 'Total Pemasukan',
-            value: formatRevenue(revenue),
-            badge: '$revenueChange %',
-            badgeColor: getBadgeColor(revenueChange),
-            badgeBg: getBadgeBgColor(revenueChange),
-          ),
-          StatCardData(
-            label: 'Transaksi',
-            value: '$txCount',
-            badge: '$txCountChange %',
-            badgeColor: getBadgeColor(txCountChange),
-            badgeBg: getBadgeBgColor(txCountChange),
-          ),
-        ];
-
-        final avgTransaction = dashboardData.summary.avgTransaction;
-        final avgTransactionChange = dashboardData.summary.avgTransactionChange;
-        final netProfit = dashboardData.summary.netProfit;
-        final netProfitChange = dashboardData.summary.netProfitChange;
-
-        statCardsRow2 = [
-          StatCardData(
-            label: 'Rata - Rata',
-            value: formatRevenue(avgTransaction),
-            badge: '$avgTransactionChange %',
-            badgeColor: getBadgeColor(avgTransactionChange),
-            badgeBg: getBadgeBgColor(avgTransactionChange),
-          ),
-          StatCardData(
-            label: 'Keuntungan',
-            value: formatRevenue(netProfit),
-            badge: '$netProfitChange %',
-            badgeColor: getBadgeColor(netProfitChange),
-            badgeBg: getBadgeBgColor(netProfitChange),
-          ),
-        ];
-
-        // ── Revenue chart ──
-        chartDays = dashboardData.salesChart.map((e) => e.label).toList();
-        chartValues = dashboardData.salesChart.map((e) => e.value).toList();
-
-        if (chartValues.isEmpty) {
-          chartDays = ['Data'];
-          chartValues = [1.0];
-        } else if (chartValues.every((v) => v == 0)) {
-          chartValues = List.filled(chartValues.length, 1.0);
-        }
-
-        // ── Top products ──
-        topProducts = dashboardData.topProducts.take(10).map((tp) {
-          return TopProductItem(name: tp.productName, pcs: tp.totalQuantity);
-        }).toList();
-      } else {
-        statCards = [];
-        statCardsRow2 = [];
-        chartDays = [];
-        chartValues = [];
-      }
-
-      // ── Filter transactions by period ──
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-
-      final periodTransactions = transactions.where((t) {
-        if (t.transactionDate == null) return false;
-        final tDate = t.transactionDate!;
-        final tDay = DateTime(tDate.year, tDate.month, tDate.day);
-
-        if (_selectedPeriod == 0) {
-          // daily
-          return tDay.isAtSameMomentAs(today);
-        } else if (_selectedPeriod == 1) {
-          // weekly
-          final weekStart = today.subtract(Duration(days: today.weekday - 1));
-          return tDay.isAfter(weekStart.subtract(const Duration(days: 1)));
-        } else if (_selectedPeriod == 2) {
-          // monthly
-          return tDate.year == today.year && tDate.month == today.month;
-        }
-        return false;
-      }).toList();
-
-      // ── Payment method breakdown ──
-      int cashCount = 0, qrisCount = 0;
-
-      for (final t in periodTransactions) {
-        if (t.paymentMethod == PaymentMethod.CASH) {
-          cashCount++;
-        } else if (t.paymentMethod == PaymentMethod.QRIS) {
-          qrisCount++;
-        }
-      }
-      paymentMethod = PaymentMethodData(cash: cashCount, qris: qrisCount);
-
-      // ── Low stock ──
-      lowStockItems = products
-          .where((p) => p.stock < 20)
-          .take(5)
-          .map(
-            (p) => LowStockItem(
-              name: p.name,
-              count: '${p.stock} items',
-              color: p.stock < 5
-                  ? AppColors.red
-                  : p.stock < 10
-                  ? const Color(0xFFF97316)
-                  : const Color(0xFFFACC15),
-            ),
-          )
-          .toList();
-
-      // ── Recent transactions ──
-      final sortedTx = List<Transaction>.from(periodTransactions);
-      sortedTx.sort((a, b) {
-        final aDate = a.transactionDate ?? DateTime(2000);
-        final bDate = b.transactionDate ?? DateTime(2000);
-        return bDate.compareTo(aDate);
-      });
-      recentTransactions = sortedTx.take(5).map((t) {
-        return TransaksiItem(
-          items: t.transactionCode ?? '-',
-          cashier: t.paymentMethod.name,
-          amount: 'Rp${_formatRupiah(t.totalAmount)}',
-        );
-      }).toList();
+      await _loadRecentTransactions();
     } catch (e) {
-      errorMessage = e.toString().replaceAll("Exception: ", "");
+      errorMessage = e.toString().replaceAll('Exception: ', '');
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  String _formatRupiah(double value) {
+  Future<void> _loadProfile() async {
+    AuthResponse? profile;
+    try {
+      profile = await _authService.getProfile();
+    } catch (_) {
+      profile = null;
+    }
+
+    if (profile != null) {
+      storeName = profile.store.businessName.toUpperCase();
+      isCashier = profile.user.role == Role.CASHIER;
+    }
+  }
+
+  Future<void> _loadRecentTransactions() async {
+    final transactions = await _transactionService.getAll().catchError(
+      (_) => <Transaction>[],
+    );
+
+    final sorted = List<Transaction>.from(transactions);
+    sorted.sort((a, b) {
+      final aDate = a.transactionDate ?? DateTime(2000);
+      final bDate = b.transactionDate ?? DateTime(2000);
+      return bDate.compareTo(aDate);
+    });
+
+    recentTransactions = sorted.take(5).map((transaction) {
+      return TransaksiItem(
+        items: transaction.transactionCode ?? '-',
+        cashier: transaction.paymentMethod.name,
+        amount: formatRupiah(transaction.totalAmount),
+      );
+    }).toList();
+  }
+
+  void _applyDashboardData() {
+    final dashboard = _dashboard;
+    if (dashboard == null) {
+      statCards = [];
+      statCardsRow2 = [];
+      chartDays = [];
+      chartValues = [];
+      paymentMethod = const PaymentMethodData(
+        cash: 0,
+        qris: 0,
+        cashRevenue: 0,
+        qrisRevenue: 0,
+      );
+      lowStockItems = [];
+      topProducts = [];
+      topRevenueProducts = [];
+      cashierPerformance = [];
+      slowMovingProducts = [];
+      businessInsights = [];
+      slowMovingPeriodLabel = '30 hari terakhir';
+      return;
+    }
+
+    final summary = _selectedPeriod == 0
+        ? dashboard.today
+        : dashboard.thisMonth;
+    final periodLabel = _selectedPeriod == 0 ? 'Hari ini' : 'Bulan ini';
+
+    statCards = [
+      StatCardData(
+        label: 'Total Pemasukan',
+        value: formatCompactRupiah(summary.totalRevenue),
+        badge: periodLabel,
+        badgeColor: AppColors.primary,
+        badgeBg: AppColors.lightGray,
+      ),
+      StatCardData(
+        label: 'Transaksi',
+        value: '${summary.transactionCount}',
+        badge: periodLabel,
+        badgeColor: AppColors.primary,
+        badgeBg: AppColors.lightGray,
+      ),
+    ];
+
+    statCardsRow2 = [
+      StatCardData(
+        label: 'Rata-rata',
+        value: formatCompactRupiah(summary.averageTransaction),
+        badge: 'per transaksi',
+        badgeColor: AppColors.green,
+        badgeBg: AppColors.lightGreen,
+      ),
+      StatCardData(
+        label: 'Gross Profit',
+        value: formatCompactRupiah(summary.grossProfit),
+        badge: '${summary.grossMarginPercent.toStringAsFixed(1)}% margin',
+        badgeColor: AppColors.green,
+        badgeBg: AppColors.lightGreen,
+      ),
+    ];
+
+    chartDays = dashboard.salesTrend.asMap().entries.map((entry) {
+      final date = entry.value.date;
+      if (entry.key % 5 != 0 && entry.key != dashboard.salesTrend.length - 1) {
+        return '';
+      }
+      return date.length >= 10 ? date.substring(5) : date;
+    }).toList();
+    chartValues = dashboard.salesTrend.map((e) => e.revenue).toList();
+
+    final cash = _paymentByMethod(dashboard, 'CASH');
+    final qris = _paymentByMethod(dashboard, 'QRIS');
+    paymentMethod = PaymentMethodData(
+      cash: cash.transactionCount,
+      qris: qris.transactionCount,
+      cashRevenue: cash.revenue,
+      qrisRevenue: qris.revenue,
+    );
+
+    lowStockItems = dashboard.inventory.lowStockProducts.take(5).map((item) {
+      return LowStockItem(
+        name: item.productName,
+        count: '${item.stock} stok',
+        color: item.stock < 5
+            ? AppColors.red
+            : item.stock < 10
+            ? const Color(0xFFF97316)
+            : const Color(0xFFFACC15),
+      );
+    }).toList();
+
+    topProducts = dashboard.topProductsByQuantity.take(10).map((product) {
+      return TopProductItem(
+        name: product.productName,
+        pcs: product.totalQuantity,
+      );
+    }).toList();
+
+    topRevenueProducts = dashboard.topProductsByRevenue.take(5).map((product) {
+      return ProductRevenueItem(
+        name: product.productName,
+        pcs: product.quantitySold,
+        revenue: formatRupiah(product.revenue),
+        profit: formatRupiah(product.grossProfit),
+      );
+    }).toList();
+
+    cashierPerformance = dashboard.cashiers.take(5).map((cashier) {
+      return CashierPerformanceItem(
+        name: cashier.cashierName,
+        transactions: cashier.transactionCount,
+        revenue: formatRupiah(cashier.revenue),
+        averageTransaction: formatRupiah(cashier.averageTransaction),
+      );
+    }).toList();
+
+    slowMovingProducts = dashboard.inventory.slowMovingProducts.take(5).map((
+      item,
+    ) {
+      return SlowMovingItem(
+        name: item.productName,
+        stock: item.stock,
+        sold: item.quantitySold,
+      );
+    }).toList();
+    slowMovingPeriodLabel =
+        '${dashboard.inventory.slowMovingWindowDays} hari terakhir';
+
+    businessInsights = _buildBusinessInsights(
+      summary: summary,
+      lowStockCount: dashboard.inventory.lowStockProducts.length,
+      slowMovingCount: dashboard.inventory.slowMovingProducts.length,
+      cashRevenue: cash.revenue,
+      qrisRevenue: qris.revenue,
+    );
+  }
+
+  List<InsightItem> _buildBusinessInsights({
+    required SalesSummary summary,
+    required int lowStockCount,
+    required int slowMovingCount,
+    required double cashRevenue,
+    required double qrisRevenue,
+  }) {
+    final insights = <InsightItem>[
+      InsightItem(
+        icon: Icons.trending_up,
+        title: 'Pendapatan ${periodLabels[_selectedPeriod].toLowerCase()}',
+        description:
+            '${formatRupiah(summary.totalRevenue)} dari ${summary.transactionCount} transaksi',
+        color: AppColors.primary,
+        backgroundColor: AppColors.lightPrimary,
+      ),
+    ];
+
+    if (summary.transactionCount > 0) {
+      final marginIsHealthy = summary.grossMarginPercent >= 30;
+      insights.add(
+        InsightItem(
+          icon: marginIsHealthy
+              ? Icons.check_circle_outline
+              : Icons.info_outline,
+          title: marginIsHealthy ? 'Margin sehat' : 'Margin perlu dicek',
+          description:
+              'Gross margin ${summary.grossMarginPercent.toStringAsFixed(1)}%, profit ${formatRupiah(summary.grossProfit)}',
+          color: marginIsHealthy ? AppColors.green : const Color(0xFFF97316),
+          backgroundColor: marginIsHealthy
+              ? AppColors.lightGreen
+              : const Color(0xFFFFEDD5),
+        ),
+      );
+    }
+
+    insights.add(
+      InsightItem(
+        icon: Icons.inventory_2_outlined,
+        title: lowStockCount == 0 ? 'Stok aman' : '$lowStockCount stok menipis',
+        description: lowStockCount == 0
+            ? 'Tidak ada produk yang perlu restock sekarang'
+            : 'Cek daftar stok sebelum produk habis',
+        color: lowStockCount == 0 ? AppColors.green : AppColors.red,
+        backgroundColor: lowStockCount == 0
+            ? AppColors.lightGreen
+            : AppColors.lightRed,
+      ),
+    );
+
+    if (slowMovingCount > 0) {
+      insights.add(
+        InsightItem(
+          icon: Icons.hourglass_empty,
+          title: '$slowMovingCount produk slow moving',
+          description:
+              'Berdasarkan penjualan $slowMovingPeriodLabel, pertimbangkan promo atau kurangi stok berikutnya',
+          color: const Color(0xFFF97316),
+          backgroundColor: const Color(0xFFFFEDD5),
+        ),
+      );
+    }
+
+    if (paymentMethod.total > 0) {
+      final qrisIsHigher = qrisRevenue > cashRevenue;
+      insights.add(
+        InsightItem(
+          icon: Icons.payments_outlined,
+          title: qrisIsHigher ? 'QRIS lebih dominan' : 'Cash lebih dominan',
+          description: qrisIsHigher
+              ? 'QRIS menyumbang ${formatRupiah(qrisRevenue)}'
+              : 'Cash menyumbang ${formatRupiah(cashRevenue)}',
+          color: AppColors.secondary,
+          backgroundColor: AppColors.lightPrimary,
+        ),
+      );
+    }
+
+    return insights.take(4).toList();
+  }
+
+  PaymentMethodBreakdown _paymentByMethod(
+    DashboardModel dashboard,
+    String method,
+  ) {
+    return dashboard.paymentMethods.firstWhere(
+      (item) => item.method.toUpperCase() == method,
+      orElse: () => PaymentMethodBreakdown(
+        method: method,
+        transactionCount: 0,
+        revenue: 0,
+      ),
+    );
+  }
+
+  String formatCompactRupiah(double value) {
+    if (value >= 1000000) {
+      return 'Rp ${(value / 1000000).toStringAsFixed(1)} jt';
+    }
+    if (value >= 1000) return 'Rp ${(value / 1000).toStringAsFixed(0)} rb';
+    return 'Rp ${value.toInt()}';
+  }
+
+  String formatRupiah(double value) {
     final intVal = value.toInt();
     final str = intVal.toString();
     final result = StringBuffer();
@@ -392,6 +509,6 @@ class AnalitikViewModel extends ChangeNotifier {
       if (i > 0 && (str.length - i) % 3 == 0) result.write('.');
       result.write(str[i]);
     }
-    return result.toString();
+    return 'Rp$result';
   }
 }

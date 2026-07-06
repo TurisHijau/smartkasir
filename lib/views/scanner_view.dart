@@ -1270,7 +1270,7 @@ class _ScannerViewState extends State<ScannerView> {
                                     final effectivePaid =
                                         selectedMethod == PaymentMethod.CASH
                                         ? paid
-                                        : totalAmount;
+                                        : 0.0;
 
                                     setSheetState(() => isProcessing = true);
                                     try {
@@ -1300,7 +1300,6 @@ class _ScannerViewState extends State<ScannerView> {
                                         setState(() => _cartItems.clear());
                                         _showTransactionSuccess(
                                           transaction,
-                                          effectivePaid,
                                           cartItemsCopy,
                                         );
                                       }
@@ -1371,10 +1370,12 @@ class _ScannerViewState extends State<ScannerView> {
 
   void _showTransactionSuccess(
     Transaction transaction,
-    double actualPaid,
     List<_CartItem> cartItems,
   ) {
-    double kembalian = actualPaid - transaction.totalAmount;
+    final actualPaid = transaction.amountPaid > 0
+        ? transaction.amountPaid
+        : transaction.totalAmount;
+    double kembalian = transaction.changeAmount;
     if (kembalian < 0) kembalian = 0;
 
     showDialog(

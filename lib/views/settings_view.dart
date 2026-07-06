@@ -210,16 +210,6 @@ class _SettingsContent extends StatelessWidget {
                                     viewModel.navigateToProducts(context),
                               ),
 
-                              // Saldo
-                              // if (viewModel.profileData?.user.role ==
-                              //     Role.OWNER)
-                              //   _buildMenuTile(
-                              //     icon: Icons.account_balance_wallet,
-                              //     title: 'Saldo',
-                              //     subtitle: 'Lihat pembayaran via QRIS',
-                              //     onTap: () =>
-                              //         viewModel.navigateToSaldo(context),
-                              //   ),
                               const SizedBox(height: 20),
 
                               // Pengaturan Perangkat Section

@@ -10,7 +10,8 @@ class TransactionService {
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((json) {
-        // API returns { "transaction": {...}, "payment": {...} }
+        // Current API returns { "transaction": {...} }.
+        // Keep the direct shape fallback for older local builds.
         if (json.containsKey('transaction')) {
           return Transaction.fromJson(json['transaction']);
         }

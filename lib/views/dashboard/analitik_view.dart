@@ -22,12 +22,6 @@ class _AnalitikViewState extends State<AnalitikView> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _vm.loadData(); // initial load
-  }
-
-  @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: _vm,
@@ -103,22 +97,55 @@ class _AnalitikViewState extends State<AnalitikView> {
                                   _buildStoreInfo(),
                                   const SizedBox(height: 16),
                                   if (!_vm.isCashier) ...[
+                                    _sectionTitle(
+                                      'Ringkasan Bisnis',
+                                      'Angka utama dan prioritas yang perlu dicek',
+                                    ),
+                                    const SizedBox(height: 10),
                                     _buildStatCards(_vm.statCards),
                                     const SizedBox(height: 12),
                                     _buildStatCards(_vm.statCardsRow2),
                                     const SizedBox(height: 16),
+                                    _buildBusinessInsights(),
+                                    const SizedBox(height: 18),
+                                    _sectionTitle(
+                                      'Penjualan',
+                                      'Tren pendapatan dan metode pembayaran',
+                                    ),
+                                    const SizedBox(height: 10),
                                     if (_vm.chartValues.isNotEmpty) ...[
                                       _buildRevenueChart(),
                                       const SizedBox(height: 16),
                                     ],
                                     _buildPaymentMethod(),
+                                    const SizedBox(height: 18),
+                                    _sectionTitle(
+                                      'Produk',
+                                      'Produk paling laku dan paling menghasilkan',
+                                    ),
+                                    const SizedBox(height: 10),
+                                    _buildTopProducts(),
+                                    const SizedBox(height: 16),
+                                    _buildTopRevenueProducts(),
+                                    const SizedBox(height: 18),
+                                    _sectionTitle(
+                                      'Stok',
+                                      'Produk yang perlu restock atau dipantau',
+                                    ),
+                                    const SizedBox(height: 10),
+                                    _buildLowStock(),
+                                    const SizedBox(height: 16),
+                                    _buildSlowMovingProducts(),
+                                    const SizedBox(height: 18),
+                                    _sectionTitle(
+                                      'Operasional',
+                                      'Performa kasir dan riwayat transaksi',
+                                    ),
+                                    const SizedBox(height: 10),
+                                    _buildCashierPerformance(),
                                     const SizedBox(height: 16),
                                   ],
-                                  _buildLowStock(),
-                                  const SizedBox(height: 16),
                                   _buildRecentTransactions(),
-                                  const SizedBox(height: 16),
-                                  _buildTopProducts(),
                                 ],
                               ),
                             ),
@@ -180,7 +207,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -253,6 +280,27 @@ class _AnalitikViewState extends State<AnalitikView> {
     );
   }
 
+  Widget _sectionTitle(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+            color: AppColors.primary,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          subtitle,
+          style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
+        ),
+      ],
+    );
+  }
+
   // ─── Stat cards ───────────────────────────────────────────────────────────
 
   Widget _buildStatCards(List<StatCardData> cards) {
@@ -277,7 +325,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -324,6 +372,60 @@ class _AnalitikViewState extends State<AnalitikView> {
     );
   }
 
+  Widget _buildBusinessInsights() {
+    return _analyticsCard(
+      title: 'Insight Cepat',
+      emptyIcon: Icons.insights_outlined,
+      emptyTitle: 'Belum Ada Insight',
+      emptySubtitle: 'Insight muncul setelah ada transaksi',
+      isEmpty: _vm.businessInsights.isEmpty,
+      child: Column(children: _vm.businessInsights.map(_insightRow).toList()),
+    );
+  }
+
+  Widget _insightRow(InsightItem item) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: item.backgroundColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(item.icon, color: item.color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item.description,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.darkGray,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ─── Revenue chart ────────────────────────────────────────────────────────
 
   Widget _buildRevenueChart() {
@@ -334,7 +436,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -344,7 +446,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Grafik Pendapatan',
+            'Tren Pendapatan',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -378,7 +480,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -416,13 +518,13 @@ class _AnalitikViewState extends State<AnalitikView> {
                   _legendItem(
                     AppColors.secondary,
                     'Cash',
-                    '${pm.cash} transaksi',
+                    '${pm.cash} transaksi • ${_vm.formatCompactRupiah(pm.cashRevenue)}',
                   ),
                   const SizedBox(height: 12),
                   _legendItem(
                     AppColors.tertiary,
                     'QRIS',
-                    '${pm.qris} transaksi',
+                    '${pm.qris} transaksi • ${_vm.formatCompactRupiah(pm.qrisRevenue)}',
                   ),
                 ],
               ),
@@ -477,7 +579,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -487,7 +589,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Stok hampir habis',
+            'Stok Perlu Restock',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -586,7 +688,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -596,7 +698,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Transaksi Terakhir',
+            'Riwayat Transaksi',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -604,65 +706,95 @@ class _AnalitikViewState extends State<AnalitikView> {
             ),
           ),
           const SizedBox(height: 14),
-          ..._vm.recentTransactions.map(
-            (t) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.receipt_long,
-                      color: AppColors.white,
-                      size: 18,
-                    ),
+          if (_vm.recentTransactions.isEmpty)
+            Center(
+              child: Column(
+                children: const [
+                  SizedBox(height: 28),
+                  Icon(
+                    Icons.receipt_long_outlined,
+                    size: 46,
+                    color: AppColors.gray,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          t.items,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        Text(
-                          'Metode : ${t.cashier}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.darkGray,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  SizedBox(height: 14),
                   Text(
-                    t.amount,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                    'Belum Ada Transaksi',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.darkGray,
                     ),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    'Riwayat muncul setelah transaksi dibuat',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: AppColors.darkGray),
                   ),
                 ],
               ),
+            )
+          else
+            ..._vm.recentTransactions.map(
+              (t) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.receipt_long,
+                        color: AppColors.white,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            t.items,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          Text(
+                            'Metode: ${t.cashier}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.darkGray,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      t.amount,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
           const SizedBox(height: 24),
           GestureDetector(
             onTap: () => vm.TransactionHistory(context),
             child: const Center(
               child: Text(
-                'Lihat Selengkapnya →',
+                'Lihat Riwayat Lengkap →',
                 style: TextStyle(fontSize: 14, color: AppColors.darkGray),
               ),
             ),
@@ -683,7 +815,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -693,7 +825,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Produk Terlaris',
+            'Produk Terlaris (Qty)',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -774,6 +906,249 @@ class _AnalitikViewState extends State<AnalitikView> {
       ),
     );
   }
+
+  Widget _buildTopRevenueProducts() {
+    return _analyticsCard(
+      title: 'Produk Paling Menghasilkan',
+      emptyIcon: Icons.leaderboard_outlined,
+      emptyTitle: 'Belum Ada Data Revenue',
+      emptySubtitle: 'Data muncul setelah ada transaksi',
+      isEmpty: _vm.topRevenueProducts.isEmpty,
+      child: Column(
+        children: _vm.topRevenueProducts.asMap().entries.map((e) {
+          final item = e.value;
+          return _rankedMetricRow(
+            rank: e.key + 1,
+            title: item.name,
+            subtitle: '${item.pcs} pcs • Profit ${item.profit}',
+            trailing: item.revenue,
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildCashierPerformance() {
+    return _analyticsCard(
+      title: 'Performa Kasir Bulan Ini',
+      emptyIcon: Icons.badge_outlined,
+      emptyTitle: 'Belum Ada Data Kasir',
+      emptySubtitle: 'Data muncul setelah kasir membuat transaksi',
+      isEmpty: _vm.cashierPerformance.isEmpty,
+      child: Column(
+        children: _vm.cashierPerformance.map((item) {
+          return _metricRow(
+            icon: Icons.person_outline,
+            title: item.name,
+            subtitle:
+                '${item.transactions} transaksi • Rata-rata ${item.averageTransaction}',
+            trailing: item.revenue,
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildSlowMovingProducts() {
+    return _analyticsCard(
+      title: 'Produk Slow Moving ${_vm.slowMovingPeriodLabel}',
+      emptyIcon: Icons.hourglass_empty,
+      emptyTitle: 'Belum Ada Data Produk',
+      emptySubtitle: 'Data muncul setelah produk dan transaksi tersedia',
+      isEmpty: _vm.slowMovingProducts.isEmpty,
+      child: Column(
+        children: _vm.slowMovingProducts.map((item) {
+          return _metricRow(
+            icon: Icons.inventory_2_outlined,
+            title: item.name,
+            subtitle: 'Terjual ${item.sold} pcs ${_vm.slowMovingPeriodLabel}',
+            trailing: '${item.stock} stok',
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _analyticsCard({
+    required String title,
+    required IconData emptyIcon,
+    required String emptyTitle,
+    required String emptySubtitle,
+    required bool isEmpty,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (isEmpty)
+            Center(
+              child: Column(
+                children: [
+                  const SizedBox(height: 28),
+                  Icon(emptyIcon, size: 46, color: AppColors.gray),
+                  const SizedBox(height: 14),
+                  Text(
+                    emptyTitle,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.darkGray,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    emptySubtitle,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.darkGray,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            )
+          else
+            child,
+        ],
+      ),
+    );
+  }
+
+  Widget _rankedMetricRow({
+    required int rank,
+    required String title,
+    required String subtitle,
+    required String trailing,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 28,
+            child: Text(
+              '$rank',
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.darkGray,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.darkGray,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            trailing,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _metricRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String trailing,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
+              color: AppColors.lightGray,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: AppColors.primary, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.darkGray,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            trailing,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ─── Custom Painters ──────────────────────────────────────────────────────────
@@ -845,8 +1220,8 @@ class LineChartPainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.primary.withOpacity(0.15),
-            AppColors.primary.withOpacity(0.01),
+            AppColors.primary.withValues(alpha: 0.15),
+            AppColors.primary.withValues(alpha: 0.01),
           ],
         ).createShader(Rect.fromLTWH(0, 0, size.width, chartH)),
     );
