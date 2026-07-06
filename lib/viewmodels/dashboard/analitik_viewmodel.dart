@@ -190,7 +190,8 @@ class AnalitikViewModel extends ChangeNotifier {
         String? startDate;
         String? endDate;
         final now = DateTime.now();
-        final formatter = (DateTime dt) => "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}";
+        final formatter = (DateTime dt) =>
+            "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}";
         endDate = formatter(now);
         if (period == 'daily') {
           startDate = formatter(now);
@@ -201,8 +202,15 @@ class AnalitikViewModel extends ChangeNotifier {
         }
 
         try {
-          final topDTOs = await _reportService.getTopProducts(startDate: startDate, endDate: endDate);
-          topProducts = topDTOs.map((e) => TopProductItem(name: e.productName, pcs: e.quantitySold)).toList();
+          final topDTOs = await _reportService.getTopProducts(
+            startDate: startDate,
+            endDate: endDate,
+          );
+          topProducts = topDTOs
+              .map(
+                (e) => TopProductItem(name: e.productName, pcs: e.quantitySold),
+              )
+              .toList();
         } catch (_) {
           topProducts = [];
         }
@@ -302,34 +310,37 @@ class AnalitikViewModel extends ChangeNotifier {
         chartValues = [];
       }
 
-      // ── Payment method breakdown ──
-      int cashCount = 0, qrisCount = 0;
-      
+      // ── Filter transactions by period ──
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
-      
-      for (final t in transactions) {
-        if (t.transactionDate != null) {
-          final tDate = t.transactionDate!;
-          final tDay = DateTime(tDate.year, tDate.month, tDate.day);
-          
-          bool include = false;
-          if (_selectedPeriod == 0) { // daily
-            include = tDay.isAtSameMomentAs(today);
-          } else if (_selectedPeriod == 1) { // weekly
-            final weekStart = today.subtract(Duration(days: today.weekday - 1));
-            include = tDay.isAfter(weekStart.subtract(const Duration(days: 1)));
-          } else if (_selectedPeriod == 2) { // monthly
-            include = tDate.year == today.year && tDate.month == today.month;
-          }
-          
-          if (include) {
-            if (t.paymentMethod == PaymentMethod.CASH) {
-              cashCount++;
-            } else if (t.paymentMethod == PaymentMethod.QRIS) {
-              qrisCount++;
-            }
-          }
+
+      final periodTransactions = transactions.where((t) {
+        if (t.transactionDate == null) return false;
+        final tDate = t.transactionDate!;
+        final tDay = DateTime(tDate.year, tDate.month, tDate.day);
+
+        if (_selectedPeriod == 0) {
+          // daily
+          return tDay.isAtSameMomentAs(today);
+        } else if (_selectedPeriod == 1) {
+          // weekly
+          final weekStart = today.subtract(Duration(days: today.weekday - 1));
+          return tDay.isAfter(weekStart.subtract(const Duration(days: 1)));
+        } else if (_selectedPeriod == 2) {
+          // monthly
+          return tDate.year == today.year && tDate.month == today.month;
+        }
+        return false;
+      }).toList();
+
+      // ── Payment method breakdown ──
+      int cashCount = 0, qrisCount = 0;
+
+      for (final t in periodTransactions) {
+        if (t.paymentMethod == PaymentMethod.CASH) {
+          cashCount++;
+        } else if (t.paymentMethod == PaymentMethod.QRIS) {
+          qrisCount++;
         }
       }
       paymentMethod = PaymentMethodData(cash: cashCount, qris: qrisCount);
@@ -352,7 +363,7 @@ class AnalitikViewModel extends ChangeNotifier {
           .toList();
 
       // ── Recent transactions ──
-      final sortedTx = List<Transaction>.from(transactions);
+      final sortedTx = List<Transaction>.from(periodTransactions);
       sortedTx.sort((a, b) {
         final aDate = a.transactionDate ?? DateTime(2000);
         final bDate = b.transactionDate ?? DateTime(2000);

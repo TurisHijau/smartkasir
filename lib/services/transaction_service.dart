@@ -9,23 +9,39 @@ class TransactionService {
     final response = await _api.get('/transactions');
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => Transaction.fromJson(json)).toList();
+      return data.map((json) {
+        // API returns { "transaction": {...}, "payment": {...} }
+        if (json.containsKey('transaction')) {
+          return Transaction.fromJson(json['transaction']);
+        }
+        return Transaction.fromJson(json);
+      }).toList();
     }
     throw Exception("Gagal memuat transaksi: ${response.statusCode}");
   }
 
   Future<Transaction> create(TransactionRequest request) async {
     final response = await _api.post('/transactions', body: request.toJson());
-    if (response.statusCode == 200) {
-      return Transaction.fromJson(jsonDecode(response.body));
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final json = jsonDecode(response.body);
+      if (json.containsKey('transaction')) {
+        return Transaction.fromJson(json['transaction']);
+      }
+      return Transaction.fromJson(json);
     }
-    throw Exception("Gagal membuat transaksi: ${response.statusCode} - ${response.body}");
+    throw Exception(
+      "Gagal membuat transaksi: ${response.statusCode} - ${response.body}",
+    );
   }
 
   Future<Transaction> getById(String id) async {
     final response = await _api.get('/transactions/$id');
     if (response.statusCode == 200) {
-      return Transaction.fromJson(jsonDecode(response.body));
+      final json = jsonDecode(response.body);
+      if (json.containsKey('transaction')) {
+        return Transaction.fromJson(json['transaction']);
+      }
+      return Transaction.fromJson(json);
     }
     throw Exception("Gagal memuat detail transaksi: ${response.statusCode}");
   }
