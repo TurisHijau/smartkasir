@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartkasir/services/auth_service.dart';
+import 'package:smartkasir/views/auth/forgot_password_view.dart';
 import 'package:smartkasir/views/auth/register_view.dart';
 import 'package:smartkasir/views/scanner_view.dart';
 
@@ -81,6 +82,13 @@ class LoginViewmodel extends ChangeNotifier {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const RegisterView()),
+    );
+  }
+
+  void navigateToForgotPassword(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ForgotPasswordView()),
     );
   }
 }

@@ -156,7 +156,33 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
 
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 8),
+
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () =>
+                                  viewModel.navigateToForgotPassword(context),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.primary,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 6,
+                                ),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: const Text(
+                                'Lupa password?',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 18),
 
                           // Login Button
                           AuthFilledButton(
