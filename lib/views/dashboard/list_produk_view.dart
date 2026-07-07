@@ -4,6 +4,7 @@ import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/models/product.dart';
 import 'package:smartkasir/views/dashboard/barcode_scanner_view.dart';
 import 'package:smartkasir/viewmodels/dashboard/list_produk_viewmodel.dart';
+import 'package:smartkasir/widgets/app_ui.dart';
 
 class ListProdukView extends StatelessWidget {
   const ListProdukView({super.key});
@@ -38,13 +39,7 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
     final viewmodel = context.watch<ListProdukViewmodel>();
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.tertiary, AppColors.secondary],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+      decoration: AppUi.gradientBackground,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         floatingActionButton: viewmodel.isCashier
@@ -67,17 +62,11 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              _buildHeader(context),
+              const AppScreenHeader(title: 'Daftar Produk'),
               Expanded(
-                child: Container(
-                  width: double.infinity,
+                child: AppPanel(
+                  margin: EdgeInsets.zero,
                   padding: const EdgeInsets.only(top: 30, left: 24, right: 24),
-                  decoration: const BoxDecoration(
-                    color: AppColors.lightGray,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(45),
-                    ),
-                  ),
                   child: Stack(
                     children: [
                       Column(
@@ -85,11 +74,7 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
                         children: [
                           const Text(
                             "Cari Produk",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primary,
-                            ),
+                            style: AppTextStyles.searchLabel,
                           ),
                           const SizedBox(height: 12),
                           Row(
@@ -98,7 +83,9 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
                                 child: Container(
                                   height: 48,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadius.md,
+                                    ),
                                     border: Border.all(
                                       color: AppColors.gray,
                                       width: 1.8,
@@ -194,7 +181,7 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
                               borderRadius: BorderRadius.circular(8),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 10,
                                 ),
                               ],
@@ -252,37 +239,6 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 27),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(
-              Icons.arrow_back_ios_new,
-              color: AppColors.white,
-              size: 28,
-            ),
-          ),
-          const Expanded(
-            child: Center(
-              child: Text(
-                "Daftar Produk",
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 24),
-        ],
-      ),
-    );
-  }
-
   Widget _actionButton({required IconData icon, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
@@ -291,7 +247,7 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
         height: 48,
         decoration: BoxDecoration(
           color: AppColors.primary,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Icon(icon, size: 34, color: AppColors.white),
       ),
@@ -317,10 +273,10 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -332,30 +288,16 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  product.name,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                ),
-                const SizedBox(height: 4),
+                Text(product.name, style: AppTextStyles.listTitle),
+                const SizedBox(height: 2),
                 Text(
                   "Harga Jual : Rp${formatRupiah(product.sellingPrice)}",
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.darkGray,
-                  ),
+                  style: AppTextStyles.listBodyStrong,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   "Stok : ${product.stock} items",
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.darkGray,
-                  ),
+                  style: AppTextStyles.listBody,
                 ),
               ],
             ),
@@ -368,7 +310,7 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
                   icon: Icons.add,
                   bgColor: AppColors.lightGreen,
                   iconColor: AppColors.green,
-                  iconSize: 26,
+                  iconSize: 25,
                 ),
                 const SizedBox(width: 6),
                 _miniButton(
@@ -402,8 +344,8 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 38,
-        height: 38,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(4),

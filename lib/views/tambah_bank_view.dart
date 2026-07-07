@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/viewmodels/tambah_bank_viewmodel.dart';
+import 'package:smartkasir/widgets/app_ui.dart';
 
 class TambahBankView extends StatelessWidget {
   const TambahBankView({super.key});
@@ -15,59 +16,18 @@ class TambahBankView extends StatelessWidget {
           return Scaffold(
             // Menghapus backgroundColor lama agar gradient di Container terlihat
             body: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.tertiary, AppColors.secondary],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
+              decoration: AppUi.gradientBackground,
               child: SafeArea(
                 child: Column(
                   children: [
                     // HEADER
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 25,
-                      ),
-                      child: Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: const Icon(
-                              Icons.arrow_back_ios_new_rounded,
-                              color: AppColors.white,
-                              size: 28,
-                            ),
-                          ),
-                          const Expanded(
-                            child: Center(
-                              child: Text(
-                                'Tambah Bank',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                        ],
-                      ),
-                    ),
+                    const AppScreenHeader(title: 'Tambah Bank'),
 
                     // CONTENT
                     Expanded(
-                      child: Container(
-                        width: double.infinity,
-                        decoration: const BoxDecoration(
-                          color: AppColors.lightGray,
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(45),
-                          ),
-                        ),
+                      child: AppPanel(
+                        margin: EdgeInsets.zero,
+                        padding: EdgeInsets.zero,
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(20, 55, 20, 20),
                           child: Column(

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/viewmodels/dashboard/analitik_viewmodel.dart';
 import 'package:smartkasir/viewmodels/settings/settings_viewmodel.dart';
+import 'package:smartkasir/widgets/app_ui.dart';
 
 class AnalitikView extends StatefulWidget {
   const AnalitikView({super.key});
@@ -27,36 +28,25 @@ class _AnalitikViewState extends State<AnalitikView> {
       listenable: _vm,
       builder: (context, _) => Container(
         // gradient background
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.tertiary, AppColors.secondary],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        decoration: AppUi.gradientBackground,
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: SafeArea(
             child: Column(
               children: [
                 //  Header
-                _buildHeader(context),
+                AppScreenHeader(
+                  title: 'Analitik',
+                  onBack: () => _vm.returnToSettings(context),
+                ),
 
                 //  border radius atas
                 Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(top: 18),
-                    decoration: const BoxDecoration(
-                      color: AppColors.lightGray,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(45),
-                      ),
-                    ),
+                  child: AppPanel(
+                    padding: EdgeInsets.zero,
+                    clip: true,
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(45),
-                      ),
+                      borderRadius: AppUi.panelBorderRadius,
                       child: _vm.isLoading
                           ? const Center(child: CircularProgressIndicator())
                           : _vm.errorMessage != null
@@ -160,51 +150,14 @@ class _AnalitikViewState extends State<AnalitikView> {
     );
   }
 
-  // ─── Header (di atas area gradient, sama seperti list_pegawai) ────────────
-
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 12, 16, 0),
-      child: SizedBox(
-        height: 56,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                onPressed: () => _vm.returnToSettings(context),
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: AppColors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-            const Center(
-              child: Text(
-                'Analitik',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildStoreInfo() {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(20),
+      padding: AppUi.cardPadding,
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -222,18 +175,11 @@ class _AnalitikViewState extends State<AnalitikView> {
               children: [
                 TextSpan(
                   text: _vm.storeName,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                  ),
+                  style: AppTextStyles.analyticsCardTitle,
                 ),
                 TextSpan(
                   text: ' - ${_vm.storeDate}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                    color: AppColors.darkGray,
-                  ),
+                  style: AppTextStyles.listBody,
                 ),
               ],
             ),
@@ -263,7 +209,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.gray,
           ),
@@ -284,19 +230,9 @@ class _AnalitikViewState extends State<AnalitikView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-            color: AppColors.primary,
-          ),
-        ),
+        Text(title, style: AppTextStyles.analyticsSectionTitle),
         const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
-        ),
+        Text(subtitle, style: AppTextStyles.analyticsCaption),
       ],
     );
   }
@@ -319,10 +255,10 @@ class _AnalitikViewState extends State<AnalitikView> {
 
   Widget _statCard(StatCardData data) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: AppUi.cardPadding,
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -336,35 +272,22 @@ class _AnalitikViewState extends State<AnalitikView> {
         children: [
           Text(
             data.label,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.darkGray,
+            style: AppTextStyles.analyticsCaption.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            data.value,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: AppColors.black,
-            ),
-          ),
+          Text(data.value, style: AppTextStyles.analyticsValue),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
               color: data.badgeBg,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
             child: Text(
               data.badge,
-              style: TextStyle(
-                fontSize: 11,
-                color: data.badgeColor,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.listBadge.copyWith(color: data.badgeColor),
             ),
           ),
         ],
@@ -402,22 +325,9 @@ class _AnalitikViewState extends State<AnalitikView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(item.title, style: AppTextStyles.analyticsRowTitle),
                 const SizedBox(height: 2),
-                Text(
-                  item.description,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.darkGray,
-                  ),
-                ),
+                Text(item.description, style: AppTextStyles.analyticsCaption),
               ],
             ),
           ),
@@ -430,10 +340,10 @@ class _AnalitikViewState extends State<AnalitikView> {
 
   Widget _buildRevenueChart() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: AppUi.cardPadding,
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -447,11 +357,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         children: [
           const Text(
             'Tren Pendapatan',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
-            ),
+            style: AppTextStyles.analyticsCardTitle,
           ),
           const SizedBox(height: 32),
           SizedBox(
@@ -474,10 +380,10 @@ class _AnalitikViewState extends State<AnalitikView> {
   Widget _buildPaymentMethod() {
     final pm = _vm.paymentMethod;
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: AppUi.cardPadding,
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -491,11 +397,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         children: [
           const Text(
             'Metode Pembayaran',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
-            ),
+            style: AppTextStyles.analyticsCardTitle,
           ),
           const SizedBox(height: 24),
           Row(
@@ -553,15 +455,13 @@ class _AnalitikViewState extends State<AnalitikView> {
           children: [
             Text(
               label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
+              style: AppTextStyles.listBodyStrong.copyWith(color: color),
             ),
             Text(
               sub,
-              style: const TextStyle(fontSize: 11, color: AppColors.darkGray),
+              style: AppTextStyles.listBadge.copyWith(
+                color: AppColors.darkGray,
+              ),
             ),
           ],
         ),
@@ -573,10 +473,10 @@ class _AnalitikViewState extends State<AnalitikView> {
 
   Widget _buildLowStock() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: AppUi.cardPadding,
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -590,11 +490,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         children: [
           const Text(
             'Stok Perlu Restock',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
-            ),
+            style: AppTextStyles.analyticsCardTitle,
           ),
           const SizedBox(height: 12),
           if (_vm.lowStockItems.isEmpty)
@@ -611,17 +507,13 @@ class _AnalitikViewState extends State<AnalitikView> {
                   Text(
                     'Semua stok aman',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.darkGray,
-                    ),
+                    style: AppTextStyles.analyticsEmptyTitle,
                   ),
                   SizedBox(height: 2),
                   Text(
                     'Tidak ada produk yang hampir habis saat ini',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+                    style: AppTextStyles.analyticsCaption,
                   ),
                   SizedBox(height: 48),
                 ],
@@ -645,17 +537,12 @@ class _AnalitikViewState extends State<AnalitikView> {
                     Expanded(
                       child: Text(
                         item.name,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.primary,
-                        ),
+                        style: AppTextStyles.analyticsRowTitle,
                       ),
                     ),
                     Text(
                       item.count,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                      style: AppTextStyles.analyticsRowTitle.copyWith(
                         color: item.color,
                       ),
                     ),
@@ -669,7 +556,7 @@ class _AnalitikViewState extends State<AnalitikView> {
             child: const Center(
               child: Text(
                 'Lihat Selengkapnya →',
-                style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+                style: AppTextStyles.analyticsLink,
               ),
             ),
           ),
@@ -682,10 +569,10 @@ class _AnalitikViewState extends State<AnalitikView> {
 
   Widget _buildRecentTransactions() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: AppUi.cardPadding,
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -699,11 +586,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         children: [
           const Text(
             'Riwayat Transaksi',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
-            ),
+            style: AppTextStyles.analyticsCardTitle,
           ),
           const SizedBox(height: 14),
           if (_vm.recentTransactions.isEmpty)
@@ -720,17 +603,13 @@ class _AnalitikViewState extends State<AnalitikView> {
                   Text(
                     'Belum Ada Transaksi',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.darkGray,
-                    ),
+                    style: AppTextStyles.analyticsEmptyTitle,
                   ),
                   SizedBox(height: 6),
                   Text(
                     'Riwayat muncul setelah transaksi dibuat',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+                    style: AppTextStyles.analyticsCaption,
                   ),
                 ],
               ),
@@ -759,32 +638,15 @@ class _AnalitikViewState extends State<AnalitikView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            t.items,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
+                          Text(t.items, style: AppTextStyles.analyticsRowTitle),
                           Text(
                             'Metode: ${t.cashier}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.darkGray,
-                            ),
+                            style: AppTextStyles.analyticsCaption,
                           ),
                         ],
                       ),
                     ),
-                    Text(
-                      t.amount,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
+                    Text(t.amount, style: AppTextStyles.analyticsRowTitle),
                   ],
                 ),
               ),
@@ -795,7 +657,7 @@ class _AnalitikViewState extends State<AnalitikView> {
             child: const Center(
               child: Text(
                 'Lihat Riwayat Lengkap →',
-                style: TextStyle(fontSize: 14, color: AppColors.darkGray),
+                style: AppTextStyles.analyticsLink,
               ),
             ),
           ),
@@ -809,10 +671,10 @@ class _AnalitikViewState extends State<AnalitikView> {
   Widget _buildTopProducts() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: AppUi.cardPadding,
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -826,11 +688,7 @@ class _AnalitikViewState extends State<AnalitikView> {
         children: [
           const Text(
             'Produk Terlaris (Qty)',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
-            ),
+            style: AppTextStyles.analyticsCardTitle,
           ),
           const SizedBox(height: 12),
           if (_vm.topProducts.isEmpty)
@@ -847,17 +705,13 @@ class _AnalitikViewState extends State<AnalitikView> {
                   Text(
                     'Produk Kosong',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.darkGray,
-                    ),
+                    style: AppTextStyles.analyticsEmptyTitle,
                   ),
                   SizedBox(height: 8),
                   Text(
                     'Belum ada produk terlaris saat ini',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: AppColors.darkGray),
+                    style: AppTextStyles.analyticsCaption,
                   ),
                   SizedBox(height: 24),
                 ],
@@ -873,31 +727,16 @@ class _AnalitikViewState extends State<AnalitikView> {
                       width: 24,
                       child: Text(
                         '${e.key + 1}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.darkGray,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: AppTextStyles.listBodyStrong,
                       ),
                     ),
                     Expanded(
                       child: Text(
                         e.value.name,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.darkGray,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTextStyles.listBodyStrong,
                       ),
                     ),
-                    Text(
-                      '${e.value.pcs} pcs',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.darkGray,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Text('${e.value.pcs} pcs', style: AppTextStyles.listBody),
                   ],
                 ),
               ),
@@ -979,10 +818,10 @@ class _AnalitikViewState extends State<AnalitikView> {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: AppUi.cardPadding,
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -994,14 +833,7 @@ class _AnalitikViewState extends State<AnalitikView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
-            ),
-          ),
+          Text(title, style: AppTextStyles.analyticsCardTitle),
           const SizedBox(height: 12),
           if (isEmpty)
             Center(
@@ -1013,20 +845,13 @@ class _AnalitikViewState extends State<AnalitikView> {
                   Text(
                     emptyTitle,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.darkGray,
-                    ),
+                    style: AppTextStyles.analyticsEmptyTitle,
                   ),
                   const SizedBox(height: 6),
                   Text(
                     emptySubtitle,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.darkGray,
-                    ),
+                    style: AppTextStyles.analyticsCaption,
                   ),
                   const SizedBox(height: 24),
                 ],
@@ -1051,45 +876,18 @@ class _AnalitikViewState extends State<AnalitikView> {
         children: [
           SizedBox(
             width: 28,
-            child: Text(
-              '$rank',
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.darkGray,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            child: Text('$rank', style: AppTextStyles.listBodyStrong),
           ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.darkGray,
-                  ),
-                ),
+                Text(title, style: AppTextStyles.analyticsRowTitle),
+                Text(subtitle, style: AppTextStyles.analyticsCaption),
               ],
             ),
           ),
-          Text(
-            trailing,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.primary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(trailing, style: AppTextStyles.analyticsRowTitle),
         ],
       ),
     );
@@ -1119,32 +917,12 @@ class _AnalitikViewState extends State<AnalitikView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.darkGray,
-                  ),
-                ),
+                Text(title, style: AppTextStyles.analyticsRowTitle),
+                Text(subtitle, style: AppTextStyles.analyticsCaption),
               ],
             ),
           ),
-          Text(
-            trailing,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.primary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(trailing, style: AppTextStyles.analyticsRowTitle),
         ],
       ),
     );

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/models/transaction.dart';
 import 'package:smartkasir/viewmodels/dashboard/transaction_viewmodel.dart';
+import 'package:smartkasir/widgets/app_ui.dart';
 
 class TransactionView extends StatelessWidget {
   const TransactionView({super.key});
@@ -24,74 +25,40 @@ class _TransactionContent extends StatelessWidget {
     final viewModel = context.watch<TransactionViewModel>();
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.tertiary, AppColors.secondary],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+      decoration: AppUi.gradientBackground,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
           child: Column(
             children: [
-              _buildHeader(context),
+              const AppScreenHeader(title: 'Riwayat Transaksi'),
               Expanded(
-                child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(top: 18),
+                child: AppPanel(
                   padding: const EdgeInsets.fromLTRB(20, 35, 20, 20),
-                  decoration: const BoxDecoration(
-                    color: AppColors.lightGray,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(45),
-                    ),
-                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         "Cari Transaksi",
-                        style: TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTextStyles.searchLabel,
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         onChanged: viewModel.search,
-                        decoration: InputDecoration(
-                          hintText: "Cari berdasarkan kode atau metode bayar",
-                          hintStyle: const TextStyle(
-                            color: AppColors.gray,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          filled: true,
+                        decoration: appInputDecoration(
+                          hint: "Cari berdasarkan kode atau metode bayar",
                           fillColor: Colors.white,
                           prefixIcon: const Icon(
                             Icons.search,
                             color: AppColors.gray,
                           ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
+                          enabledBorderSide: const BorderSide(
+                            color: AppColors.gray,
+                            width: 1.8,
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.gray,
-                              width: 1.8,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.primary,
-                              width: 1.8,
-                            ),
+                          focusedBorderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1.8,
                           ),
                         ),
                       ),
@@ -122,41 +89,6 @@ class _TransactionContent extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 12, 16, 0),
-      child: SizedBox(
-        height: 56,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: AppColors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-            const Center(
-              child: Text(
-                "Riwayat Transaksi",
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

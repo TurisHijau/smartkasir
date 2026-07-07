@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/viewmodels/dashboard/list_pegawai_viewmodel.dart';
+import 'package:smartkasir/widgets/app_ui.dart';
 
 class ListPegawaiView extends StatelessWidget {
   const ListPegawaiView({super.key});
@@ -24,71 +25,29 @@ class _ListPegawaiContent extends StatelessWidget {
     final viewModel = context.watch<ListPegawaiViewmodel>();
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.tertiary, AppColors.secondary],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+      decoration: AppUi.gradientBackground,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
           child: Column(
             children: [
-              _buildHeader(context),
+              const AppScreenHeader(title: 'Daftar Pegawai'),
               Expanded(
-                child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(top: 18),
+                child: AppPanel(
                   padding: const EdgeInsets.fromLTRB(24, 30, 24, 20),
-                  decoration: const BoxDecoration(
-                    color: AppColors.lightGray,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(45),
-                    ),
-                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         "Cari Pegawai",
-                        style: TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: AppTextStyles.searchLabel,
                       ),
                       const SizedBox(height: 12),
                       TextField(
                         onChanged: viewModel.search,
-                        decoration: InputDecoration(
-                          hintText: "Masukkan nama pegawai",
-                          hintStyle: const TextStyle(
-                            color: AppColors.gray,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          filled: true,
-                          fillColor: Colors.white.withOpacity(0.7),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.primary,
-                              width: 1.5,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.primary,
-                              width: 2,
-                            ),
-                          ),
+                        decoration: appInputDecoration(
+                          hint: "Masukkan nama pegawai",
+                          fillColor: Colors.white.withValues(alpha: 0.7),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -103,7 +62,7 @@ class _ListPegawaiContent extends StatelessWidget {
                                 onRefresh: viewModel.loadUsers,
                                 child: ListView.separated(
                                   itemCount: viewModel.employees.length,
-                                  separatorBuilder: (_, __) =>
+                                  separatorBuilder: (_, _) =>
                                       const SizedBox(height: 14),
                                   itemBuilder: (context, index) {
                                     final user = viewModel.employees[index];
@@ -136,41 +95,6 @@ class _ListPegawaiContent extends StatelessWidget {
                 ),
               )
             : null,
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 12, 16, 0),
-      child: SizedBox(
-        height: 56,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: AppColors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-            const Center(
-              child: Text(
-                "Daftar Pegawai",
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -278,7 +202,7 @@ class _EmployeeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -290,33 +214,13 @@ class _EmployeeCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  user.name,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text(user.name, style: AppTextStyles.listTitle),
                 const SizedBox(height: 2),
-                Text(
-                  user.username,
-                  style: const TextStyle(
-                    color: AppColors.darkGray,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text(user.username, style: AppTextStyles.listBodyStrong),
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    Text(
-                      user.phone ?? '-',
-                      style: const TextStyle(
-                        color: AppColors.darkGray,
-                        fontSize: 13,
-                      ),
-                    ),
+                    Text(user.phone ?? '-', style: AppTextStyles.listBody),
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -324,16 +228,12 @@ class _EmployeeCard extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         roleLabel(user.role),
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTextStyles.listBadge,
                       ),
                     ),
                   ],

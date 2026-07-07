@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/viewmodels/dashboard/kelola_pegawai_viewmodel.dart';
+import 'package:smartkasir/widgets/app_ui.dart';
 
 class KelolaPegawaiView extends StatelessWidget {
   final User? user;
@@ -62,30 +63,18 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
     final viewModel = context.watch<KelolaPegawaiViewModel>();
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.tertiary, AppColors.secondary],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+      decoration: AppUi.gradientBackground,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
           child: Column(
             children: [
-              _buildHeader(context, viewModel.isEditMode),
+              AppScreenHeader(
+                title: viewModel.isEditMode ? 'Edit Pegawai' : 'Kelola Pegawai',
+              ),
               Expanded(
-                child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(top: 18),
-                  padding: const EdgeInsets.fromLTRB(24, 40, 24, 30),
-                  decoration: const BoxDecoration(
-                    color: AppColors.lightGray,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(45),
-                    ),
-                  ),
+                child: AppPanel(
+                  padding: AppUi.formPanelPadding,
                   child: SingleChildScrollView(
                     child: Form(
                       key: _formKey,
@@ -154,94 +143,51 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
 
                           const SizedBox(height: 40),
 
-                          SizedBox(
-                            width: double.infinity,
-                            height: 55,
-                            child: ElevatedButton(
-                              onPressed: viewModel.isLoading
-                                  ? null
-                                  : () async {
-                                      if (_formKey.currentState!.validate()) {
-                                        if (_passwordController
-                                                .text
-                                                .isNotEmpty &&
-                                            _passwordController.text !=
-                                                _konfirmasiPasswordController
-                                                    .text) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Password tidak cocok',
-                                              ),
-                                              backgroundColor: Colors.red,
-                                            ),
-                                          );
-                                          return;
-                                        }
+                          AppFilledButton(
+                            label: viewModel.isEditMode
+                                ? 'UPDATE PEGAWAI'
+                                : 'TAMBAH PEGAWAI',
+                            isLoading: viewModel.isLoading,
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                if (_passwordController.text.isNotEmpty &&
+                                    _passwordController.text !=
+                                        _konfirmasiPasswordController.text) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Password tidak cocok'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  return;
+                                }
 
-                                        final password =
-                                            _passwordController.text.isNotEmpty
-                                            ? _passwordController.text
-                                            : 'unchanged';
+                                final password =
+                                    _passwordController.text.isNotEmpty
+                                    ? _passwordController.text
+                                    : 'unchanged';
 
-                                        final success = await viewModel
-                                            .saveEmployee(
-                                              name: _namaPegawaiController.text
-                                                  .trim(),
-                                              username: _usernameController.text
-                                                  .trim(),
-                                              phone: _noTelpController.text
-                                                  .trim(),
-                                              password: password,
-                                            );
+                                final success = await viewModel.saveEmployee(
+                                  name: _namaPegawaiController.text.trim(),
+                                  username: _usernameController.text.trim(),
+                                  phone: _noTelpController.text.trim(),
+                                  password: password,
+                                );
 
-                                        if (success && context.mounted) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                viewModel.isEditMode
-                                                    ? "Pegawai berhasil diupdate"
-                                                    : "Pegawai berhasil ditambahkan",
-                                              ),
-                                            ),
-                                          );
-                                          Navigator.pop(context);
-                                        }
-                                      }
-                                    },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                disabledBackgroundColor: AppColors.primary
-                                    .withOpacity(0.6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: viewModel.isLoading
-                                  ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2.5,
-                                      ),
-                                    )
-                                  : Text(
-                                      viewModel.isEditMode
-                                          ? 'UPDATE PEGAWAI'
-                                          : 'TAMBAH PEGAWAI',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                if (success && context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        viewModel.isEditMode
+                                            ? "Pegawai berhasil diupdate"
+                                            : "Pegawai berhasil ditambahkan",
                                       ),
                                     ),
-                            ),
+                                  );
+                                  Navigator.pop(context);
+                                }
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -261,7 +207,7 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
       padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: AppColors.primary, width: 2),
       ),
       child: DropdownButtonHideUnderline(
@@ -288,53 +234,8 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isEdit) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 12, 16, 0),
-      child: SizedBox(
-        height: 56,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: AppColors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-            Center(
-              child: Text(
-                isEdit ? 'Edit Pegawai' : 'Kelola Pegawai',
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildLabel(String label) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: AppColors.primary,
-        ),
-      ),
-    );
+    return AppFieldLabel(label);
   }
 
   Widget _buildTextField({
@@ -349,19 +250,9 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(
-          color: AppColors.darkGray,
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
-        filled: true,
+      decoration: appInputDecoration(
+        hint: hint,
         fillColor: Colors.white.withOpacity(0.7),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 15,
-        ),
         suffixIcon: onSuffixIconTap != null
             ? IconButton(
                 icon: Icon(
@@ -372,17 +263,9 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                 onPressed: onSuffixIconTap,
               )
             : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2.5),
+        focusedBorderSide: const BorderSide(
+          color: AppColors.primary,
+          width: 2.5,
         ),
       ),
       validator: required

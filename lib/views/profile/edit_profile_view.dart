@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/models/auth.dart';
 import 'package:smartkasir/viewmodels/profile/edit_profile_viewmodel.dart';
+import 'package:smartkasir/widgets/app_ui.dart';
 
 class EditProfileView extends StatefulWidget {
   final AuthResponse profileData; // ← terima data profil yang sudah ada
@@ -54,36 +54,21 @@ class _EditProfileViewState extends State<EditProfileView> {
       child: Consumer<EditProfileViewModel>(
         builder: (context, viewModel, child) {
           return Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.tertiary, AppColors.secondary],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
+            decoration: AppUi.gradientBackground,
             child: Scaffold(
               backgroundColor: Colors.transparent,
               body: SafeArea(
                 child: Column(
                   children: [
-                    _buildHeader(context),
+                    const AppScreenHeader(title: 'Edit Profil'),
                     Expanded(
-                      child: Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(top: 18),
+                      child: AppPanel(
                         padding: const EdgeInsets.fromLTRB(20, 35, 20, 20),
-                        decoration: const BoxDecoration(
-                          color: AppColors.lightGray,
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(45),
-                          ),
-                        ),
                         child: SingleChildScrollView(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _buildLabel("Nama", required: true),
-                              const SizedBox(height: 8),
                               _buildTextField(
                                 controller: _namaController,
                                 hint: "Masukkan Nama",
@@ -91,7 +76,6 @@ class _EditProfileViewState extends State<EditProfileView> {
 
                               const SizedBox(height: 20),
                               _buildLabel("Email"),
-                              const SizedBox(height: 8),
                               _buildTextField(
                                 controller: _emailController,
                                 hint: "Masukkan Email",
@@ -100,7 +84,6 @@ class _EditProfileViewState extends State<EditProfileView> {
 
                               const SizedBox(height: 20),
                               _buildLabel("Username"),
-                              const SizedBox(height: 8),
                               _buildTextField(
                                 controller: _usernameController,
                                 hint: "Masukkan Username",
@@ -108,7 +91,6 @@ class _EditProfileViewState extends State<EditProfileView> {
 
                               const SizedBox(height: 20),
                               _buildLabel("Password Baru"),
-                              const SizedBox(height: 8),
                               _buildTextField(
                                 controller: _passwordController,
                                 hint: "Kosongkan jika tidak ingin diubah",
@@ -117,7 +99,6 @@ class _EditProfileViewState extends State<EditProfileView> {
 
                               const SizedBox(height: 20),
                               _buildLabel("No Telp"),
-                              const SizedBox(height: 8),
                               _buildTextField(
                                 controller: _noTelpController,
                                 hint: "Masukkan No Telepon",
@@ -143,61 +124,27 @@ class _EditProfileViewState extends State<EditProfileView> {
                               const SizedBox(height: 20),
 
                               // Selesai Button
-                              SizedBox(
-                                width: double.infinity,
-                                height: 58,
-                                child: ElevatedButton(
-                                  onPressed: viewModel.isLoading
-                                      ? null
-                                      : () async {
-                                          final success = await viewModel
-                                              .updateProfile(
-                                                context,
-                                                userId:
-                                                    widget
-                                                        .profileData
-                                                        .user
-                                                        .id ??
-                                                    '',
-                                                name: _namaController.text,
-                                                email: _emailController.text,
-                                                username:
-                                                    _usernameController.text,
-                                                password:
-                                                    _passwordController.text,
-                                                role: widget
-                                                    .profileData
-                                                    .user
-                                                    .role
-                                                    .name,
-                                                phone: _noTelpController.text,
-                                              );
-                                          if (success && context.mounted) {
-                                            Navigator.pop(
-                                              context,
-                                            ); // ← kembali ke ProfileView
-                                          }
-                                        },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                  ),
-                                  child: viewModel.isLoading
-                                      ? const CircularProgressIndicator(
-                                          color: Colors.white,
-                                        )
-                                      : const Text(
-                                          "SELESAI",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                ),
+                              AppFilledButton(
+                                label: 'SELESAI',
+                                isLoading: viewModel.isLoading,
+                                height: 55,
+                                onPressed: () async {
+                                  final success = await viewModel.updateProfile(
+                                    context,
+                                    userId: widget.profileData.user.id ?? '',
+                                    name: _namaController.text,
+                                    email: _emailController.text,
+                                    username: _usernameController.text,
+                                    password: _passwordController.text,
+                                    role: widget.profileData.user.role.name,
+                                    phone: _noTelpController.text,
+                                  );
+                                  if (success && context.mounted) {
+                                    Navigator.pop(
+                                      context,
+                                    ); // ← kembali ke ProfileView
+                                  }
+                                },
                               ),
                             ],
                           ),
@@ -214,63 +161,8 @@ class _EditProfileViewState extends State<EditProfileView> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 12, 16, 0),
-      child: SizedBox(
-        height: 56,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: AppColors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-            const Center(
-              child: Text(
-                'Edit Profil',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildLabel(String text, {bool required = false}) {
-    return Row(
-      children: [
-        Text(
-          text,
-          style: const TextStyle(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w800,
-            fontSize: 16,
-          ),
-        ),
-        if (required)
-          const Text(
-            " *",
-            style: TextStyle(
-              color: Colors.red,
-              fontWeight: FontWeight.w800,
-              fontSize: 16,
-            ),
-          ),
-      ],
-    );
+    return AppFieldLabel(text, required: required);
   }
 
   Widget _buildTextField({
@@ -283,23 +175,9 @@ class _EditProfileViewState extends State<EditProfileView> {
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: AppColors.darkGray, fontSize: 15),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 16,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
+      decoration: appInputDecoration(
+        hint: hint,
+        enabledBorderSide: BorderSide.none,
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/models/product.dart';
 import 'package:smartkasir/utils/currency_input_formatter.dart';
 import 'package:smartkasir/viewmodels/dashboard/kelola_produk_viewmodel.dart';
+import 'package:smartkasir/widgets/app_ui.dart';
 import 'package:intl/intl.dart';
 
 class KelolaProdukView extends StatelessWidget {
@@ -72,30 +73,18 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
     final viewModel = context.watch<KelolaProdukViewModel>();
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.tertiary, AppColors.secondary],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+      decoration: AppUi.gradientBackground,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
           child: Column(
             children: [
-              _buildHeader(context, viewModel.isEditMode),
+              AppScreenHeader(
+                title: viewModel.isEditMode ? 'Edit Produk' : 'Kelola Produk',
+              ),
               Expanded(
-                child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(top: 18),
-                  padding: const EdgeInsets.fromLTRB(24, 40, 24, 30),
-                  decoration: const BoxDecoration(
-                    color: AppColors.lightGray,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(45),
-                    ),
-                  ),
+                child: AppPanel(
+                  padding: AppUi.formPanelPadding,
                   child: SingleChildScrollView(
                     child: Form(
                       key: _formKey,
@@ -132,10 +121,12 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                                   }
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.all(16),
+                                  padding: const EdgeInsets.all(15),
                                   decoration: BoxDecoration(
                                     color: AppColors.primary,
-                                    borderRadius: BorderRadius.circular(18),
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadius.lg,
+                                    ),
                                   ),
                                   child: const Icon(
                                     Icons.qr_code_scanner,
@@ -149,10 +140,7 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                             padding: EdgeInsets.only(top: 8.0, left: 4.0),
                             child: Text(
                               'Tap icon untuk membuka scan via kamera',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.gray,
-                              ),
+                              style: AppTextStyles.helper,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -194,10 +182,7 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
                               ),
                               child: Text(
                                 'Stok saat ini: ${widget.product?.stock ?? 0} pcs',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.gray,
-                                ),
+                                style: AppTextStyles.helper,
                               ),
                             ),
                           _buildTextField(
@@ -222,84 +207,39 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
 
                           const SizedBox(height: 40),
 
-                          SizedBox(
-                            width: double.infinity,
-                            height: 55,
-                            child: ElevatedButton(
-                              onPressed: viewModel.isLoading
-                                  ? null
-                                  : () async {
-                                      if (_formKey.currentState!.validate()) {
-                                        final success = await viewModel
-                                            .saveProduct(
-                                              barcode: _kodeProdukController
-                                                  .text
-                                                  .trim(),
-                                              name: _namaProdukController.text
-                                                  .trim(),
-                                              costPrice: _hargaModalController
-                                                  .text
-                                                  .replaceAll(
-                                                    RegExp(r'[^0-9]'),
-                                                    '',
-                                                  ),
-                                              sellingPrice: _hargaJualController
-                                                  .text
-                                                  .replaceAll(
-                                                    RegExp(r'[^0-9]'),
-                                                    '',
-                                                  ),
-                                              stock: _stokController.text
-                                                  .replaceAll(
-                                                    RegExp(r'[^0-9]'),
-                                                    '',
-                                                  ),
-                                            );
-                                        if (success && context.mounted) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                viewModel.isEditMode
-                                                    ? "Produk berhasil diupdate"
-                                                    : "Produk berhasil ditambahkan",
-                                              ),
-                                            ),
-                                          );
-                                          Navigator.pop(context);
-                                        }
-                                      }
-                                    },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                disabledBackgroundColor: AppColors.primary
-                                    .withOpacity(0.6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: viewModel.isLoading
-                                  ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2.5,
-                                      ),
-                                    )
-                                  : Text(
-                                      viewModel.isEditMode
-                                          ? 'UPDATE PRODUK'
-                                          : 'TAMBAH PRODUK',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                          AppFilledButton(
+                            label: viewModel.isEditMode
+                                ? 'UPDATE PRODUK'
+                                : 'TAMBAH PRODUK',
+                            isLoading: viewModel.isLoading,
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                final success = await viewModel.saveProduct(
+                                  barcode: _kodeProdukController.text.trim(),
+                                  name: _namaProdukController.text.trim(),
+                                  costPrice: _hargaModalController.text
+                                      .replaceAll(RegExp(r'[^0-9]'), ''),
+                                  sellingPrice: _hargaJualController.text
+                                      .replaceAll(RegExp(r'[^0-9]'), ''),
+                                  stock: _stokController.text.replaceAll(
+                                    RegExp(r'[^0-9]'),
+                                    '',
+                                  ),
+                                );
+                                if (success && context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        viewModel.isEditMode
+                                            ? "Produk berhasil diupdate"
+                                            : "Produk berhasil ditambahkan",
                                       ),
                                     ),
-                            ),
+                                  );
+                                  Navigator.pop(context);
+                                }
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -314,53 +254,8 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isEdit) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 12, 16, 0),
-      child: SizedBox(
-        height: 56,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: AppColors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-            Center(
-              child: Text(
-                isEdit ? 'Edit Produk' : 'Kelola Produk',
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildLabel(String label) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: AppColors.primary,
-        ),
-      ),
-    );
+    return AppFieldLabel(label);
   }
 
   Widget _buildTextField({
@@ -379,32 +274,14 @@ class _KelolaProdukContentState extends State<_KelolaProdukContent> {
           isCurrency // ← tambah formatter
           ? [CurrencyInputFormatter()]
           : null,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(
-          color: AppColors.darkGray,
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
-        filled: true,
+      decoration: appInputDecoration(
+        hint: hint,
         fillColor: enabled
             ? Colors.white.withOpacity(0.7)
             : Colors.grey.shade300,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 15,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2.5),
+        focusedBorderSide: const BorderSide(
+          color: AppColors.primary,
+          width: 2.5,
         ),
       ),
       validator: required

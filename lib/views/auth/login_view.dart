@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/viewmodels/auth/login_viewmodel.dart';
+import 'package:smartkasir/widgets/app_ui.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -11,11 +12,18 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final usernameController = TextEditingController();
-    final passwordController = TextEditingController();
-
     return ChangeNotifierProvider(
       create: (_) => LoginViewmodel(),
       child: Consumer<LoginViewmodel>(
@@ -62,8 +70,8 @@ class _LoginViewState extends State<LoginView> {
                     decoration: const BoxDecoration(
                       color: AppColors.lightGray,
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(50),
-                        topRight: Radius.circular(50),
+                        topLeft: Radius.circular(AppRadius.authPanel),
+                        topRight: Radius.circular(AppRadius.authPanel),
                       ),
                     ),
                     child: SingleChildScrollView(
@@ -100,11 +108,7 @@ class _LoginViewState extends State<LoginView> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               "Username",
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 19,
-                              ),
+                              style: AppTextStyles.authLabel,
                             ),
                           ),
 
@@ -113,33 +117,8 @@ class _LoginViewState extends State<LoginView> {
                           // Email Field
                           TextField(
                             controller: usernameController,
-                            decoration: InputDecoration(
-                              hintText: "Masukkan username Anda",
-                              hintStyle: const TextStyle(
-                                color: AppColors.darkGray,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 17,
-                              ),
-                              filled: true,
-                              fillColor: AppColors.lightGray,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 20,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(28),
-                                borderSide: const BorderSide(
-                                  color: AppColors.darkGray,
-                                  width: 2,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(28),
-                                borderSide: const BorderSide(
-                                  color: AppColors.primary,
-                                  width: 2,
-                                ),
-                              ),
+                            decoration: authInputDecoration(
+                              hint: "Masukkan username Anda",
                             ),
                           ),
 
@@ -150,11 +129,7 @@ class _LoginViewState extends State<LoginView> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               "Password",
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 19,
-                              ),
+                              style: AppTextStyles.authLabel,
                             ),
                           ),
 
@@ -164,8 +139,8 @@ class _LoginViewState extends State<LoginView> {
                           TextField(
                             controller: passwordController,
                             obscureText: viewModel.obscurePassword,
-                            decoration: InputDecoration(
-                              hintText: "Masukkan password Anda",
+                            decoration: authInputDecoration(
+                              hint: "Masukkan password Anda",
                               suffixIcon: Padding(
                                 padding: const EdgeInsets.only(right: 8.0),
                                 child: IconButton(
@@ -178,77 +153,22 @@ class _LoginViewState extends State<LoginView> {
                                   onPressed: viewModel.togglePasswordVisibility,
                                 ),
                               ),
-                              hintStyle: const TextStyle(
-                                color: AppColors.darkGray,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 17,
-                              ),
-                              filled: true,
-                              fillColor: AppColors.lightGray,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 20,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(28),
-                                borderSide: const BorderSide(
-                                  color: AppColors.darkGray,
-                                  width: 2,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(28),
-                                borderSide: const BorderSide(
-                                  color: AppColors.primary,
-                                  width: 2,
-                                ),
-                              ),
                             ),
                           ),
 
                           const SizedBox(height: 24),
 
                           // Login Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 64,
-                            child: ElevatedButton(
-                              onPressed: viewModel.loading
-                                  ? null
-                                  : () {
-                                      viewModel.login(
-                                        context,
-                                        usernameController.text,
-                                        passwordController.text,
-                                      );
-                                    },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                disabledBackgroundColor: AppColors.primary
-                                    .withOpacity(0.6),
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(28),
-                                ),
-                              ),
-                              child: viewModel.loading
-                                  ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2.5,
-                                      ),
-                                    )
-                                  : const Text(
-                                      "MASUK",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                            ),
+                          AuthFilledButton(
+                            label: 'MASUK',
+                            isLoading: viewModel.loading,
+                            onPressed: () {
+                              viewModel.login(
+                                context,
+                                usernameController.text,
+                                passwordController.text,
+                              );
+                            },
                           ),
 
                           const SizedBox(height: 72),

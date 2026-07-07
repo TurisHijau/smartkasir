@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/viewmodels/auth/register_viewmodel.dart';
+import 'package:smartkasir/widgets/app_ui.dart';
 
 class RegisterView extends StatelessWidget {
   const RegisterView({super.key});
@@ -56,8 +57,8 @@ class RegisterView extends StatelessWidget {
                     decoration: const BoxDecoration(
                       color: AppColors.lightGray,
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(50),
-                        topRight: Radius.circular(50),
+                        topLeft: Radius.circular(AppRadius.authPanel),
+                        topRight: Radius.circular(AppRadius.authPanel),
                       ),
                     ),
                     child: SingleChildScrollView(
@@ -227,51 +228,23 @@ class RegisterView extends StatelessWidget {
                           const SizedBox(height: 28),
 
                           // Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 64,
-                            child: ElevatedButton(
-                              onPressed: viewModel.isLoading
-                                  ? null
-                                  : () async {
-                                      final success = await viewModel
-                                          .register();
-                                      if (success && context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'Registrasi berhasil! Silakan login.',
-                                            ),
-                                            backgroundColor: Colors.green,
-                                          ),
-                                        );
-                                        viewModel.navigateToLogin(context);
-                                      }
-                                    },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                disabledBackgroundColor: AppColors.primary
-                                    .withOpacity(0.6),
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(28),
-                                ),
-                              ),
-                              child: viewModel.isLoading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                  : const Text(
-                                      "DAFTAR",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                          AuthFilledButton(
+                            label: 'DAFTAR',
+                            isLoading: viewModel.isLoading,
+                            onPressed: () async {
+                              final success = await viewModel.register();
+                              if (success && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Registrasi berhasil! Silakan login.',
                                     ),
-                            ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                                viewModel.navigateToLogin(context);
+                              }
+                            },
                           ),
 
                           const SizedBox(height: 72),
@@ -316,14 +289,7 @@ class RegisterView extends StatelessWidget {
   }
 
   Widget buildLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: AppColors.primary,
-        fontWeight: FontWeight.w700,
-        fontSize: 18,
-      ),
-    );
+    return Text(text, style: AppTextStyles.authLabel);
   }
 
   Widget buildTextField(
@@ -339,33 +305,14 @@ class RegisterView extends StatelessWidget {
         controller: controller,
         obscureText: obscure,
         keyboardType: type,
-        decoration: InputDecoration(
-          hintText: hint,
+        decoration: authInputDecoration(
+          hint: hint,
           suffixIcon: suffixIcon != null
               ? Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: suffixIcon,
                 )
               : null,
-          hintStyle: const TextStyle(
-            color: AppColors.darkGray,
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-          ),
-          filled: true,
-          fillColor: AppColors.lightGray,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 20,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(28),
-            borderSide: const BorderSide(color: AppColors.darkGray, width: 2),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(28),
-            borderSide: const BorderSide(color: AppColors.primary, width: 2),
-          ),
         ),
       ),
     );

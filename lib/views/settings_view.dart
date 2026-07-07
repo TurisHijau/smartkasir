@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
 import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/viewmodels/settings/settings_viewmodel.dart';
+import 'package:smartkasir/widgets/app_ui.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -33,30 +34,17 @@ class _SettingsContent extends StatelessWidget {
     final viewModel = context.watch<SettingsViewModel>();
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.tertiary, AppColors.secondary],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+      decoration: AppUi.gradientBackground,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
           child: Column(
             children: [
-              _buildHeader(context),
+              const AppScreenHeader(title: 'Pengaturan'),
               Expanded(
-                child: Container(
-                  width: double.infinity,
+                child: AppPanel(
                   margin: const EdgeInsets.only(top: 12),
                   padding: const EdgeInsets.fromLTRB(16, 28, 16, 20),
-                  decoration: const BoxDecoration(
-                    color: AppColors.lightGray,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(36),
-                    ),
-                  ),
                   child: viewModel.isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : viewModel.profileData == null
@@ -316,41 +304,6 @@ class _SettingsContent extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 12, 16, 0),
-      child: SizedBox(
-        height: 56,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: AppColors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-            const Center(
-              child: Text(
-                'Pengaturan',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
