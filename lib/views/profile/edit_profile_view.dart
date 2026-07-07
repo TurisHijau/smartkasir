@@ -137,6 +137,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                                     username: _usernameController.text,
                                     password: _passwordController.text,
                                     phone: _noTelpController.text,
+                                    role: widget.profileData.user.role,
                                   );
                                   if (success && context.mounted) {
                                     Navigator.pop(

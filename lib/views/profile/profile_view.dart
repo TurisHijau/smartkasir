@@ -97,50 +97,51 @@ class _ProfileContent extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      _getRoleLabel(
-                                        viewModel.profileData!.user.role.name,
-                                      ),
+                                      viewModel.profileData!.user.username,
                                       style: const TextStyle(
                                         fontSize: 16,
                                         color: AppColors.gray,
                                       ),
                                     ),
-                                    if (viewModel.profileData!.user.role !=
-                                        Role.CASHIER) ...[
-                                      const SizedBox(height: 24),
-                                      ElevatedButton.icon(
-                                        onPressed: () {
-                                          viewModel.editProfile(context);
-                                        },
-                                        icon: const Icon(
-                                          Icons.edit,
-                                          color: Colors.white,
-                                        ),
-                                        label: const Text(
-                                          'Edit Profil',
-                                          style: TextStyle(
+                                    const SizedBox(height: 24),
+                                    Wrap(
+                                      spacing: 12,
+                                      runSpacing: 12,
+                                      alignment: WrapAlignment.center,
+                                      children: [
+                                        ElevatedButton.icon(
+                                          onPressed: () {
+                                            viewModel.editProfile(context);
+                                          },
+                                          icon: const Icon(
+                                            Icons.edit,
                                             color: Colors.white,
-                                            fontWeight: FontWeight.bold,
                                           ),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.primary,
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 32,
-                                            vertical: 12,
+                                          label: const Text(
+                                            'Edit Profil',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 24,
+                                              vertical: 12,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 40),
+                              const SizedBox(height: 20),
 
                               // Info Section
                               _buildInfoTile(
@@ -149,25 +150,17 @@ class _ProfileContent extends StatelessWidget {
                                 viewModel.profileData!.store.businessName,
                               ),
                               _buildInfoTile(
-                                Icons.person_outline,
-                                'Username',
-                                viewModel.profileData!.user.username,
-                              ),
-                              _buildInfoTile(
                                 Icons.phone,
                                 'No. Telepon Toko',
                                 viewModel.profileData!.store.phone ?? '-',
-                              ),
-                              _buildInfoTile(
-                                Icons.email,
-                                'Email Pemilik',
-                                viewModel.profileData!.user.email ?? '-',
                               ),
                               _buildInfoTile(
                                 Icons.location_on,
                                 'Alamat',
                                 viewModel.profileData!.store.address ?? '-',
                               ),
+
+                              const SizedBox(height: 40),
                             ],
                           ),
                         ),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:smartkasir/models/auth.dart';
+import 'package:smartkasir/models/store.dart';
 import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/services/api_client.dart';
 import 'package:smartkasir/exceptions/auth_exception.dart';
@@ -85,6 +86,19 @@ class AuthService {
     } else {
       throw Exception(
         "Gagal update profil: ${response.statusCode} - ${response.body}",
+      );
+    }
+  }
+
+  Future<Store> updateStore(String id, Map<String, dynamic> data) async {
+    final response = await _api.put('/stores/$id', body: data);
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      return Store.fromJson(responseData);
+    } else {
+      throw Exception(
+        "Gagal update toko: ${response.statusCode} - ${response.body}",
       );
     }
   }

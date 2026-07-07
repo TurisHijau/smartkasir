@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/services/auth_service.dart';
 
 class EditProfileViewModel extends ChangeNotifier {
@@ -15,6 +16,7 @@ class EditProfileViewModel extends ChangeNotifier {
     required String username,
     required String password,
     required String phone,
+    required Role role,
   }) async {
     if (name.trim().isEmpty) {
       errorMessage = "Nama tidak boleh kosong";
@@ -36,6 +38,7 @@ class EditProfileViewModel extends ChangeNotifier {
       final data = <String, dynamic>{
         "name": name.trim(),
         "username": username.trim(),
+        "role": role.name,
       };
 
       if (email.trim().isNotEmpty) {

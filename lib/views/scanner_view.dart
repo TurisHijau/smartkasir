@@ -741,15 +741,8 @@ class _ScannerViewState extends State<ScannerView> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-          return AnimatedPadding(
-            duration: const Duration(milliseconds: 150),
-            curve: Curves.easeOut,
-            padding: EdgeInsets.only(
-              left: 24,
-              right: 24,
-              bottom: keyboardHeight + 24,
-            ),
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 520),
