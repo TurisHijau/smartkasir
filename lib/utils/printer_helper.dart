@@ -115,6 +115,7 @@ class PrinterHelper {
     // Tanggal
     String formattedDate = DateFormat(
       'dd MMMM yyyy HH:mm',
+      'id',
     ).format(DateTime.now());
     bytes += _textToBytes(formattedDate);
     bytes += EscPos.lineFeed;

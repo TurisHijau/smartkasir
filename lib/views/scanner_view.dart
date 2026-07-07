@@ -694,12 +694,48 @@ class _ScannerViewState extends State<ScannerView> {
     );
   }
 
-  // POPUP INPUT MANUAL — now looks up barcode from API
+  // POPUP INPUT MANUAL
   void _showInputManualSheet() {
     final kodeController = TextEditingController();
     bool isSearching = false;
     String? lookupError;
     String? lookupSuccess;
+    List<Product> allProducts = [];
+    List<Product> suggestions = [];
+    bool isLoadingProducts = true;
+
+    // Load semua produk di background untuk autocomplete
+    _productService
+        .getAll()
+        .then((products) {
+          allProducts = products;
+          isLoadingProducts = false;
+        })
+        .catchError((_) {
+          isLoadingProducts = false;
+        });
+
+    void updateSuggestions(String query, StateSetter setDialogState) {
+      if (query.trim().isEmpty) {
+        setDialogState(() => suggestions = []);
+        return;
+      }
+      final q = query.trim().toLowerCase();
+      final filtered = allProducts.where((p) {
+        final barcode = (p.barcode ?? '').toLowerCase();
+        final name = p.name.toLowerCase();
+        return barcode.contains(q) || name.contains(q);
+      }).toList();
+      // Prioritaskan yang barcodenya dimulai dengan query
+      filtered.sort((a, b) {
+        final aBarcode = (a.barcode ?? '').toLowerCase();
+        final bBarcode = (b.barcode ?? '').toLowerCase();
+        final aStarts = aBarcode.startsWith(q) ? 0 : 1;
+        final bStarts = bBarcode.startsWith(q) ? 0 : 1;
+        return aStarts.compareTo(bStarts);
+      });
+      setDialogState(() => suggestions = filtered.take(3).toList());
+    }
 
     showDialog(
       context: context,
@@ -740,7 +776,8 @@ class _ScannerViewState extends State<ScannerView> {
                                 ),
                                 keyboardType: TextInputType.text,
                                 textInputAction: TextInputAction.search,
-                                onChanged: (_) {
+                                autofocus: true,
+                                onChanged: (val) {
                                   if (lookupError != null ||
                                       lookupSuccess != null) {
                                     setDialogState(() {
@@ -748,9 +785,10 @@ class _ScannerViewState extends State<ScannerView> {
                                       lookupSuccess = null;
                                     });
                                   }
+                                  updateSuggestions(val, setDialogState);
                                 },
                                 decoration: InputDecoration(
-                                  hintText: 'Masukkan Kode Produk',
+                                  hintText: 'Ketik kode atau nama produk...',
                                   hintStyle: TextStyle(
                                     color: Colors.grey[400],
                                     fontSize: 14,
@@ -778,42 +816,188 @@ class _ScannerViewState extends State<ScannerView> {
                                       width: 1.5,
                                     ),
                                   ),
-                                ),
-                              ),
-                              if (lookupSuccess != null) ...[
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  height: 52,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        const Icon(
-                                          Icons.check_circle,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Text(
-                                            lookupSuccess!,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
+                                  suffixIcon: isLoadingProducts
+                                      ? const Padding(
+                                          padding: EdgeInsets.all(14),
+                                          child: SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: AppColors.primary,
                                             ),
                                           ),
-                                        ),
-                                      ],
+                                        )
+                                      : null,
+                                ),
+                              ),
+
+                              // DROPDOWN SUGGESTIONS
+                              if (suggestions.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: const Color(0xFFEDEFF3),
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.07),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: suggestions.asMap().entries.map((
+                                      entry,
+                                    ) {
+                                      final idx = entry.key;
+                                      final p = entry.value;
+                                      final isLast =
+                                          idx == suggestions.length - 1;
+                                      return InkWell(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: idx == 0
+                                              ? const Radius.circular(16)
+                                              : Radius.zero,
+                                          bottom: isLast
+                                              ? const Radius.circular(16)
+                                              : Radius.zero,
+                                        ),
+                                        onTap: () async {
+                                          _addProductToCart(p);
+                                          setDialogState(() {
+                                            lookupSuccess =
+                                                'Produk "${p.name}" ditambahkan';
+                                            suggestions = [];
+                                            kodeController.clear();
+                                          });
+                                          await Future.delayed(
+                                            const Duration(milliseconds: 700),
+                                          );
+                                          if (context.mounted) {
+                                            Navigator.pop(context);
+                                          }
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 11,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            border: isLast
+                                                ? null
+                                                : const Border(
+                                                    bottom: BorderSide(
+                                                      color: Color(0xFFEDEFF3),
+                                                    ),
+                                                  ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 36,
+                                                height: 36,
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.primary
+                                                      .withOpacity(0.08),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.inventory_2_outlined,
+                                                  size: 18,
+                                                  color: AppColors.primary,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      p.name,
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        fontSize: 13,
+                                                        color: Colors.black87,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                    if (p.barcode != null &&
+                                                        p
+                                                            .barcode!
+                                                            .isNotEmpty) ...[
+                                                      const SizedBox(height: 2),
+                                                      Text(
+                                                        p.barcode!,
+                                                        style: TextStyle(
+                                                          fontSize: 11,
+                                                          color:
+                                                              Colors.grey[500],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ],
+                                                ),
+                                              ),
+                                              Text(
+                                                'Rp${_formatRupiah(p.sellingPrice)}',
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppColors.primary,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+
+                              if (lookupSuccess != null) ...[
+                                const SizedBox(height: 10),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.check_circle,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          lookupSuccess!,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ] else if (lookupError != null) ...[
@@ -842,6 +1026,7 @@ class _ScannerViewState extends State<ScannerView> {
                                           setDialogState(() {
                                             isSearching = true;
                                             lookupError = null;
+                                            suggestions = [];
                                           });
                                           try {
                                             final product =
@@ -849,7 +1034,6 @@ class _ScannerViewState extends State<ScannerView> {
                                                     .findByBarcode(barcode);
                                             if (product != null &&
                                                 context.mounted) {
-                                              // Add immediately, show inline success attached
                                               _addProductToCart(product);
                                               setDialogState(() {
                                                 lookupSuccess =
@@ -861,8 +1045,9 @@ class _ScannerViewState extends State<ScannerView> {
                                                   milliseconds: 700,
                                                 ),
                                               );
-                                              if (context.mounted)
+                                              if (context.mounted) {
                                                 Navigator.pop(context);
+                                              }
                                             } else if (context.mounted) {
                                               setDialogState(
                                                 () => lookupError =
@@ -948,38 +1133,6 @@ class _ScannerViewState extends State<ScannerView> {
         color: AppColors.primary,
         fontWeight: FontWeight.bold,
         fontSize: 18,
-      ),
-    );
-  }
-
-  Widget _dialogTextField({
-    required TextEditingController controller,
-    required String hint,
-    bool isNumber = false,
-  }) {
-    return TextField(
-      controller: controller,
-      style: const TextStyle(color: Colors.black87, fontSize: 18),
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 18),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 20,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
       ),
     );
   }
@@ -1531,8 +1684,6 @@ class _ScannerViewState extends State<ScannerView> {
     );
   }
 
-  // ─────────────────────────── HELPERS ───────────────────────────
-
   String _formatRupiah(double value) {
     final intVal = value.toInt();
     final str = intVal.toString();
@@ -1545,7 +1696,6 @@ class _ScannerViewState extends State<ScannerView> {
   }
 }
 
-/// Cart item using real Product model
 class _CartItem {
   final Product product;
   final int quantity;
