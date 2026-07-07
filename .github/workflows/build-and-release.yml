@@ -1,0 +1,124 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: build-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  android:
+    name: Build Android APKs
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Show tool versions
+        run: |
+          flutter --version
+          java -version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests when present
+        run: |
+          if [ -d test ]; then
+            flutter test
+          else
+            echo "No test directory found; skipping tests."
+          fi
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Prepare artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${GITHUB_SHA::7}"
+          VERSION="$(grep '^version:' pubspec.yaml | awk '{print $2}')"
+
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-debug.apk "dist/smartkasir-${VERSION}-${SHORT_SHA}-debug.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "dist/smartkasir-${VERSION}-${SHORT_SHA}-release.apk"
+
+          cat > dist/build-info.txt <<EOF
+          App: smartkasir
+          Version: ${VERSION}
+          Commit: ${GITHUB_SHA}
+          Branch: ${GITHUB_REF_NAME}
+          Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          EOF
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: smartkasir-android-${{ github.sha }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create or update GitHub release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${GITHUB_SHA::7}"
+          VERSION="$(grep '^version:' pubspec.yaml | awk '{print $2}')"
+          TAG="build-${SHORT_SHA}"
+          TITLE="SMARTKASIR ${VERSION} (${SHORT_SHA})"
+          NOTES_FILE="$(mktemp)"
+
+          cat > "${NOTES_FILE}" <<EOF
+          Automated build for commit \`${GITHUB_SHA}\`.
+
+          Artifacts:
+          - Debug APK: use this for internal testing with debug behavior.
+          - Release APK: use this for release-mode testing. This project currently signs release builds with the debug signing config.
+
+          Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          EOF
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release edit "${TAG}" \
+              --title "${TITLE}" \
+              --notes-file "${NOTES_FILE}" \
+              --target "${GITHUB_SHA}"
+          else
+            gh release create "${TAG}" \
+              --title "${TITLE}" \
+              --notes-file "${NOTES_FILE}" \
+              --target "${GITHUB_SHA}"
+          fi
+
+          gh release upload "${TAG}" dist/* --clobber
