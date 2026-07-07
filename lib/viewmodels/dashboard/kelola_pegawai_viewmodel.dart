@@ -20,6 +20,7 @@ class KelolaPegawaiViewModel extends ChangeNotifier {
   }
 
   bool get isEditMode => editingUser != null;
+  bool get isEditingOwner => editingUser?.role == Role.OWNER;
 
   void togglePasswordVisibility() {
     obscurePassword = !obscurePassword;
@@ -32,6 +33,7 @@ class KelolaPegawaiViewModel extends ChangeNotifier {
   }
 
   void setRole(Role role) {
+    if (isEditingOwner) return;
     selectedRole = role;
     notifyListeners();
   }

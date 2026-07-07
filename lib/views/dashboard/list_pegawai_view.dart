@@ -251,13 +251,15 @@ class _EmployeeCard extends StatelessWidget {
                   iconColor: AppColors.primary,
                   onTap: () => viewModel.navigateToEditEmployee(context, user),
                 ),
-                const SizedBox(width: 8),
-                _ActionButton(
-                  backgroundColor: AppColors.lightRed,
-                  icon: Icons.delete,
-                  iconColor: Colors.red,
-                  onTap: () => viewModel.deleteUser(context, user),
-                ),
+                if (user.role != Role.OWNER) ...[
+                  const SizedBox(width: 8),
+                  _ActionButton(
+                    backgroundColor: AppColors.lightRed,
+                    icon: Icons.delete,
+                    iconColor: Colors.red,
+                    onTap: () => viewModel.deleteUser(context, user),
+                  ),
+                ],
               ],
             ),
         ],

@@ -105,7 +105,9 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
                           const SizedBox(height: 16),
 
                           _buildLabel('Role'),
-                          _buildRoleDropdown(viewModel),
+                          viewModel.isEditingOwner
+                              ? _buildReadOnlyRole()
+                              : _buildRoleDropdown(viewModel),
                           const SizedBox(height: 16),
 
                           _buildLabel('Password'),
@@ -206,7 +208,7 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
+        color: Colors.white.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: AppColors.primary, width: 2),
       ),
@@ -234,6 +236,26 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
     );
   }
 
+  Widget _buildReadOnlyRole() {
+    return Container(
+      width: double.infinity,
+      padding: AppUi.inputPadding,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.primary, width: 1.5),
+      ),
+      child: const Text(
+        'Pemilik Toko',
+        style: TextStyle(
+          color: AppColors.darkGray,
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+      ),
+    );
+  }
+
   Widget _buildLabel(String label) {
     return AppFieldLabel(label);
   }
@@ -252,7 +274,7 @@ class _KelolaPegawaiContentState extends State<_KelolaPegawaiContent> {
       obscureText: obscureText,
       decoration: appInputDecoration(
         hint: hint,
-        fillColor: Colors.white.withOpacity(0.7),
+        fillColor: Colors.white.withValues(alpha: 0.7),
         suffixIcon: onSuffixIconTap != null
             ? IconButton(
                 icon: Icon(

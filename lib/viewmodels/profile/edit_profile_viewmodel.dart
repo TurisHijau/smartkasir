@@ -14,7 +14,6 @@ class EditProfileViewModel extends ChangeNotifier {
     required String email,
     required String username,
     required String password,
-    required String role,
     required String phone,
   }) async {
     if (name.trim().isEmpty) {
@@ -36,7 +35,6 @@ class EditProfileViewModel extends ChangeNotifier {
     try {
       final data = <String, dynamic>{
         "name": name.trim(),
-        "role": role,
         "username": username.trim(),
       };
 

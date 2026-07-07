@@ -33,7 +33,7 @@ class _EditProfileViewState extends State<EditProfileView> {
     );
     _passwordController = TextEditingController();
     _noTelpController = TextEditingController(
-      text: widget.profileData.store.phone ?? '',
+      text: widget.profileData.user.phone ?? '',
     );
   }
 
@@ -98,10 +98,10 @@ class _EditProfileViewState extends State<EditProfileView> {
                               ),
 
                               const SizedBox(height: 20),
-                              _buildLabel("No Telp"),
+                              _buildLabel("No HP"),
                               _buildTextField(
                                 controller: _noTelpController,
-                                hint: "Masukkan No Telepon",
+                                hint: "Masukkan No HP",
                                 keyboardType: TextInputType.phone,
                               ),
 
@@ -136,7 +136,6 @@ class _EditProfileViewState extends State<EditProfileView> {
                                     email: _emailController.text,
                                     username: _usernameController.text,
                                     password: _passwordController.text,
-                                    role: widget.profileData.user.role.name,
                                     phone: _noTelpController.text,
                                   );
                                   if (success && context.mounted) {

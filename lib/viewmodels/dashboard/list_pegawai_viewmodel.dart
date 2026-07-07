@@ -30,20 +30,23 @@ class ListPegawaiViewmodel extends ChangeNotifier {
       errorMessage = null;
       notifyListeners();
 
-      final results = await Future.wait([
-        _userService.getAll(),
-        _authService.getProfile().catchError((_) => null),
-      ]);
+      _allUsers = await _userService.getAll();
 
-      _allUsers = results[0] as List<User>;
-      final profile = results[1] as AuthResponse?;
+      AuthResponse? profile;
+      try {
+        profile = await _authService.getProfile();
+      } catch (_) {
+        profile = null;
+      }
 
+      isCashier = false;
+      isOwner = false;
       if (profile != null) {
-        if (profile.user.role.name == 'CASHIER') {
+        if (profile.user.role == Role.CASHIER) {
           isCashier = true;
         }
         // Only OWNER can add/edit/delete employees
-        if (profile.user.role.name == 'OWNER') {
+        if (profile.user.role == Role.OWNER) {
           isOwner = true;
         }
       }
@@ -89,6 +92,16 @@ class ListPegawaiViewmodel extends ChangeNotifier {
   }
 
   Future<void> deleteUser(BuildContext context, User user) async {
+    if (user.role == Role.OWNER) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("\"${user.name}\" adalah owner dan tidak bisa dihapus"),
+          backgroundColor: Colors.red[700],
+        ),
+      );
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
