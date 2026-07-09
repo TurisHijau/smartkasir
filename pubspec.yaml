@@ -1,7 +1,7 @@
 name: smartkasir
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.67
 
 environment:
   sdk: ^3.11.1
@@ -23,6 +23,7 @@ dependencies:
   vibration: ^3.1.8
   intl: ^0.20.2
   permission_handler: ^12.0.3
+  tutorial_coach_mark: ^1.3.3
 
 dev_dependencies:
   flutter_test:

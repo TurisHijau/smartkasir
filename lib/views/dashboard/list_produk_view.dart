@@ -5,6 +5,8 @@ import 'package:smartkasir/models/product.dart';
 import 'package:smartkasir/views/dashboard/barcode_scanner_view.dart';
 import 'package:smartkasir/viewmodels/dashboard/list_produk_viewmodel.dart';
 import 'package:smartkasir/widgets/app_ui.dart';
+import 'package:smartkasir/utils/tutorial_helper.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 class ListProdukView extends StatelessWidget {
   const ListProdukView({super.key});
@@ -27,6 +29,58 @@ class _ListProdukScreen extends StatefulWidget {
 
 class _ListProdukScreenState extends State<_ListProdukScreen> {
   final _searchController = TextEditingController();
+  final GlobalKey _addBtnKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showTutorial();
+    });
+  }
+
+  void _showTutorial() async {
+    final phase = await TutorialHelper.getTutorialPhase();
+    List<TargetFocus> targets = [];
+
+    if (phase == TutorialPhase.addProduct) {
+      targets.add(
+        TargetFocus(
+          identify: "add_product",
+          keyTarget: _addBtnKey,
+          alignSkip: Alignment.topLeft,
+          contents: [
+            TargetContent(
+              align: ContentAlign.top,
+              builder: (context, controller) => const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text("Tambah Produk", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 10),
+                  Text("Klik tombol + ini untuk menambahkan produk baru Anda ke dalam sistem.", textAlign: TextAlign.right, style: TextStyle(color: Colors.white, fontSize: 16)),
+                ],
+              ),
+            )
+          ],
+        ),
+      );
+    }
+
+    if (targets.isEmpty) return;
+    if (!context.mounted) return;
+
+    TutorialHelper.showTutorial(
+      context: context,
+      targets: targets,
+      onClickTarget: (target) {
+        if (target.identify == "add_product") {
+          final viewModel = context.read<ListProdukViewmodel>();
+          viewModel.navigateToAddProduct(context);
+        }
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -48,6 +102,7 @@ class _ListProdukScreenState extends State<_ListProdukScreen> {
                 width: 66,
                 height: 66,
                 child: FloatingActionButton(
+                  key: _addBtnKey,
                   backgroundColor: AppColors.primary,
                   shape: const CircleBorder(),
                   elevation: 4,

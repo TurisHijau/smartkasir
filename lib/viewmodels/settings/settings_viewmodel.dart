@@ -18,7 +18,7 @@ class SettingsViewModel extends ChangeNotifier {
   final PrinterHelper _printerHelper = PrinterHelper();
 
   AuthResponse? profileData;
-  bool isLoading = false;
+  bool isLoading = true;
   String? errorMessage;
 
   // Printer State

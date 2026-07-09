@@ -5,6 +5,10 @@ import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/viewmodels/settings/settings_viewmodel.dart';
 import 'package:smartkasir/widgets/app_ui.dart';
 
+import 'package:smartkasir/utils/tutorial_helper.dart';
+import 'package:smartkasir/views/dashboard/list_produk_view.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 
@@ -17,9 +21,14 @@ class SettingsView extends StatelessWidget {
   }
 }
 
-class _SettingsContent extends StatelessWidget {
+class _SettingsContent extends StatefulWidget {
   const _SettingsContent();
 
+  @override
+  State<_SettingsContent> createState() => _SettingsContentState();
+}
+
+class _SettingsContentState extends State<_SettingsContent> {
   String _getInitials(String name) {
     if (name.isEmpty) return 'U';
     final parts = name.trim().split(' ');
@@ -29,9 +38,195 @@ class _SettingsContent extends StatelessWidget {
     return name.substring(0, name.length > 1 ? 2 : 1).toUpperCase();
   }
 
+  // Tutorial Keys
+  final GlobalKey _analitikKey = GlobalKey();
+  final GlobalKey _pegawaiKey = GlobalKey();
+  final GlobalKey _produkKey = GlobalKey();
+  final GlobalKey _printerKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    // Tutorial will be shown after loading completes in build()
+  }
+
+  bool _tutorialShown = false;
+
+  void _showTutorial() async {
+    final phase = await TutorialHelper.getTutorialPhase();
+    List<TargetFocus> targets = [];
+
+    if (phase == TutorialPhase.addProduct) {
+      targets.add(
+        TargetFocus(
+          identify: "produk",
+          keyTarget: _produkKey,
+          shape: ShapeLightFocus.RRect,
+          radius: 14,
+          alignSkip: Alignment.topRight,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) => const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Produk",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Masuk ke menu ini untuk menambahkan produk pertama Anda.",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (phase == TutorialPhase.advancedExploration) {
+      targets.addAll([
+        TargetFocus(
+          identify: "pegawai",
+          keyTarget: _pegawaiKey,
+          shape: ShapeLightFocus.RRect,
+          radius: 14,
+          alignSkip: Alignment.topRight,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) => const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Pegawai",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Tambahkan akun untuk kasir atau manajer Anda.",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        TargetFocus(
+          identify: "analitik",
+          keyTarget: _analitikKey,
+          shape: ShapeLightFocus.RRect,
+          radius: 14,
+          alignSkip: Alignment.topRight,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) => const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Analitik",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Pantau performa penjualan toko Anda melalui laporan statistik.",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        TargetFocus(
+          identify: "printer",
+          keyTarget: _printerKey,
+          shape: ShapeLightFocus.RRect,
+          radius: 14,
+          alignSkip: Alignment.topRight,
+          contents: [
+            TargetContent(
+              align: ContentAlign.top,
+              builder: (context, controller) => const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Printer Struk",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Hubungkan aplikasi dengan printer thermal bluetooth untuk mencetak struk.",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ]);
+    }
+
+    if (targets.isEmpty) return;
+    if (!context.mounted) return;
+
+    TutorialHelper.showTutorial(
+      context: context,
+      targets: targets,
+      onClickTarget: (target) {
+        final viewModel = context.read<SettingsViewModel>();
+        if (target.identify == "produk") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ListProdukView()),
+          ).then((_) {
+            if (mounted) _showTutorial();
+          });
+        } else if (target.identify == "pegawai") {
+          if (viewModel.profileData?.user.role != Role.CASHIER) {
+            viewModel.navigateToEmploye(context);
+          }
+        } else if (target.identify == "analitik") {
+          viewModel.navigateToAnalitik(context);
+        } else if (target.identify == "printer") {
+          _showPrinterDialog(context, viewModel);
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<SettingsViewModel>();
+
+    if (!viewModel.isLoading && !_tutorialShown) {
+      _tutorialShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) _showTutorial();
+      });
+    }
 
     return Container(
       decoration: AppUi.gradientBackground,
@@ -66,7 +261,6 @@ class _SettingsContent extends StatelessWidget {
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 20),
-                              // Check if it's a session expiration error
                               if (viewModel.errorMessage?.contains('habis') ??
                                   false)
                                 ElevatedButton(
@@ -171,6 +365,7 @@ class _SettingsContent extends StatelessWidget {
 
                               // Analitik - semua role
                               _buildMenuTile(
+                                key: _analitikKey,
                                 icon: Icons.analytics,
                                 title: 'Analitik',
                                 subtitle: 'Lihat analisis keuangan toko',
@@ -182,6 +377,7 @@ class _SettingsContent extends StatelessWidget {
                               if (viewModel.profileData?.user.role !=
                                   Role.CASHIER)
                                 _buildMenuTile(
+                                  key: _pegawaiKey,
                                   icon: Icons.people,
                                   title: 'Pegawai',
                                   subtitle: 'Buat atau edit akun pegawai',
@@ -191,6 +387,7 @@ class _SettingsContent extends StatelessWidget {
 
                               // Produk - semua role
                               _buildMenuTile(
+                                key: _produkKey,
                                 icon: Icons.inventory,
                                 title: 'Produk',
                                 subtitle: 'Kelola list produk',
@@ -212,6 +409,7 @@ class _SettingsContent extends StatelessWidget {
                               ),
                               const SizedBox(height: 10),
                               _buildMenuTile(
+                                key: _printerKey,
                                 icon: Icons.print,
                                 title: 'Printer Struk',
                                 subtitle: viewModel.isPrinterConnected
@@ -310,6 +508,7 @@ class _SettingsContent extends StatelessWidget {
   }
 
   Widget _buildMenuTile({
+    Key? key,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -317,6 +516,7 @@ class _SettingsContent extends StatelessWidget {
     Widget? trailing,
   }) {
     return Padding(
+      key: key,
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: InkWell(
         onTap: onTap,

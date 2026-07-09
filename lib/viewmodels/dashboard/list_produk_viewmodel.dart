@@ -15,7 +15,7 @@ class ListProdukViewmodel extends ChangeNotifier {
   final AuthService _authService = AuthService();
 
   bool showFilter = false;
-  bool isLoading = false;
+  bool isLoading = true;
   String? errorMessage;
   bool isCashier = false;
 

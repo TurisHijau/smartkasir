@@ -10,6 +10,8 @@ import 'package:smartkasir/services/auth_service.dart';
 import 'package:smartkasir/views/settings_view.dart';
 import 'package:vibration/vibration.dart';
 import 'package:smartkasir/constants/app_colors.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:smartkasir/utils/tutorial_helper.dart';
 
 class ScannerView extends StatefulWidget {
   const ScannerView({super.key});
@@ -34,6 +36,206 @@ class _ScannerViewState extends State<ScannerView> {
 
   final Map<String, DateTime> _lastScanTimes = {};
   final List<_CartItem> _cartItems = [];
+
+  final GlobalKey _settingsKey = GlobalKey();
+  final GlobalKey _cameraToggleKey = GlobalKey();
+  final GlobalKey _manualInputKey = GlobalKey();
+  final GlobalKey _checkoutKey = GlobalKey();
+  
+  // Checkout Sheet Tutorial Keys
+  final GlobalKey _paymentMethodKey = GlobalKey();
+  final GlobalKey _processPaymentKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showTutorial();
+    });
+  }
+
+  void _showTutorial() async {
+    if (!mounted) return;
+    final phase = await TutorialHelper.getTutorialPhase();
+    List<TargetFocus> targets = [];
+
+    if (phase == TutorialPhase.addProduct ||
+        phase == TutorialPhase.advancedExploration) {
+      targets.add(
+        TargetFocus(
+          identify: "settings",
+          keyTarget: _settingsKey,
+          shape: ShapeLightFocus.Circle,
+          alignSkip: Alignment.bottomRight,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) => Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text(
+                    "Pengaturan",
+                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    phase == TutorialPhase.addProduct
+                        ? "Langkah Pertama: Masuk ke Pengaturan untuk menambahkan produk ke toko Anda."
+                        : "Eksplorasi Lanjutan: Masuk ke Pengaturan untuk mengelola pegawai, analitik, dan printer.",
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (phase == TutorialPhase.scanProduct) {
+      targets.addAll([
+        TargetFocus(
+          identify: "camera_toggle",
+          keyTarget: _cameraToggleKey,
+          shape: ShapeLightFocus.Circle,
+          alignSkip: Alignment.bottomRight,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) => const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text("Scan Barcode", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 10),
+                  Text("Nyalakan kamera untuk memindai produk yang baru saja Anda tambahkan.", style: TextStyle(color: Colors.white, fontSize: 16)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        TargetFocus(
+          identify: "manual_input",
+          keyTarget: _manualInputKey,
+          shape: ShapeLightFocus.RRect,
+          radius: 12,
+          alignSkip: Alignment.topRight,
+          contents: [
+            TargetContent(
+              align: ContentAlign.top,
+              builder: (context, controller) => const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Input Manual", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 10),
+                  Text("Atau gunakan Input Manual jika produk Anda tidak memiliki barcode.", style: TextStyle(color: Colors.white, fontSize: 16)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ]);
+    } else if (phase == TutorialPhase.checkout && _cartItems.isNotEmpty) {
+      targets.add(
+        TargetFocus(
+          identify: "checkout",
+          keyTarget: _checkoutKey,
+          shape: ShapeLightFocus.RRect,
+          radius: 12,
+          alignSkip: Alignment.topRight,
+          contents: [
+            TargetContent(
+              align: ContentAlign.top,
+              builder: (context, controller) => const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Review Belanja", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 10),
+                  Text("Produk berhasil ditambahkan ke keranjang! Klik di sini untuk melanjutkan ke pembayaran.", style: TextStyle(color: Colors.white, fontSize: 16)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (targets.isEmpty) return;
+
+    TutorialHelper.showTutorial(
+      context: context,
+      targets: targets,
+      onClickTarget: (target) async {
+        if (target.identify == "settings") {
+          await _scannerController.stop();
+          setState(() => _isCameraOn = false);
+          if (context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsView()),
+            ).then((_) {
+              if (mounted) _showTutorial();
+            });
+          }
+        } else if (target.identify == "camera_toggle") {
+          _toggleCamera();
+        } else if (target.identify == "manual_input") {
+          _showInputManualSheet();
+        } else if (target.identify == "checkout") {
+          if (_cartItems.isNotEmpty) _showReviewSheet();
+        }
+      },
+    );
+  }
+
+  void _showCheckoutTutorial(BuildContext sheetContext) {
+    final targets = [
+      TargetFocus(
+        identify: "payment_method",
+        keyTarget: _paymentMethodKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 12,
+        alignSkip: Alignment.topRight,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) => const Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Metode Pembayaran", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                SizedBox(height: 10),
+                Text("Pilih CASH atau QRIS sesuai pembayaran pelanggan. Jika CASH, masukkan uang yang diterima.", style: TextStyle(color: Colors.white, fontSize: 16)),
+              ],
+            ),
+          )
+        ],
+      ),
+      TargetFocus(
+        identify: "process_payment",
+        keyTarget: _processPaymentKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 12,
+        alignSkip: Alignment.topRight,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) => const Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Proses Transaksi", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                SizedBox(height: 10),
+                Text("Klik tombol ini untuk menyelesaikan transaksi dan mencetak struk belanja.", style: TextStyle(color: Colors.white, fontSize: 16)),
+              ],
+            ),
+          )
+        ],
+      ),
+    ];
+    TutorialHelper.showTutorial(context: sheetContext, targets: targets);
+  }
 
   @override
   void dispose() {
@@ -1149,13 +1351,20 @@ class _ScannerViewState extends State<ScannerView> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => StatefulBuilder(
-        builder: (context, setSheetState) => AnimatedPadding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          duration: const Duration(milliseconds: 150),
-          curve: Curves.easeOut,
+      builder: (sheetContext) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          final phase = await TutorialHelper.getTutorialPhase();
+          if (phase == TutorialPhase.checkout && mounted) {
+            _showCheckoutTutorial(sheetContext);
+          }
+        });
+        return StatefulBuilder(
+          builder: (context, setSheetState) => AnimatedPadding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOut,
           child: DraggableScrollableSheet(
             initialChildSize: 0.65,
             minChildSize: 0.4,
@@ -1324,10 +1533,12 @@ class _ScannerViewState extends State<ScannerView> {
                         const SizedBox(height: 8),
 
                         // Payment method buttons
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: PaymentMethod.values.map((method) {
+                        Container(
+                          key: _paymentMethodKey,
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: PaymentMethod.values.map((method) {
                             final isSelected = selectedMethod == method;
                             return SizedBox(
                               height: 40,
@@ -1359,6 +1570,7 @@ class _ScannerViewState extends State<ScannerView> {
                               ),
                             );
                           }).toList(),
+                          ),
                         ),
 
                         if (selectedMethod != PaymentMethod.QRIS) ...[
@@ -1393,7 +1605,8 @@ class _ScannerViewState extends State<ScannerView> {
                         const SizedBox(height: 16),
 
                         // Process button
-                        SizedBox(
+                        Container(
+                          key: _processPaymentKey,
                           width: double.infinity,
                           height: 52,
                           child: ElevatedButton(
@@ -1448,6 +1661,9 @@ class _ScannerViewState extends State<ScannerView> {
                                           transaction,
                                           cartItemsCopy,
                                         );
+                                        TutorialHelper.advanceTutorialPhase(TutorialPhase.checkout).then((_) {
+                                          if (mounted) _showTutorial();
+                                        });
                                       }
                                     } catch (e) {
                                       if (context.mounted) {
@@ -1506,7 +1722,8 @@ class _ScannerViewState extends State<ScannerView> {
             ),
           ),
         ),
-      ),
+        );
+      },
     ).whenComplete(() {
       if (_isCameraOn && mounted) {
         _scannerController.start();

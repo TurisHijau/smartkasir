@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartkasir/constants/app_colors.dart';
-import 'package:smartkasir/models/user.dart';
 import 'package:smartkasir/viewmodels/profile/profile_viewmodel.dart';
 import 'package:smartkasir/widgets/app_ui.dart';
 
@@ -180,19 +179,6 @@ class _ProfileContent extends StatelessWidget {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
     return name.substring(0, name.length > 1 ? 2 : 1).toUpperCase();
-  }
-
-  String _getRoleLabel(String roleName) {
-    switch (roleName) {
-      case 'OWNER':
-        return 'Pemilik Toko';
-      case 'MANAGER':
-        return 'Manajer';
-      case 'CASHIER':
-        return 'Kasir';
-      default:
-        return roleName;
-    }
   }
 
   Widget _buildInfoTile(IconData icon, String label, String value) {

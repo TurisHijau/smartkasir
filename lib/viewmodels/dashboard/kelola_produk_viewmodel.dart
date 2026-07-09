@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartkasir/models/product.dart';
 import 'package:smartkasir/services/product_service.dart';
 import 'package:smartkasir/views/dashboard/barcode_scanner_view.dart';
+import 'package:smartkasir/utils/tutorial_helper.dart';
 
 class KelolaProdukViewModel extends ChangeNotifier {
   final ProductService _productService = ProductService();
@@ -12,7 +13,6 @@ class KelolaProdukViewModel extends ChangeNotifier {
   String? scannedBarcode;
   bool isProductNameLocked = false;
 
-  /// The product being edited, null for create mode.
   final Product? editingProduct;
 
   KelolaProdukViewModel({this.editingProduct});
@@ -49,6 +49,7 @@ class KelolaProdukViewModel extends ChangeNotifier {
         await _productService.update(editingProduct!.id!, product);
       } else {
         await _productService.create(product);
+        await TutorialHelper.advanceTutorialPhase(TutorialPhase.addProduct);
       }
 
       return true;
